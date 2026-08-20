@@ -1,0 +1,112 @@
+/* ------------------------------------------------------------------ */
+/* Global utilities & accessibility helpers (design-system level).    */
+/* ------------------------------------------------------------------ */
+
+/* Screen-reader-only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip link (keyboard users) */
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 100;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  transition: top 0.2s ease;
+}
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* Balanced headings */
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Entrance animations. Kept inside the 200–500ms band except .animate-reveal,
+   a large-section (hero) entrance, which is allowed to run slightly longer. */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out both;
+}
+.animate-slide-up {
+  animation: slide-up 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Hero entrance: fade + slide + gentle de-blur. A large-section exception to
+   the 200–500ms rule (still deliberate, not sluggish). */
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(20px); filter: blur(6px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+.animate-reveal {
+  animation: reveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform, filter;
+}
+
+/* Word-by-word headline reveal (see components/animations/RevealText.tsx).
+   Each word sits in an overflow-hidden mask so it slides up from behind the
+   line, rather than the whole heading fading in as one block. */
+@keyframes word-reveal {
+  from { opacity: 0; transform: translateY(115%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.reveal-word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.08em;
+}
+.reveal-word-inner {
+  display: inline-block;
+  animation: word-reveal 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform;
+}
+
+/* Floating icon badges over a photo hero (see
+   components/animations/FloatingBadges.tsx) — each badge drifts up/down on
+   its own cycle so the group doesn't look mechanically synced. */
+@keyframes float-badge {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.float-badge {
+  animation: float-badge 4s ease-in-out infinite;
+}
+
+/* Respect reduced-motion everywhere, no exceptions — including the hero. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

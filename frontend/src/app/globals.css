@@ -1,0 +1,234 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+@import "../styles/utilities.css";
+
+/* Enable class-based dark mode (ThemeProvider toggles `.dark` on <html>). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Map runtime tokens into Tailwind so `bg-background`, `text-primary`, etc.
+   exist as utilities and react to the light/dark variable overrides. */
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
+  --color-destructive: hsl(var(--destructive));
+  --color-emergency: hsl(var(--emergency));
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* Locale-aware body fonts */
+  :lang(hi) body,
+  [lang="hi"] {
+    font-family: var(--font-devanagari);
+  }
+  :lang(ar) body,
+  [lang="ar"] {
+    font-family: var(--font-arabic);
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  ::selection {
+    background: hsl(var(--primary) / 0.2);
+  }
+  /* Subtle hover glow on every link — text links, icon-only links (social
+     icons), and button-styled <a> links all pick this up automatically.
+     drop-shadow (not text-shadow) so it works identically on text glyphs
+     and on SVG icons, which text-shadow can't touch. */
+  a {
+    transition: color 0.25s ease, filter 0.25s ease;
+  }
+  a:hover {
+    filter: drop-shadow(0 0 6px hsl(var(--primary) / 0.5));
+  }
+  /* Hover underline is footer-only, not site-wide. */
+  footer a {
+    text-decoration-line: none;
+    text-decoration-thickness: auto;
+    transition: color 0.25s ease, filter 0.25s ease, text-decoration-color 0.25s ease;
+  }
+  footer a:hover {
+    text-decoration-line: underline;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    a {
+      transition: none;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Animated border glow for carousel cards (see CardCarousel.tsx).    */
+/* A conic-gradient comet trace rotates around each card's own edge   */
+/* via a ::before ring — the card itself never moves.                 */
+/* ------------------------------------------------------------------ */
+@property --glow-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.glow-card {
+  position: relative;
+  border-radius: var(--radius-lg);
+}
+
+.glow-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.glow-card::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  z-index: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--glow-angle),
+    transparent 0deg,
+    transparent 268deg,
+    hsl(var(--ring)) 300deg,
+    hsl(var(--secondary)) 328deg,
+    transparent 356deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.85;
+  pointer-events: none;
+  animation: glow-card-spin 6s linear infinite;
+}
+
+@keyframes glow-card-spin {
+  to {
+    --glow-angle: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-card::before {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Scroll-driven timeline (see components/sections/Timeline.tsx).      */
+/* JS toggles `.is-active` on each [data-timeline-item] as the scroll- */
+/* driven progress line reaches it; everything else here is pure CSS. */
+/* ------------------------------------------------------------------ */
+.timeline-node {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  transition:
+    background-color 0.5s ease,
+    color 0.5s ease,
+    box-shadow 0.5s ease,
+    transform 0.4s ease;
+}
+
+.timeline-item.is-active .timeline-node {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  box-shadow: 0 0 0 6px hsl(var(--primary) / 0.14);
+  transform: scale(1.08);
+}
+
+.timeline-reveal > * {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.timeline-item.is-active .timeline-reveal > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.timeline-item.is-active .timeline-reveal > *:nth-child(1) {
+  transition-delay: 0ms;
+}
+.timeline-item.is-active .timeline-reveal > *:nth-child(2) {
+  transition-delay: 70ms;
+}
+.timeline-item.is-active .timeline-reveal > *:nth-child(3) {
+  transition-delay: 140ms;
+}
+.timeline-item.is-active .timeline-reveal > *:nth-child(4) {
+  transition-delay: 210ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timeline-node {
+    transition: none;
+  }
+  .timeline-reveal > * {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Idle "blink" pulse for accent icons (see MissionGlance.tsx). Only   */
+/* animates opacity, so it never fights a hover/open transform on the  */
+/* same element.                                                       */
+/* ------------------------------------------------------------------ */
+@keyframes icon-blink-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.icon-blink {
+  animation: icon-blink-pulse 2.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-blink {
+    animation: none;
+  }
+}

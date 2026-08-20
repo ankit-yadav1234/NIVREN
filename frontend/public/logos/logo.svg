@@ -1,0 +1,6 @@
+<svg width="160" height="40" viewBox="0 0 160 40" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nirvana Health">
+  <rect x="2" y="2" width="36" height="36" rx="9" fill="#1478a6"/>
+  <path d="M9 21h4l2-6 3 12 3-9 2 3h5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <text x="46" y="26" font-family="Roboto, Inter, sans-serif" font-size="18" font-weight="700" fill="#0f2a3a">Nirvana</text>
+  <text x="123" y="26" font-family="Roboto, Inter, sans-serif" font-size="18" font-weight="500" fill="#1478a6">Health</text>
+</svg>

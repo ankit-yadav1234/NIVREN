@@ -1,0 +1,58 @@
+import type { Service } from "@/types";
+
+export const services: Service[] = [
+  {
+    id: "health-checkup",
+    slug: "health-checkup",
+    title: "Health Checkup",
+    description: "Comprehensive preventive health packages tailored to your age and lifestyle.",
+    icon: "ClipboardCheck",
+    image: "https://images.unsplash.com/photo-1536064479547-7ee40b74b807?auto=format&fit=crop&w=1200&q=80",
+    category: "Preventive Care",
+  },
+  {
+    id: "diagnostics",
+    slug: "diagnostics",
+    title: "Diagnostics & Imaging",
+    description: "State-of-the-art lab testing, MRI, CT, ultrasound, and digital X-ray.",
+    icon: "Microscope",
+    image: "https://images.unsplash.com/photo-1666214282459-c7dff167ecc0?auto=format&fit=crop&w=1200&q=80",
+    category: "Diagnostics",
+  },
+  {
+    id: "emergency-care",
+    slug: "emergency-care",
+    title: "Emergency Care",
+    description: "24/7 emergency department with rapid response and critical care support.",
+    icon: "Ambulance",
+    image: "https://images.unsplash.com/photo-1765209679033-9f3e63803846?auto=format&fit=crop&w=1200&q=80",
+    category: "Emergency",
+  },
+  {
+    id: "surgery",
+    slug: "surgery",
+    title: "Surgery",
+    description: "Advanced minimally invasive and robotic surgical procedures.",
+    icon: "Stethoscope",
+    image: "https://images.unsplash.com/photo-1550831106-f8d5b6f1abe9?auto=format&fit=crop&w=1200&q=80",
+    category: "Treatment",
+  },
+  {
+    id: "pharmacy",
+    slug: "pharmacy",
+    title: "Pharmacy",
+    description: "In-house pharmacy with round-the-clock medication availability.",
+    icon: "Pill",
+    image: "https://images.unsplash.com/photo-1696861308115-54a5e5a134b0?auto=format&fit=crop&w=1200&q=80",
+    category: "Support",
+  },
+  {
+    id: "telemedicine",
+    slug: "telemedicine",
+    title: "Telemedicine",
+    description: "Consult top specialists from the comfort of your home.",
+    icon: "Video",
+    image: "https://images.unsplash.com/photo-1758691462749-a95ce1bd7f96?auto=format&fit=crop&w=1200&q=80",
+    category: "Digital Care",
+  },
+];
