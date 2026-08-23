@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarPlus, Stethoscope, ShieldCheck } from "lucide-react";
+import { CalendarPlus, BarChart3, ShieldCheck } from "lucide-react";
 import type { Locale } from "@/types";
 import type { Dictionary } from "@/content/schema";
 import { Container } from "@/components/ui/Container";
@@ -33,7 +33,7 @@ export function Hero({
 }) {
   const t = dict.home.hero;
   return (
-    <section className="relative isolate flex min-h-[85vh] items-center overflow-hidden bg-slate-950">
+    <section className="relative isolate flex min-h-dvh items-center overflow-hidden bg-slate-950">
       {/* Moving video background */}
       <HeroVideo src={HERO_VIDEO} className="absolute inset-0 -z-20 h-full w-full scale-105 object-cover" />
       {/* Readability overlay: diagonal multi-stop wash + a soft brand-color glow behind the copy */}
@@ -73,20 +73,20 @@ export function Hero({
             className="animate-reveal mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
           >
             <Link
-              href={localePath("/appointment", locale)}
+              href={localePath("/rcm", locale)}
               className={cn(buttonVariants({ size: "lg" }), "uppercase tracking-wide")}
             >
-              <CalendarPlus className="h-5 w-5" aria-hidden />
+              <BarChart3 className="h-5 w-5" aria-hidden />
               {t.primaryAction}
             </Link>
             <Link
-              href={localePath("/doctors", locale)}
+              href={localePath("/appointment", locale)}
               className={cn(
                 buttonVariants({ size: "lg", variant: "outline" }),
                 "border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white",
               )}
             >
-              <Stethoscope className="h-5 w-5" aria-hidden />
+              <CalendarPlus className="h-5 w-5" aria-hidden />
               {t.secondaryAction}
             </Link>
           </div>

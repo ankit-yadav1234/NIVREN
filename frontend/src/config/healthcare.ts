@@ -1,6 +1,8 @@
 export const healthcareConfig = {
   emergency: {
-    enabled: true,
+    // Off: an RCM company positioning doesn't want a hospital-style
+    // "call an ambulance" banner on the homepage.
+    enabled: false,
     phone: "+91 98765 00000",
     available24x7: true,
   },

@@ -5,9 +5,17 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Reveal } from "@/components/animations/Reveal";
 
 /** A single featured quote — the compact alternative to the homepage's 3-card Testimonials grid. */
-export function SimpleTestimonial({ testimonial, muted }: { testimonial: Testimonial; muted?: boolean }) {
+export function SimpleTestimonial({
+  id,
+  testimonial,
+  muted,
+}: {
+  id?: string;
+  testimonial: Testimonial;
+  muted?: boolean;
+}) {
   return (
-    <Section muted={muted}>
+    <Section id={id} muted={muted}>
       <Reveal className="mx-auto max-w-2xl text-center">
         <Quote className="mx-auto h-9 w-9 text-primary/30" aria-hidden />
         <div className="mt-3 flex justify-center" aria-label={`${testimonial.rating} / 5`}>

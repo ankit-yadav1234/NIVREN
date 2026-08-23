@@ -59,18 +59,18 @@ export const en: Dictionary = {
       legal: "Legal",
       emergency: "24/7 Emergency",
       rights: "All rights reserved.",
-      tagline: "Compassionate, connected healthcare for you and your family.",
+      tagline: "Revenue cycle management for healthcare organizations, backed by a hospital network we run ourselves.",
     },
   },
   home: {
     hero: {
-      badge: "Trusted by 50,000+ families",
-      title: "Compassionate care,",
-      titleAccent: "better health.",
+      badge: "Revenue Cycle Management for Hospitals & Clinics",
+      title: "Get paid for the care",
+      titleAccent: "you already deliver.",
       description:
-        "World-class doctors, modern facilities, and patient-first care — all in one connected healthcare network.",
-      primaryAction: "Book Now",
-      secondaryAction: "Find a Doctor",
+        "NIVREN runs a connected hospital network — and helps other healthcare organizations run theirs profitably, with end-to-end billing, coding, and revenue cycle management.",
+      primaryAction: "Explore RCM Services",
+      secondaryAction: "Book a Patient Visit",
     },
     emergency: {
       title: "Need urgent medical assistance?",
@@ -130,7 +130,7 @@ export const en: Dictionary = {
   },
   about: {
     title: "About Us",
-    subtitle: "Two decades of compassionate, evidence-based healthcare.",
+    subtitle: "A hospital network and RCM partner, built on two decades of running healthcare operations.",
     mission: {
       title: "Our Mission",
       body: "To deliver accessible, high-quality healthcare that treats every patient with dignity, empathy, and clinical excellence.",

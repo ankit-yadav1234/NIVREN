@@ -20,8 +20,8 @@ export function QuickLinksBand({ locale }: { locale: Locale }) {
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
           <Reveal>
             <p className="text-xl font-bold leading-snug md:text-2xl">
-              NIVREN is committed to connecting patients with the right care, right when
-              they need it.
+              NIVREN helps healthcare organizations get paid faster — and connects our own
+              patients with the right care, right when they need it.
             </p>
           </Reveal>
 

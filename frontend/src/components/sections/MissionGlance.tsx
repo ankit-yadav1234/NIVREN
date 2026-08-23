@@ -23,13 +23,13 @@ export function MissionGlance({ locale }: { locale: Locale }) {
               The NIVREN Network at a Glance
             </p>
             <h2 className="mt-4 text-[length:var(--text-h1)] font-bold leading-[1.1] text-primary">
-              Our mission is to make world-class healthcare feel personal
+              Revenue cycle expertise, proven on our own hospital network
             </h2>
             <p className="mt-5 max-w-xl leading-relaxed text-muted-foreground">
-              NIVREN is a connected network of specialists dedicated to compassionate,
-              evidence-based care. With 50,000+ patients across 6+ departments and more than two
-              decades of experience, we bring board-certified physicians, modern diagnostics, and
-              transparent care together — online and in person.
+              NIVREN runs a connected network of hospitals and clinics — which means our RCM team
+              doesn&apos;t just process claims, they understand how a hospital actually operates.
+              That same operational discipline now helps other healthcare organizations collect
+              more, faster.
             </p>
             <Link
               href={localePath("/about", locale)}

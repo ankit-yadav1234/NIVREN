@@ -25,4 +25,12 @@ export const contentImageSections: ContentImageSectionData[] = [
     body: "We invest heavily in continuing medical education, nurse mentorship programs, and cross-department training, so every member of our care team brings the latest clinical knowledge to your bedside — expertise that keeps growing alongside their experience.",
     imagePosition: "left",
   },
+  {
+    id: "rcm-support",
+    icon: "BarChart3",
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
+    heading: "Beyond patient care, we support the business of healthcare",
+    body: "Our Revenue Cycle Management team works with hospitals and clinics across the region on medical billing, coding, and claims — the same operational discipline we bring to our own network, now helping other providers collect more, faster.",
+    imagePosition: "right",
+  },
 ];

@@ -12,6 +12,7 @@ import { LocaleProvider } from "@/providers/LocaleProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { AssistantWidget } from "@/components/layout/AssistantWidget";
 import { PageTransition } from "@/components/animations/PageTransition";
 import { organizationJsonLd } from "@/lib/seo/structured-data";
 
@@ -60,6 +61,7 @@ export default async function LocaleLayout({
                 <PageTransition>{children}</PageTransition>
               </main>
               <Footer locale={locale as Locale} />
+              <AssistantWidget />
             </LocaleProvider>
           </QueryProvider>
         </ThemeProvider>

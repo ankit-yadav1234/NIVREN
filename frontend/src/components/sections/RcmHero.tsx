@@ -38,7 +38,7 @@ export function RcmHero({
   locale: Locale;
 }) {
   return (
-    <section className="relative isolate flex min-h-[70vh] items-center overflow-hidden bg-slate-950 pt-16">
+    <section className="relative isolate flex min-h-dvh items-center overflow-hidden bg-slate-950 pt-16">
       <HeroVideo src={RCM_VIDEO} className="absolute inset-0 -z-20 h-full w-full object-cover" />
       {/* Mobile/tablet: solid wash, full bleed. Desktop: left-to-right window. */}
       <div

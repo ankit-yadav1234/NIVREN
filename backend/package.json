@@ -5,13 +5,19 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "voice-agent": "tsx src/voice-agent/agent.ts dev",
     "build": "tsc",
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@google/genai": "^2.18.0",
+    "@livekit/agents": "^1.7.0",
+    "@livekit/agents-plugin-google": "^1.7.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "livekit-server-sdk": "^2.18.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

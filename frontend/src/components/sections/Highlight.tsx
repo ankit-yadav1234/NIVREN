@@ -25,7 +25,7 @@ export function HighlightSection({
   const imageFirst = data.imagePosition === "left";
 
   return (
-    <Section muted={muted}>
+    <Section id={data.id} muted={muted}>
       <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
         <Reveal className={cn(!imageFirst && "lg:order-2")}>
           <div className="grid grid-cols-2 gap-4">

@@ -49,7 +49,7 @@ export default async function AboutPage({
 
       <InThisSection locale={locale} />
 
-      <Container className="py-12">
+      <Container id="mission-vision" className="py-12">
         <div className="grid gap-6 md:grid-cols-2">
           <Card className="p-6">
             <Target className="h-8 w-8 text-primary" aria-hidden />
@@ -64,7 +64,7 @@ export default async function AboutPage({
         </div>
       </Container>
 
-      <Section muted>
+      <Section id="values" muted>
         <SectionHeading title={t.values.title} />
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {t.values.items.map((v) => (
@@ -97,7 +97,7 @@ export default async function AboutPage({
         <ContentImageSection key={c.id} data={c} muted={i % 2 === 1} />
       ))}
 
-      {testimonials[0] && <SimpleTestimonial testimonial={testimonials[0]} />}
+      {testimonials[0] && <SimpleTestimonial id="testimonial" testimonial={testimonials[0]} />}
 
       {highlightSections.map((h, i) => (
         <HighlightSection key={h.id} data={h} locale={locale} dict={dict} muted={i % 2 === 1} />

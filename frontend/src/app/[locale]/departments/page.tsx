@@ -6,6 +6,8 @@ import { getDepartments } from "@/lib/api/departments";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { DepartmentCard } from "@/components/healthcare/DepartmentCard";
+import { HeroBanner } from "@/components/sections/HeroBanner";
+import { departmentsBanner } from "@/data/heroBanners";
 
 export async function generateMetadata({
   params,
@@ -34,6 +36,7 @@ export default async function DepartmentsPage({
         crumbs={[{ label: dict.common.nav.home, href: "/" }, { label: dict.departments.title }]}
         locale={locale}
       />
+      <HeroBanner data={departmentsBanner} locale={locale} />
       <Container className="py-12">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {departments.map((d) => (

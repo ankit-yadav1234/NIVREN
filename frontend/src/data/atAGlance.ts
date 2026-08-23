@@ -8,17 +8,17 @@ export interface GlanceAccordionItem {
 /** Powers the "At a Glance" accordion in components/sections/MissionGlance.tsx. */
 export const glanceAccordion: GlanceAccordionItem[] = [
   {
-    id: "updates",
-    title: "Patient Care Updates",
+    id: "rcm",
+    title: "Revenue Cycle Management",
     description:
-      "Stay informed about new specialists, expanded hours, and the programs shaping care across our network.",
-    link: { label: "Read More", href: "/about" },
+      "End-to-end billing, coding, and denial management for hospitals and clinics — built on two decades of running our own network.",
+    link: { label: "Explore RCM Services", href: "/rcm" },
   },
   {
     id: "departments",
     title: "Our Departments",
     description:
-      "Explore board-certified specialists across cardiology, neurology, orthopedics, pediatrics, oncology, and dermatology.",
+      "The network we operate ourselves — board-certified specialists across cardiology, neurology, orthopedics, pediatrics, oncology, and dermatology.",
     link: { label: "Browse Departments", href: "/departments" },
   },
   {
@@ -44,8 +44,8 @@ export interface QuickLink {
 
 /** Powers the dark quick-links band in components/sections/QuickLinksBand.tsx. */
 export const quickLinks: QuickLink[] = [
-  { label: "Book Now", href: "/appointment" },
+  { label: "Explore RCM Services", href: "/rcm" },
+  { label: "Book a Patient Visit", href: "/appointment" },
   { label: "Contact Our Care Team", href: "/contact" },
   { label: "Find a Location Near You", href: "/locations" },
-  { label: "Explore Career Opportunities", href: "/contact", muted: true },
 ];

@@ -1,7 +1,8 @@
 export const siteConfig = {
   name: "NIVREN",
   shortName: "NIVREN",
-  description: "Compassionate, connected healthcare for you and your family.",
+  description:
+    "Revenue cycle management for hospitals and clinics — billing, coding, and denial management from the team that runs its own connected hospital network.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   phone: "+91 98765 43210",
   emergencyPhone: "+91 98765 00000",

@@ -44,7 +44,7 @@ export function LanguageSwitcher() {
         <span className="hidden sm:inline">{locales[locale].code.toUpperCase()}</span>
       </button>
       {open && (
-        <ul className="absolute end-0 z-50 mt-1 min-w-40 rounded-[var(--radius-lg)] border border-border bg-card p-1.5 shadow-lg">
+        <ul className="absolute end-0 z-50 mt-1 min-w-40 rounded-[var(--radius-lg)] border border-border bg-card p-1.5 text-foreground shadow-lg">
           {supportedLocales.map((code) => (
             <li key={code}>
               <button

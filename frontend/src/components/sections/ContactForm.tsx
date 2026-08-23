@@ -9,9 +9,18 @@ import { contactSchema, type ContactFormValues } from "@/lib/validation/contact"
 import { submitContactMessage } from "@/lib/api/contact";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { FormField, FormLabel, FormError } from "@/components/ui/FormField";
 import { ErrorState } from "@/components/ui/states";
+
+const INTEREST_OPTIONS = [
+  { value: "", label: "Select an option" },
+  { value: "patient-care", label: "Patient Care / Appointments" },
+  { value: "rcm", label: "Revenue Cycle Management (for providers)" },
+  { value: "billing", label: "Billing or Insurance Question" },
+  { value: "general", label: "General Inquiry" },
+];
 
 export function ContactForm({ dict }: { dict: Dictionary }) {
   const t = dict.contact;
@@ -77,9 +86,19 @@ export function ContactForm({ dict }: { dict: Dictionary }) {
           <Input id="c-email" type="email" {...register("email")} aria-invalid={!!errors.email} />
           <FormError>{errors.email?.message}</FormError>
         </FormField>
-        <FormField className="sm:col-span-2">
+        <FormField>
           <FormLabel htmlFor="c-phone">{t.form.phone}</FormLabel>
           <Input id="c-phone" type="tel" {...register("phone")} />
+        </FormField>
+        <FormField>
+          <FormLabel htmlFor="c-interest">What are you reaching out about?</FormLabel>
+          <Select id="c-interest" {...register("interest")}>
+            {INTEREST_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </Select>
         </FormField>
         <FormField className="sm:col-span-2">
           <FormLabel htmlFor="c-message" required>

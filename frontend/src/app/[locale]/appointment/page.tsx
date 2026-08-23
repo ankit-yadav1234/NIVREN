@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { UserPlus } from "lucide-react";
 import type { Locale } from "@/types";
 import { getContent } from "@/content";
 import { buildMetadata } from "@/lib/seo/metadata";
@@ -8,6 +10,7 @@ import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { AppointmentForm } from "@/components/healthcare/AppointmentForm";
+import { localePath } from "@/lib/utils/format";
 
 export async function generateMetadata({
   params,
@@ -41,7 +44,21 @@ export default async function AppointmentPage({
         locale={locale}
       />
       <Container className="py-12">
-        <Card className="mx-auto max-w-2xl p-6 md:p-8">
+        <div className="mx-auto flex max-w-2xl flex-wrap items-center gap-2 rounded-[var(--radius-md)] border border-border bg-muted/50 px-4 py-3 text-sm">
+          <UserPlus className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+          <span className="text-muted-foreground">
+            Have an account?{" "}
+            <Link href={localePath("/login", locale)} className="font-semibold text-primary hover:underline">
+              Sign in
+            </Link>{" "}
+            to track this booking, or{" "}
+            <Link href={localePath("/signup", locale)} className="font-semibold text-primary hover:underline">
+              create one
+            </Link>
+            . Booking as a guest works too.
+          </span>
+        </div>
+        <Card className="mx-auto mt-6 max-w-2xl p-6 md:p-8">
           <AppointmentForm
             departments={departments}
             doctors={doctors}

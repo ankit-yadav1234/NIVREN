@@ -56,7 +56,7 @@ function NavItemWithDropdown({
         aria-controls={menuId}
         onClick={() => setOpen(true)}
         className={cn(
-          "inline-flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:text-white",
+          "inline-flex items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-2 text-sm font-medium transition-colors hover:text-white min-[1130px]:px-3",
           isActive(pathname, item.href, locale) ? "text-white" : "text-white/80",
         )}
       >
@@ -119,7 +119,7 @@ export function DesktopNav({
   const pathname = usePathname();
   return (
     <nav aria-label="Primary" className="hidden lg:block">
-      <ul className="flex items-center gap-1">
+      <ul className="flex items-center gap-0.5 min-[1130px]:gap-1">
         {items.map((item) =>
           item.children?.length ? (
             <NavItemWithDropdown key={item.href} item={item} locale={locale} pathname={pathname} />
@@ -128,7 +128,7 @@ export function DesktopNav({
               <Link
                 href={localePath(item.href, locale)}
                 className={cn(
-                  "inline-block rounded-md px-3 py-2 text-sm font-medium transition-colors hover:text-white",
+                  "inline-block whitespace-nowrap rounded-md px-1.5 py-2 text-sm font-medium transition-colors hover:text-white min-[1130px]:px-3",
                   isActive(pathname, item.href, locale) ? "text-white" : "text-white/80",
                 )}
               >

@@ -34,7 +34,7 @@ export default async function ServicesPage({
         crumbs={[{ label: dict.common.nav.home, href: "/" }, { label: dict.services.title }]}
         locale={locale}
       />
-      <Container className="py-12">
+      <Container id="service-cards" className="py-12">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {services.map((s) => (
             <ServiceCard key={s.id} service={s} locale={locale} />

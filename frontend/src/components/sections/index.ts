@@ -7,5 +7,6 @@ export { Services } from "./Services";
 export { Testimonials } from "./Testimonials";
 export { AppointmentCTA } from "./AppointmentCTA";
 export { Locations } from "./Locations";
+export { ImpactStrip } from "./ImpactStrip";
 export { FaqSection } from "./FaqSection";
 export { Contact } from "./Contact";

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, FileWarning, Clock, ShieldAlert, TrendingDown, Star } from "lucide-react";
 import type { Locale } from "@/types";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { getRcmServices } from "@/lib/api/rcm";
@@ -8,8 +8,10 @@ import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { Icon } from "@/components/ui/Icon";
+import { Avatar } from "@/components/ui/Avatar";
 import { buttonVariants } from "@/components/ui/Button";
 import { RcmHero } from "@/components/sections/RcmHero";
+import { FAQ } from "@/components/healthcare/FAQ";
 import { Reveal } from "@/components/animations/Reveal";
 import { cn } from "@/lib/utils/cn";
 import { localePath } from "@/lib/utils/format";
@@ -19,6 +21,62 @@ const WHY = [
   { value: "28 days", label: "Average days in AR" },
   { value: "-35%", label: "Denials reduced" },
   { value: "24/7", label: "Dedicated support" },
+];
+
+const PAIN_POINTS = [
+  {
+    icon: FileWarning,
+    title: "Coding errors slip through",
+    body: "Incomplete documentation or a missed modifier quietly cuts into what a claim is actually worth.",
+  },
+  {
+    icon: ShieldAlert,
+    title: "Every payer plays by different rules",
+    body: "One insurer's clean claim is another's denial — generic billing teams can't keep up with all of them.",
+  },
+  {
+    icon: Clock,
+    title: "Prior authorizations stall care",
+    body: "A slow approval pushes back the procedure and pushes back the payment that follows it.",
+  },
+  {
+    icon: TrendingDown,
+    title: "Denials repeat without a fix",
+    body: "Without a root-cause review, the same denial reason keeps costing you the following month too.",
+  },
+];
+
+const RCM_FAQS = [
+  {
+    id: "onboarding",
+    question: "How quickly can we onboard with your RCM team?",
+    answer:
+      "Most practices are fully transitioned within 2–3 weeks. We start with a claims and workflow audit, then phase in coding, billing, and follow-up so nothing falls through during the switch.",
+  },
+  {
+    id: "software",
+    question: "Do you work with our existing practice management software?",
+    answer:
+      "Yes — our team works within your current PM/EHR system rather than asking you to migrate. We adapt to your setup, not the other way around.",
+  },
+  {
+    id: "denials",
+    question: "What happens when a claim gets denied?",
+    answer:
+      "Every denial gets a root-cause review, not just a resubmission. We track denial categories over time so the same issue doesn't keep recurring quarter after quarter.",
+  },
+  {
+    id: "security",
+    question: "Is our patient data secure and HIPAA-compliant?",
+    answer:
+      "All workflows run through HIPAA-compliant, encrypted systems, with access limited to the staff directly handling your account.",
+  },
+  {
+    id: "modular",
+    question: "Can we start with just one service, like coding or AR follow-up?",
+    answer:
+      "Yes — our RCM services are modular. Many practices start with a single service and expand once they see the results.",
+  },
 ];
 
 export async function generateMetadata({
@@ -47,6 +105,25 @@ export default async function RcmPage({ params }: { params: Promise<{ locale: Lo
         description="From patient access to final payment — we manage your entire revenue cycle so your team can focus on care, not paperwork."
         locale={locale}
       />
+
+      {/* Pain points */}
+      <Section>
+        <SectionHeading
+          title="Where practices lose revenue without knowing it"
+          description="Generic billing teams miss these every day — ours don't."
+        />
+        <Reveal className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {PAIN_POINTS.map((p) => (
+            <Card key={p.title} className="p-6">
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] bg-destructive/10 text-destructive">
+                <p.icon className="h-5 w-5" aria-hidden />
+              </span>
+              <h3 className="mt-4 font-semibold">{p.title}</h3>
+              <p className="mt-1.5 text-sm text-muted-foreground">{p.body}</p>
+            </Card>
+          ))}
+        </Reveal>
+      </Section>
 
       {/* Why choose us */}
       <Container className="py-12">
@@ -87,7 +164,7 @@ export default async function RcmPage({ params }: { params: Promise<{ locale: Lo
       </Section>
 
       {/* Value props */}
-      <Section>
+      <Section muted>
         <SectionHeading title="Why providers choose us" description="Technology-driven, compliance-first, and relentlessly focused on your bottom line." />
         <Reveal className="mx-auto grid max-w-3xl gap-3">
           {[
@@ -101,6 +178,39 @@ export default async function RcmPage({ params }: { params: Promise<{ locale: Lo
               <span className="text-sm">{point}</span>
             </div>
           ))}
+        </Reveal>
+      </Section>
+
+      {/* Client testimonial */}
+      <Section>
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <div className="mx-auto flex justify-center" aria-label="5 / 5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star key={i} className="h-4 w-4 fill-warning text-warning" aria-hidden />
+            ))}
+          </div>
+          <p className="mt-4 text-[length:var(--text-h3)] font-semibold leading-snug text-foreground">
+            &ldquo;Switching our billing over to NIVREN&apos;s RCM team cut our denial rate almost in
+            half within two quarters. We finally have visibility into where every claim stands.&rdquo;
+          </p>
+          <div className="mx-auto mt-6 flex w-fit items-center gap-3">
+            <Avatar name="Rohit Malhotra" size={48} className="ring-2 ring-background" />
+            <div className="text-start">
+              <p className="text-sm font-semibold">Rohit Malhotra</p>
+              <p className="text-xs text-muted-foreground">Practice Administrator, Sunrise Multispecialty Clinic</p>
+            </div>
+          </div>
+        </Reveal>
+      </Section>
+
+      {/* FAQ */}
+      <Section muted>
+        <SectionHeading
+          title="Frequently asked questions"
+          description="Everything providers ask before switching their revenue cycle over to us."
+        />
+        <Reveal className="mx-auto max-w-3xl">
+          <FAQ faqs={RCM_FAQS} />
         </Reveal>
       </Section>
 
