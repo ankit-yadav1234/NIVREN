@@ -15,6 +15,12 @@ export function VoiceAgentPanel({
   voice: VoiceSession;
   onClose: () => void;
 }) {
+  React.useEffect(() => {
+    if (voice.status === "idle") {
+      voice.start();
+    }
+  }, [voice]);
+
   const speaking = voice.status === "connected" && voice.agentSpeaking && !voice.audioBlocked;
   const isConnecting = voice.status === "connecting";
 

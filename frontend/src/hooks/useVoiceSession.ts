@@ -86,8 +86,13 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
       room.on(RoomEvent.TrackSubscribed, (track: RemoteTrack) => {
         if (track.kind === Track.Kind.Audio) {
           const el = track.attach();
+          el.autoplay = true;
           document.body.appendChild(el);
           audioElRef.current = el;
+          el.play().catch((err) => {
+            console.warn("Audio autoplay blocked by browser:", err);
+            setAudioBlocked(true);
+          });
         }
       });
 
