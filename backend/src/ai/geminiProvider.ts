@@ -1,7 +1,7 @@
 import { GoogleGenAI, type FunctionDeclaration } from "@google/genai";
 import type { AIGenerateRequest, AIGenerateResponse, AIMessage, AIProvider } from "./types";
 
-const DEFAULT_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const DEFAULT_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 
 function toContents(history: AIMessage[] | undefined, message: string, context: string | undefined) {
   const contents = (history ?? []).map((m) => ({
