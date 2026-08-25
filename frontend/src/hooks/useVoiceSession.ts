@@ -30,6 +30,7 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
   // particular). Silent agent audio with no error otherwise looks exactly
   // like the agent doing nothing, so this needs to surface as its own state.
   const [audioBlocked, setAudioBlocked] = React.useState(false);
+  const [muted, setMuted] = React.useState(false);
   const roomRef = React.useRef<Room | null>(null);
   const audioElRef = React.useRef<HTMLAudioElement | null>(null);
   const onActionRef = React.useRef(onAction);
@@ -46,11 +47,20 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
     audioElRef.current = null;
     setAgentSpeaking(false);
     setAudioBlocked(false);
+    setMuted(false);
   }, []);
 
   /** Retries playback from inside a real click — the browser's fix for autoplay-blocked audio. */
   const enableAudio = React.useCallback(async () => {
     await roomRef.current?.startAudio();
+  }, []);
+
+  const toggleMute = React.useCallback(async () => {
+    const room = roomRef.current;
+    if (!room) return;
+    const enable = !room.localParticipant.isMicrophoneEnabled;
+    await room.localParticipant.setMicrophoneEnabled(enable);
+    setMuted(!enable);
   }, []);
 
   const stop = React.useCallback(async () => {
@@ -148,5 +158,5 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
     };
   }, []);
 
-  return { status, agentSpeaking, audioBlocked, error, start, stop, enableAudio };
+  return { status, agentSpeaking, audioBlocked, muted, error, start, stop, enableAudio, toggleMute };
 }

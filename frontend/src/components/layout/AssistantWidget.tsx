@@ -2,9 +2,10 @@
 
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { MessageCircle, X, Send, Loader2, Sparkles, Mic, MicOff } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Sparkles } from "lucide-react";
 import { sendAIMessage, type AIMessage, type AIClientAction } from "@/lib/api/ai";
 import { useVoiceSession } from "@/hooks/useVoiceSession";
+import { VoiceAgentPanel, VOICE_AVATAR_URL } from "./VoiceAgentPanel";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils/cn";
 
@@ -26,14 +27,17 @@ function withLocale(path: string, pathname: string): string {
 }
 
 /**
- * Floating site-wide AI assistant. Understands the current page (route +
- * title, sent with every request) and can act on the user's behalf through
- * a small whitelisted set of tools (navigate, book_appointment) — never
- * arbitrary code. Mounted once in the root layout so it's available on
- * every page.
+ * Floating site-wide AI assistant — two independent widgets sharing one
+ * action pipeline: a text chat bubble, and a separate voice-agent avatar
+ * (see VoiceAgentPanel) opened from its own floating button. Understands
+ * the current page (route + title, sent with every request) and can act on
+ * the user's behalf through a small whitelisted set of tools (navigate,
+ * book_appointment, scroll_to_section) — never arbitrary code. Mounted
+ * once in the root layout so it's available on every page.
  */
 export function AssistantWidget() {
   const [open, setOpen] = React.useState(false);
+  const [voiceOpen, setVoiceOpen] = React.useState(false);
   const [messages, setMessages] = React.useState<ChatEntry[]>([]);
   const [input, setInput] = React.useState("");
   const [loading, setLoading] = React.useState(false);
@@ -55,6 +59,16 @@ export function AssistantWidget() {
   );
 
   const voice = useVoiceSession(runClientAction, pathname);
+
+  const openVoice = () => {
+    setOpen(false);
+    setVoiceOpen(true);
+    if (voice.status === "idle") voice.start();
+  };
+  const closeVoice = () => {
+    setVoiceOpen(false);
+    if (voice.status === "connected" || voice.status === "connecting") voice.stop();
+  };
 
   React.useEffect(() => {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
@@ -97,12 +111,43 @@ export function AssistantWidget() {
     <>
       <button
         type="button"
+        aria-label={voiceOpen ? "Close voice agent" : "Open voice agent"}
+        aria-pressed={voiceOpen}
+        onClick={() => (voiceOpen ? closeVoice() : openVoice())}
+        className="fixed bottom-24 end-5 z-40 h-14 w-14 rounded-full transition-transform hover:scale-105 active:scale-95"
+      >
+        <span
+          aria-hidden
+          className={cn(
+            "absolute -inset-1.5 rounded-full bg-gradient-to-br from-primary to-secondary blur-md transition-opacity",
+            voice.status === "connected" ? "animate-pulse opacity-90" : "opacity-50",
+          )}
+        />
+        <span
+          className="relative z-10 block h-14 w-14 overflow-hidden rounded-full bg-cover bg-center shadow-lg ring-2 ring-white/80"
+          style={{ backgroundImage: `url(${VOICE_AVATAR_URL})` }}
+        >
+          {voiceOpen && (
+            <span className="absolute inset-0 flex items-center justify-center bg-slate-950/60">
+              <X className="h-6 w-6 text-white" aria-hidden />
+            </span>
+          )}
+        </span>
+      </button>
+
+      <button
+        type="button"
         aria-label={open ? "Close assistant" : "Open assistant"}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          setVoiceOpen(false);
+          setOpen((v) => !v);
+        }}
         className="fixed bottom-5 end-5 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 active:scale-95"
       >
         {open ? <X className="h-6 w-6" aria-hidden /> : <MessageCircle className="h-6 w-6" aria-hidden />}
       </button>
+
+      {voiceOpen && <VoiceAgentPanel voice={voice} onClose={closeVoice} />}
 
       {open && (
         <div
@@ -113,61 +158,13 @@ export function AssistantWidget() {
           <div className="flex items-center gap-2 border-b border-border bg-primary px-4 py-3 text-primary-foreground">
             <Sparkles className="h-4 w-4" aria-hidden />
             <span className="flex-1 text-sm font-semibold">NIVREN Assistant</span>
-            <button
-              type="button"
-              aria-label={voice.status === "connected" ? "Stop voice session" : "Start voice session"}
-              aria-pressed={voice.status === "connected"}
-              onClick={() => (voice.status === "connected" || voice.status === "connecting" ? voice.stop() : voice.start())}
-              className={cn(
-                "inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors",
-                voice.status === "connected"
-                  ? "bg-primary-foreground text-primary"
-                  : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground",
-              )}
-            >
-              {voice.status === "connecting" ? (
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-              ) : voice.status === "connected" ? (
-                <Mic className="h-4 w-4" aria-hidden />
-              ) : (
-                <MicOff className="h-4 w-4" aria-hidden />
-              )}
-            </button>
           </div>
-
-          {voice.status !== "idle" && (
-            <div className="flex items-center gap-2 border-b border-border bg-muted px-4 py-2 text-xs text-muted-foreground">
-              <span
-                className={cn(
-                  "h-2 w-2 rounded-full",
-                  voice.status === "connecting" && "animate-pulse bg-amber-500",
-                  voice.status === "connected" && (voice.agentSpeaking ? "animate-pulse bg-primary" : "bg-emerald-500"),
-                  voice.status === "error" && "bg-destructive",
-                )}
-                aria-hidden
-              />
-              {voice.status === "connecting" && "Connecting…"}
-              {voice.status === "connected" && !voice.audioBlocked && (voice.agentSpeaking ? "Agent speaking…" : "Listening…")}
-              {voice.status === "connected" && voice.audioBlocked && "Audio blocked by the browser"}
-              {voice.status === "error" && (voice.error ?? "Voice session error.")}
-            </div>
-          )}
-
-          {voice.status === "connected" && voice.audioBlocked && (
-            <button
-              type="button"
-              onClick={() => voice.enableAudio()}
-              className="border-b border-border bg-amber-500/10 px-4 py-2 text-left text-xs font-medium text-amber-600 hover:bg-amber-500/20 dark:text-amber-400"
-            >
-              🔊 Tap to enable the agent&rsquo;s voice — your browser blocked autoplay
-            </button>
-          )}
 
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto p-4">
             {messages.length === 0 && (
               <p className="text-sm text-muted-foreground">
                 Ask me about departments, RCM services, or say things like &ldquo;open the services
-                page&rdquo; or &ldquo;book an appointment&rdquo;. Tap the mic to talk instead.
+                page&rdquo; or &ldquo;book an appointment&rdquo;. Or tap the other button to talk instead.
               </p>
             )}
             {messages.map((m) => (
