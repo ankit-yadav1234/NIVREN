@@ -45,6 +45,8 @@ export default async function DepartmentDetailPage({
       <PageHeader
         title={dept.name}
         subtitle={dept.description}
+        eyebrow="Department"
+        image={dept.image}
         crumbs={[
           { label: dict.common.nav.home, href: "/" },
           { label: dict.departments.title, href: "/departments" },

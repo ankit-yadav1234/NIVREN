@@ -30,6 +30,7 @@ import {
   Syringe,
   MapPin,
   HelpCircle,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -65,6 +66,7 @@ const registry: Record<string, LucideIcon> = {
   Syringe,
   MapPin,
   HelpCircle,
+  Users,
 };
 
 export function Icon({ name, className }: { name: string; className?: string }) {

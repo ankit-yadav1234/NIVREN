@@ -19,11 +19,14 @@ export const siteConfig = {
   supportedLocales: ["en", "hi", "ar"] as const,
 
   features: {
+    // Header/mobile-nav CTA — now points to /contact (consultation request).
     appointments: true,
-    doctorSearch: true,
-    emergency: true,
+    // Patient doctor directory — no fit for a B2B RCM provider site.
+    doctorSearch: false,
+    emergency: false,
     insurance: true,
-    locations: true,
+    // Patient-facing hospital locations — no fit for a B2B RCM provider site.
+    locations: false,
     testimonials: true,
     faq: true,
     themeToggle: true,

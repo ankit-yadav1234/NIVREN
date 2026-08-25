@@ -19,10 +19,10 @@ export function MissionGlance({ locale }: { locale: Locale }) {
       <Container>
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
           <Reveal>
-            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground md:text-sm">
+            <p className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-primary">
               The NIVREN Network at a Glance
             </p>
-            <h2 className="mt-4 text-[length:var(--text-h1)] font-bold leading-[1.1] text-primary">
+            <h2 className="mt-4 text-2xl sm:text-3xl lg:text-[2.25rem] font-medium leading-[1.2] text-foreground">
               Revenue cycle expertise, proven on our own hospital network
             </h2>
             <p className="mt-5 max-w-xl leading-relaxed text-muted-foreground">

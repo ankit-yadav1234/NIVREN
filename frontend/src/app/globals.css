@@ -8,6 +8,9 @@
 /* Map runtime tokens into Tailwind so `bg-background`, `text-primary`, etc.
    exist as utilities and react to the light/dark variable overrides. */
 @theme inline {
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: var(--font-besley), Georgia, "Times New Roman", serif;
+  --font-heading: var(--font-besley), Georgia, "Times New Roman", serif;
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   --color-card: hsl(var(--card));
@@ -53,11 +56,14 @@
   [lang="ar"] {
     font-family: var(--font-arabic);
   }
-  h1, h2, h3, h4 {
+  h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    font-weight: 700;
-    line-height: 1.15;
+    font-weight: 600;
+    line-height: 1.18;
     letter-spacing: -0.01em;
+  }
+  h1 {
+    font-weight: 500;
   }
   :focus-visible {
     outline: 2px solid hsl(var(--ring));
@@ -67,15 +73,8 @@
   ::selection {
     background: hsl(var(--primary) / 0.2);
   }
-  /* Subtle hover glow on every link — text links, icon-only links (social
-     icons), and button-styled <a> links all pick this up automatically.
-     drop-shadow (not text-shadow) so it works identically on text glyphs
-     and on SVG icons, which text-shadow can't touch. */
   a {
-    transition: color 0.25s ease, filter 0.25s ease;
-  }
-  a:hover {
-    filter: drop-shadow(0 0 6px hsl(var(--primary) / 0.5));
+    transition: color 0.25s ease;
   }
   /* Hover underline is footer-only, not site-wide. */
   footer a {
@@ -251,5 +250,36 @@
 @media (prefers-reduced-motion: reduce) {
   [style*="voiceRing"] {
     animation: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Smooth Non-Blinking Infinite Auto-Scroll Carousel (Testimonials)  */
+/* ------------------------------------------------------------------ */
+@keyframes marquee-scroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee-smooth {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 40s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-smooth:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-smooth {
+    animation: none;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }

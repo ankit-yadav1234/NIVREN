@@ -6,6 +6,7 @@ import { getLocations } from "@/lib/api/locations";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { LocationCard } from "@/components/healthcare/LocationCard";
+import { AppointmentCTA } from "@/components/sections/AppointmentCTA";
 
 export async function generateMetadata({
   params,
@@ -34,13 +35,14 @@ export default async function LocationsPage({
         crumbs={[{ label: dict.common.nav.home, href: "/" }, { label: dict.locations.title }]}
         locale={locale}
       />
-      <Container className="py-12">
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <Container className="py-12 md:py-16">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {locations.map((l) => (
             <LocationCard key={l.id} location={l} locale={locale} dict={dict} />
           ))}
         </div>
       </Container>
+      <AppointmentCTA dict={dict} locale={locale} />
     </>
   );
 }

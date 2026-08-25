@@ -38,26 +38,26 @@ export function RcmHero({
   locale: Locale;
 }) {
   return (
-    <section className="relative isolate flex min-h-dvh items-center overflow-hidden bg-slate-950 pt-16">
+    <section className="relative isolate flex min-h-[100dvh] min-h-screen w-full items-center overflow-hidden bg-slate-950">
       <HeroVideo src={RCM_VIDEO} className="absolute inset-0 -z-20 h-full w-full object-cover" />
       {/* Mobile/tablet: solid wash, full bleed. Desktop: left-to-right window. */}
       <div
         aria-hidden
-        className="absolute inset-0 -z-0 bg-slate-950/88 lg:bg-[linear-gradient(100deg,rgba(2,6,23,0.96)_0%,rgba(2,6,23,0.82)_38%,rgba(2,6,23,0.4)_68%,rgba(2,6,23,0.12)_100%)]"
+        className="absolute inset-0 -z-10 bg-slate-950/88 md:bg-[linear-gradient(100deg,rgba(2,6,23,0.96)_0%,rgba(2,6,23,0.82)_45%,rgba(2,6,23,0.4)_70%,rgba(2,6,23,0.12)_100%)]"
       />
 
       <FloatingBadges badges={BADGES} />
 
-      <Container className="relative z-10 py-16 md:py-24">
-        <div className="max-w-xl">
-          <span className="animate-reveal inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.15em] text-primary">
+      <Container className="relative z-10 py-24 sm:py-28 md:py-36 pt-32 sm:pt-36 md:pt-40">
+        <div className="max-w-xl text-left">
+          <span className="animate-reveal inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-950/40 px-3.5 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-cyan-300 backdrop-blur-sm">
             {eyebrow}
           </span>
-          <h1 className="mt-3 text-[length:var(--text-display)] font-bold leading-[1.05] tracking-tight text-white">
+          <h1 className="mt-4 font-serif text-3xl sm:text-5xl md:text-6xl font-medium leading-[1.12] tracking-tight text-white">
             <RevealText text={title} baseDelay={0.12} step={0.05} />
           </h1>
           <p
-            className="animate-reveal mt-5 text-[length:var(--text-body)] text-white/80"
+            className="animate-reveal mt-5 text-sm sm:text-base md:text-lg font-light leading-relaxed text-white/85"
             style={{ animationDelay: "0.35s" }}
           >
             {description}

@@ -32,56 +32,91 @@ function getClient(): GoogleGenAI {
   return sharedClient;
 }
 
-async function buildIndex(client: GoogleGenAI): Promise<IndexedDoc[]> {
-  const response = await client.models.embedContent({
-    model: EMBEDDING_MODEL,
-    contents: knowledgeBase.map((d) => d.text),
-  });
-  const embeddings = response.embeddings ?? [];
-  return knowledgeBase.map((doc, i) => ({
-    ...doc,
-    vector: embeddings[i]?.values ?? [],
-  }));
-}
-
 /**
- * Kicks off the (one-time) embedding build in the background without
- * blocking the caller. Call this once at process startup — the voice agent
- * in particular can't afford to pay this cold-start cost inside a live
- * call's first search_knowledge tool call.
+ * Keyword & Semantic Token Matcher fallback when Embedding API quota is exhausted.
  */
-export function warmIndex(): void {
-  if (index || indexing) return;
-  indexing = buildIndex(getClient());
-  indexing.catch(() => {
-    indexing = null; // let the next retrieveContext() retry
+function fallbackKeywordSearch(query: string, topK = 3): KnowledgeDoc[] {
+  const queryWords = query
+    .toLowerCase()
+    .replace(/[^\w\s]/g, "")
+    .split(/\s+/)
+    .filter((w) => w.length > 2);
+
+  if (queryWords.length === 0) return knowledgeBase.slice(0, topK);
+
+  const scored = knowledgeBase.map((doc) => {
+    const textLower = (doc.text + " " + doc.category + " " + doc.id).toLowerCase();
+    let score = 0;
+    for (const word of queryWords) {
+      if (textLower.includes(word)) {
+        score += word.length > 4 ? 2 : 1;
+      }
+    }
+    return { doc, score };
   });
-}
 
-/**
- * Retrieves the top-k most relevant knowledge documents for a query.
- * The embedding index is built once (lazily, on first call, or eagerly via
- * warmIndex()) and cached — the knowledge base is small and static, so
- * there's no need to re-embed on every request.
- */
-export async function retrieveContext(query: string, topK = 3): Promise<KnowledgeDoc[]> {
-  const client = getClient();
-  if (!index) {
-    if (!indexing) indexing = buildIndex(client);
-    index = await indexing;
-  }
-
-  const queryEmbedding = await client.models.embedContent({
-    model: EMBEDDING_MODEL,
-    contents: [query],
-  });
-  const queryVector = queryEmbedding.embeddings?.[0]?.values ?? [];
-  if (queryVector.length === 0) return [];
-
-  return [...index]
-    .map((doc) => ({ doc, score: cosineSimilarity(queryVector, doc.vector) }))
+  return scored
+    .filter((s) => s.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, topK)
-    .filter((r) => r.score > 0.5)
-    .map((r) => r.doc);
+    .map((s) => s.doc);
+}
+
+async function buildIndex(client: GoogleGenAI): Promise<IndexedDoc[]> {
+  try {
+    const response = await client.models.embedContent({
+      model: EMBEDDING_MODEL,
+      contents: knowledgeBase.map((d) => d.text),
+    });
+    const embeddings = response.embeddings ?? [];
+    return knowledgeBase.map((doc, i) => ({
+      ...doc,
+      vector: embeddings[i]?.values ?? [],
+    }));
+  } catch (err) {
+    console.warn("Embedding index build skipped (using fast keyword fallback):", (err as Error)?.message);
+    return [];
+  }
+}
+
+export function warmIndex(): void {
+  if (index || indexing) return;
+  try {
+    indexing = buildIndex(getClient());
+    indexing.catch(() => {
+      indexing = null;
+    });
+  } catch (_) {}
+}
+
+export async function retrieveContext(query: string, topK = 3): Promise<KnowledgeDoc[]> {
+  try {
+    const client = getClient();
+    if (!index || index.length === 0) {
+      if (!indexing) indexing = buildIndex(client);
+      index = await indexing;
+    }
+
+    if (index.length > 0) {
+      const queryEmbedding = await client.models.embedContent({
+        model: EMBEDDING_MODEL,
+        contents: [query],
+      });
+      const queryVector = queryEmbedding.embeddings?.[0]?.values ?? [];
+      if (queryVector.length > 0) {
+        const matches = [...index]
+          .map((doc) => ({ doc, score: cosineSimilarity(queryVector, doc.vector) }))
+          .sort((a, b) => b.score - a.score)
+          .slice(0, topK)
+          .filter((r) => r.score > 0.45)
+          .map((r) => r.doc);
+
+        if (matches.length > 0) return matches;
+      }
+    }
+  } catch (err) {
+    // Embedding quota exceeded or network error -> seamlessly use keyword fallback
+  }
+
+  return fallbackKeywordSearch(query, topK);
 }

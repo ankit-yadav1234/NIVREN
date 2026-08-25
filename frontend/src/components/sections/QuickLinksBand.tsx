@@ -19,7 +19,7 @@ export function QuickLinksBand({ locale }: { locale: Locale }) {
       <Container>
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
           <Reveal>
-            <p className="text-xl font-bold leading-snug md:text-2xl">
+            <p className="text-[23px] font-bold leading-snug md:text-[27px] lg:text-[29px]">
               NIVREN helps healthcare organizations get paid faster — and connects our own
               patients with the right care, right when they need it.
             </p>
@@ -32,13 +32,13 @@ export function QuickLinksBand({ locale }: { locale: Locale }) {
                   key={link.href + link.label}
                   href={localePath(link.href, locale)}
                   className={cn(
-                    "group/link flex items-center justify-between gap-4 py-4 text-sm font-medium transition-colors duration-300 hover:text-background",
+                    "group/link flex items-center justify-between gap-4 py-3.5 text-base md:text-[17px] font-medium transition-all duration-300 hover:text-cyan-400 hover:translate-x-1",
                     link.muted ? "text-background/55" : "text-background/90",
                   )}
                 >
-                  <span>{link.label}</span>
+                  <span className="transition-colors duration-300 group-hover/link:text-cyan-400">{link.label}</span>
                   <ArrowRight
-                    className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover/link:translate-x-1.5 rtl:rotate-180"
+                    className="h-5 w-5 shrink-0 transition-all duration-300 text-background/70 group-hover/link:text-cyan-400 group-hover/link:translate-x-2 rtl:rotate-180"
                     aria-hidden
                   />
                 </Link>

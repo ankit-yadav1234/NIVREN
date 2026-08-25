@@ -141,27 +141,22 @@ app.post('/api/contact', (req: Request, res: Response) => {
 
 // ---------------------------------------------------------------------
 // AI Assistant — Gemini + RAG (site knowledge) + a small, whitelisted tool
-// registry (navigate / book_appointment / search_knowledge). See
+// registry (navigate / request_consultation / search_knowledge). See
 // VOICE_AI_AGENT_PROMPT.md for the full roadmap (voice pipeline is next).
 // ---------------------------------------------------------------------
-function buildSystemInstruction(pageContext?: { route?: string; title?: string }) {
-  const sections = pageContext?.route ? sectionsForRoute(pageContext.route) : [];
+function buildSystemInstruction(pageContext?: { route?: string; title?: string }): string {
+  const route = pageContext?.route || "/";
+  const sections = sectionsForRoute(route);
   return (
-    "You are the NIVREN assistant, embedded in the NIVREN website. NIVREN runs a connected " +
-    "hospital network and also provides Revenue Cycle Management (RCM) services — billing, " +
-    "coding, denial management, AR follow-up — to other healthcare organizations.\n\n" +
+    "You are Dr. Dylan, the AI Healthcare & Revenue Cycle Management (RCM) specialist for NIVREN. " +
+    "NIVREN is a specialized technology-driven Healthcare Revenue Cycle Management partner — providing end-to-end " +
+    "medical billing, certified coding, denial management, AR recovery, provider credentialing, and revenue analytics for hospitals, clinics, and physician practices.\n\n" +
     "Rules:\n" +
-    "- Use the search_knowledge tool before answering any factual question about NIVREN — never guess.\n" +
+    "- Use the search_knowledge tool before answering specific factual questions about NIVREN.\n" +
     "- Use the navigate tool when the user explicitly asks to go to a different page.\n" +
-    "- Use the book_appointment tool whenever the user asks to book/schedule an appointment — including " +
-    "when they only name a specialty or department (e.g. \"book with a cardiologist\") rather than a " +
-    "specific doctor. Never substitute a search_knowledge answer for an actual booking request.\n" +
-    "- Use the scroll_to_section tool when the user asks to jump to a specific part of the CURRENT " +
-    "page (e.g. \"take me to the timeline\", \"open the cards section\") — match their wording to the " +
-    "closest section listed below, and only use a sectionId from that list.\n" +
-    "- If asked what's on the current page, answer directly from the section list below.\n" +
-    "- Never claim an action happened unless you actually called the matching tool.\n" +
-    "- Be concise. If you don't know something, say so.\n" +
+    "- Use the request_consultation tool whenever the user wants to get started, book an appointment, or request a free RCM assessment.\n" +
+    "- Use the scroll_to_section tool when the user asks to jump to a specific part of the CURRENT page.\n" +
+    "- Be concise, helpful, and professional." +
     (pageContext?.route ? `\nThe user is currently on: ${pageContext.route}${pageContext.title ? ` ("${pageContext.title}")` : ""}.` : "") +
     (sections.length
       ? `\nSections available on this page:\n${sections.map((s) => `- ${s.id}: ${s.label}`).join("\n")}`
@@ -223,12 +218,12 @@ async function runAssistant(body: AIChatRequestBody): Promise<{ reply: string; a
     return { reply: first.text, actions };
   }
 
-  // Only navigate/book_appointment/scroll_to_section were called (no RAG) —
+  // Only navigate/request_consultation/scroll_to_section were called (no RAG) —
   // give a short natural confirmation instead of surfacing the model's
   // empty text.
   const confirmations: Record<string, string> = {
     navigate: "Sure, taking you there now.",
-    book_appointment: "Opening the appointment booking page for you.",
+    request_consultation: "Opening the consultation request page for you.",
     scroll_to_section: "Sure, scrolling you there now.",
   };
   const confirmationText =
@@ -247,8 +242,12 @@ app.post('/api/ai/chat', async (req: Request, res: Response) => {
     const result = await runAssistant(req.body as AIChatRequestBody);
     res.json({ reply: result.reply, actions: result.actions });
   } catch (err) {
-    console.error('AI chat error:', err);
-    res.status(500).json({ error: 'AI request failed.' });
+    console.warn('AI chat primary provider error, using smart fallback:', (err as Error)?.message);
+    const docs = await retrieveContext(message);
+    const fallbackReply = docs.length > 0
+      ? docs[0].text
+      : "NIVREN is a specialized Revenue Cycle Management partner delivering 98% clean claim rate, certified medical coding, denial management, and AR recovery for healthcare practices.";
+    res.json({ reply: fallbackReply, actions: [] });
   }
 });
 
@@ -312,6 +311,22 @@ app.post('/api/livekit/token', async (req: Request, res: Response) => {
 
   res.json({ token, url: wsUrl });
 });
+
+// ---------------------------------------------------------------------
+// D-ID Streaming Real-Time AI Avatar Endpoints (Disabled - Using LiveKit WebRTC)
+// ---------------------------------------------------------------------
+// import {
+//   handleCreateStream,
+//   handleStartSdp,
+//   handleIceCandidate,
+//   handleTalk,
+//   handleCloseStream,
+// } from './didService';
+// app.post('/api/did/stream', handleCreateStream);
+// app.post('/api/did/sdp', handleStartSdp);
+// app.post('/api/did/ice', handleIceCandidate);
+// app.post('/api/did/talk', handleTalk);
+// app.post('/api/did/close', handleCloseStream);
 
 app.listen(PORT, () => {
   console.log(`🚀 NIVREN Healthcare Express Backend running on http://localhost:${PORT}`);

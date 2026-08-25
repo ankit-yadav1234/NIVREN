@@ -1,13 +1,12 @@
 import type { NavigationItem } from "@/types";
 import { departments } from "@/data/departments";
-import { services } from "@/data/services";
 import { rcmServices } from "@/data/rcmServices";
 
 /**
  * Dropdown children are derived from the real content data (departments.ts,
- * services.ts, rcmServices.ts) instead of being hand-duplicated here, so the
- * menu icon/description/list always matches the actual pages — and can't
- * silently drift out of sync (e.g. list only 4 of 6 departments).
+ * rcmServices.ts) instead of being hand-duplicated here, so the menu icon/
+ * description/list always matches the actual pages — and can't silently
+ * drift out of sync (e.g. list only 4 of 6 specialties).
  */
 const rcmChildren: NavigationItem[] = [
   { label: "All RCM Services", href: "/rcm", icon: "LayoutGrid" },
@@ -19,8 +18,8 @@ const rcmChildren: NavigationItem[] = [
   })),
 ];
 
-const departmentChildren: NavigationItem[] = [
-  { label: "All Departments", labelKey: "allDepartments", href: "/departments", icon: "LayoutGrid" },
+const specialtyChildren: NavigationItem[] = [
+  { label: "All Specialties", href: "/departments", icon: "LayoutGrid" },
   ...departments.map((d) => ({
     label: d.name,
     href: `/departments/${d.slug}`,
@@ -29,75 +28,58 @@ const departmentChildren: NavigationItem[] = [
   })),
 ];
 
-const serviceChildren: NavigationItem[] = [
-  { label: "All Services", labelKey: "allServices", href: "/services", icon: "LayoutGrid" },
-  ...services.map((s) => ({
-    label: s.title,
-    href: `/services/${s.slug}`,
-    icon: s.icon,
-    description: s.description,
-  })),
+const aboutChildren: NavigationItem[] = [
+  { label: "Our Story", href: "/about", icon: "Info", description: "Mission, values, and how NIVREN got here." },
+  { label: "Leadership", href: "/about/leadership", icon: "HeartHandshake", description: "The team behind the operations." },
+  { label: "Careers", href: "/about/careers", icon: "Users", description: "Open roles and what it's like to work here." },
 ];
 
 const resourcesChildren: NavigationItem[] = [
-  {
-    label: "Our Locations",
-    href: "/locations",
-    icon: "MapPin",
-    description: "Find the NIVREN facility closest to you.",
-  },
-  {
-    label: "Frequently Asked Questions",
-    href: "/faq",
-    icon: "HelpCircle",
-    description: "Answers to common questions about our care and services.",
-  },
-  {
-    label: "Get in Touch",
-    href: "/contact",
-    icon: "Phone",
-    description: "Questions, feedback, or support — reach our care team.",
-  },
+  { label: "Case Studies", href: "/case-studies", icon: "BarChart3", description: "Real results from providers we work with." },
+  { label: "FAQ", href: "/faq", icon: "HelpCircle", description: "Common questions about working with NIVREN." },
 ];
 
 /** Primary navigation. Items with `children` render as a dropdown. */
 export const mainNavigation: NavigationItem[] = [
   { label: "RCM Services", href: "/rcm", children: rcmChildren },
-  { label: "Departments", labelKey: "departments", href: "/departments", children: departmentChildren },
-  { label: "Doctors", labelKey: "doctors", href: "/doctors" },
-  { label: "Services", labelKey: "services", href: "/services", children: serviceChildren },
-  { label: "About", labelKey: "about", href: "/about" },
-  { label: "Resources", href: "/contact", children: resourcesChildren },
+  // { label: "Specialties We Bill For", href: "/departments", children: specialtyChildren },
+  { label: "Who We Serve", href: "/who-we-serve" },
+  { label: "About", labelKey: "about", href: "/about", children: aboutChildren },
+  { label: "Resources", href: "/case-studies", children: resourcesChildren },
+  { label: "Contact", labelKey: "contact", href: "/contact" },
 ];
 
 export const footerNavigation = {
   quickLinks: [
     { label: "RCM Services", href: "/rcm", icon: "Receipt" },
+    { label: "Who We Serve", href: "/who-we-serve", icon: "Activity" },
     { label: "About", labelKey: "about", href: "/about", icon: "Info" },
-    { label: "Doctors", labelKey: "doctors", href: "/doctors", icon: "Stethoscope" },
-    { label: "Departments", labelKey: "departments", href: "/departments", icon: "LayoutGrid" },
+    { label: "Leadership", href: "/about/leadership", icon: "HeartHandshake" },
+    { label: "Careers", href: "/about/careers", icon: "Users" },
+    { label: "Case Studies", href: "/case-studies", icon: "BarChart3" },
+    { label: "FAQ", href: "/faq", icon: "HelpCircle" },
     { label: "Contact", labelKey: "contact", href: "/contact", icon: "Phone" },
   ] as NavigationItem[],
   services: [
     {
-      label: "Health Checkup",
-      href: "/services/health-checkup",
-      icon: services.find((s) => s.slug === "health-checkup")?.icon,
-      description: services.find((s) => s.slug === "health-checkup")?.description,
+      label: "Medical Billing",
+      href: "/rcm/medical-billing",
+      icon: rcmServices.find((s) => s.slug === "medical-billing")?.icon,
+      description: rcmServices.find((s) => s.slug === "medical-billing")?.tagline,
     },
     {
-      label: "Diagnostics",
-      href: "/services/diagnostics",
-      icon: services.find((s) => s.slug === "diagnostics")?.icon,
-      description: services.find((s) => s.slug === "diagnostics")?.description,
+      label: "Medical Coding",
+      href: "/rcm/medical-coding",
+      icon: rcmServices.find((s) => s.slug === "medical-coding")?.icon,
+      description: rcmServices.find((s) => s.slug === "medical-coding")?.tagline,
     },
     {
-      label: "Emergency Care",
-      href: "/services/emergency-care",
-      icon: services.find((s) => s.slug === "emergency-care")?.icon,
-      description: services.find((s) => s.slug === "emergency-care")?.description,
+      label: "Denial Management",
+      href: "/rcm/denial-management",
+      icon: rcmServices.find((s) => s.slug === "denial-management")?.icon,
+      description: rcmServices.find((s) => s.slug === "denial-management")?.tagline,
     },
-    { label: "Appointments", href: "/appointment", icon: "Calendar" },
+    { label: "All RCM Services", href: "/rcm", icon: "LayoutGrid" },
   ] as NavigationItem[],
   legal: [
     { label: "Privacy Policy", labelKey: "privacyPolicy", href: "/privacy" },

@@ -43,7 +43,10 @@ export function BlinkAccordion({
                 type="button"
                 onClick={() => setOpen(isOpen ? "" : item.id)}
                 aria-expanded={isOpen}
-                className="flex w-full items-center justify-between gap-4 rounded-[var(--radius-md)] px-3 py-5 text-start text-lg font-bold text-primary transition-colors duration-300 hover:bg-primary/5"
+                className={cn(
+                  "flex w-full items-center justify-between gap-4 rounded-[var(--radius-md)] px-3 py-5 text-start text-lg font-medium transition-colors duration-300 hover:text-primary",
+                  isOpen ? "text-primary" : "text-foreground",
+                )}
               >
                 <span>{item.title}</span>
                 <span
@@ -62,15 +65,17 @@ export function BlinkAccordion({
                 isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
               )}
             >
-              <div className="min-h-0 px-3 pb-5 pt-1">
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
-                <Link
-                  href={localePath(item.link.href, locale)}
-                  className="group/link mt-3 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-primary hover:underline"
-                >
-                  {item.link.label}
-                  <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover/link:translate-x-1 rtl:rotate-180" aria-hidden />
-                </Link>
+              <div className="min-h-0 overflow-hidden">
+                <div className="px-3 pb-5 pt-1">
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{item.description}</p>
+                  <Link
+                    href={localePath(item.link.href, locale)}
+                    className="group/link mt-3 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-primary hover:underline"
+                  >
+                    {item.link.label}
+                    <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover/link:translate-x-1 rtl:rotate-180" aria-hidden />
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

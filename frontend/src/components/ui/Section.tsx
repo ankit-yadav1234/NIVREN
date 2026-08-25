@@ -26,10 +26,12 @@ export function Section({
 }
 
 export function SectionHeading({
+  eyebrow,
   title,
   description,
   align = "center",
 }: {
+  eyebrow?: string;
   title: string;
   description?: string;
   align?: "center" | "start";
@@ -41,6 +43,11 @@ export function SectionHeading({
         align === "center" ? "mx-auto text-center" : "text-start",
       )}
     >
+      {eyebrow && (
+        <span className="mb-2.5 block text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+          {eyebrow}
+        </span>
+      )}
       <h2 className="text-[length:var(--text-h2)] font-bold">{title}</h2>
       {description && (
         <p className="mt-3 text-muted-foreground text-[length:var(--text-body)]">{description}</p>

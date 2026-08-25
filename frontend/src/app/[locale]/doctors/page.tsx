@@ -18,6 +18,8 @@ import { DoctorCard } from "@/components/healthcare/DoctorCard";
 import { DepartmentDoctorDirectory } from "@/components/sections/DepartmentDoctorDirectory";
 import { Section, SectionHeading } from "@/components/ui/Section";
 
+import { AppointmentCTA } from "@/components/sections/AppointmentCTA";
+
 export async function generateMetadata({
   params,
 }: {
@@ -62,7 +64,7 @@ export default async function DoctorsPage({
         crumbs={[{ label: dict.common.nav.home, href: "/" }, { label: dict.doctors.title }]}
         locale={locale}
       />
-      <Container className="py-12">
+      <Container className="py-12 md:py-16">
         <Suspense fallback={null}>
           <DoctorSearch
             departments={departments}
@@ -75,7 +77,7 @@ export default async function DoctorsPage({
         {doctors.length === 0 ? (
           <EmptyState title={dict.doctors.noResults} />
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {doctors.map((d) => (
               <DoctorCard key={d.id} doctor={d} locale={locale} dict={dict} />
             ))}
@@ -85,11 +87,14 @@ export default async function DoctorsPage({
 
       <Section muted>
         <SectionHeading
+          eyebrow="Specialist Directory"
           title="Browse by Department"
           description="Every specialist, organized by department. Tap a doctor to see their full profile."
         />
         <DepartmentDoctorDirectory departments={departments} doctors={allDoctors} locale={locale} dict={dict} />
       </Section>
+
+      <AppointmentCTA dict={dict} locale={locale} />
     </>
   );
 }

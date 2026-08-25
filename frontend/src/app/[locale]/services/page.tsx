@@ -6,6 +6,7 @@ import { getServices } from "@/lib/api/services";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ServiceCard } from "@/components/healthcare/ServiceCard";
+import { AppointmentCTA } from "@/components/sections/AppointmentCTA";
 
 export async function generateMetadata({
   params,
@@ -34,13 +35,14 @@ export default async function ServicesPage({
         crumbs={[{ label: dict.common.nav.home, href: "/" }, { label: dict.services.title }]}
         locale={locale}
       />
-      <Container id="service-cards" className="py-12">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <Container id="service-cards" className="py-12 md:py-16">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {services.map((s) => (
             <ServiceCard key={s.id} service={s} locale={locale} />
           ))}
         </div>
       </Container>
+      <AppointmentCTA dict={dict} locale={locale} />
     </>
   );
 }

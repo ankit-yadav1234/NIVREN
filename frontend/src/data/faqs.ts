@@ -2,38 +2,50 @@ import type { FAQ } from "@/types";
 
 export const faqs: FAQ[] = [
   {
-    id: "faq-1",
-    question: "How do I book an appointment?",
+    id: "faq-onboarding",
+    question: "How quickly can we onboard with your RCM team?",
     answer:
-      "You can book online through our appointment page, call our helpline, or visit any of our locations in person.",
-    category: "Appointments",
+      "Most practices are fully transitioned within 2–3 weeks. We start with a claims and workflow audit, then phase in coding, billing, and follow-up so nothing falls through during the switch.",
+    category: "Onboarding",
   },
   {
-    id: "faq-2",
-    question: "Do you accept insurance?",
+    id: "faq-software",
+    question: "Do you work with our existing practice management software?",
     answer:
-      "Yes, we work with most major insurance providers. Please check our insurance section or contact us to confirm your plan.",
-    category: "Billing",
+      "Yes — our team works within your current PM/EHR system rather than asking you to migrate. We adapt to your setup, not the other way around.",
+    category: "Onboarding",
   },
   {
-    id: "faq-3",
-    question: "Are online consultations available?",
-    answer:
-      "Many of our doctors offer online consultations. Look for the online consultation badge on each doctor's profile.",
-    category: "Consultations",
+    id: "faq-modular",
+    question: "Can we start with just one service, like coding or AR follow-up?",
+    answer: "Yes — our RCM services are modular. Many practices start with a single service and expand once they see the results.",
+    category: "Services",
   },
   {
-    id: "faq-4",
-    question: "What should I bring to my first visit?",
+    id: "faq-denials",
+    question: "What happens when a claim gets denied?",
     answer:
-      "Please bring a valid photo ID, your insurance card if applicable, and any previous medical records or test results.",
-    category: "Visits",
+      "Every denial gets a root-cause review, not just a resubmission. We track denial categories over time so the same issue doesn't keep recurring quarter after quarter.",
+    category: "Services",
   },
   {
-    id: "faq-5",
-    question: "Is emergency care available 24/7?",
+    id: "faq-specialties",
+    question: "Do you have experience with our specialty?",
     answer:
-      "Yes. Our emergency departments at select locations operate 24 hours a day, every day of the year.",
-    category: "Emergency",
+      "We bring deep coding and billing expertise across cardiology, neurology, orthopedics, pediatrics, oncology, and dermatology — proven first on our own hospital network before we offer it to other providers.",
+    category: "Services",
+  },
+  {
+    id: "faq-security",
+    question: "Is our patient data secure and HIPAA-compliant?",
+    answer: "All workflows run through HIPAA-compliant, encrypted systems, with access limited to the staff directly handling your account.",
+    category: "Compliance",
+  },
+  {
+    id: "faq-billing",
+    question: "How does NIVREN charge for its services?",
+    answer:
+      "Pricing depends on which services you need and your claims volume. Request a free revenue cycle assessment through the Contact page and we'll walk you through what a partnership would look like.",
+    category: "Pricing",
   },
 ];

@@ -22,7 +22,6 @@ export const PAGE_SECTIONS: Record<string, PageSection[]> = {
     { id: "care-team", label: "Why Patients Choose Us" },
     { id: "comfort-tech", label: "Facilities & Comfort" },
   ],
-  "/services": [{ id: "service-cards", label: "Services list" }],
 };
 
 /** Strips a leading locale segment (e.g. "/en/about" -> "/about") so routes match PAGE_SECTIONS keys. */

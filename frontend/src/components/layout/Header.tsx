@@ -42,7 +42,7 @@ export function Header({ locale }: { locale: Locale }) {
             {features.appointments && (
               <div className="hidden sm:block">
                 <Link
-                  href={localePath("/appointment", locale)}
+                  href={localePath("/contact", locale)}
                   className={buttonVariants({ size: "sm", className: "uppercase tracking-wide whitespace-nowrap" })}
                 >
                   {dict.common.actions.bookAppointment}

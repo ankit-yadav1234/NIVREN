@@ -49,29 +49,29 @@ export default async function AboutPage({
 
       <InThisSection locale={locale} />
 
-      <Container id="mission-vision" className="py-12">
+      <Container id="mission-vision" className="py-12 md:py-16">
         <div className="grid gap-6 md:grid-cols-2">
-          <Card className="p-6">
-            <Target className="h-8 w-8 text-primary" aria-hidden />
-            <h2 className="mt-3 text-lg font-semibold">{t.mission.title}</h2>
-            <p className="mt-2 text-muted-foreground">{t.mission.body}</p>
+          <Card className="rounded-2xl p-6 sm:p-8 transition-all duration-300 hover:shadow-lg">
+            <Target className="h-9 w-9 text-primary" aria-hidden />
+            <h2 className="mt-4 text-[20px] font-semibold tracking-tight text-foreground">{t.mission.title}</h2>
+            <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{t.mission.body}</p>
           </Card>
-          <Card className="p-6">
-            <Eye className="h-8 w-8 text-primary" aria-hidden />
-            <h2 className="mt-3 text-lg font-semibold">{t.vision.title}</h2>
-            <p className="mt-2 text-muted-foreground">{t.vision.body}</p>
+          <Card className="rounded-2xl p-6 sm:p-8 transition-all duration-300 hover:shadow-lg">
+            <Eye className="h-9 w-9 text-primary" aria-hidden />
+            <h2 className="mt-4 text-[20px] font-semibold tracking-tight text-foreground">{t.vision.title}</h2>
+            <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{t.vision.body}</p>
           </Card>
         </div>
       </Container>
 
       <Section id="values" muted>
-        <SectionHeading title={t.values.title} />
+        <SectionHeading eyebrow="Core Values" title={t.values.title} />
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {t.values.items.map((v) => (
-            <Card key={v.title} className="p-6">
-              <Heart className="h-6 w-6 text-secondary" aria-hidden />
-              <h3 className="mt-3 font-semibold">{v.title}</h3>
-              <p className="mt-1.5 text-sm text-muted-foreground">{v.body}</p>
+            <Card key={v.title} className="rounded-2xl p-6 sm:p-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+              <Heart className="h-6 w-6 text-primary" aria-hidden />
+              <h3 className="mt-3.5 text-[18px] font-semibold text-foreground">{v.title}</h3>
+              <p className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">{v.body}</p>
             </Card>
           ))}
         </div>

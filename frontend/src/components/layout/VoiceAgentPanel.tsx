@@ -1,121 +1,127 @@
 "use client";
 
-import { Mic, MicOff } from "lucide-react";
+import * as React from "react";
+import { Volume2, VolumeX, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { useVoiceSession } from "@/hooks/useVoiceSession";
-
-/** Placeholder avatar face for the voice-agent trigger/panel — swap for a real photorealistic (Tavus/D-ID/HeyGen) avatar once that's wired up. */
-export const VOICE_AVATAR_URL =
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=240&h=240&q=80";
+import { AVATAR_CONFIG } from "@/config/avatar";
 
 type VoiceSession = ReturnType<typeof useVoiceSession>;
 
-/**
- * Full-panel voice agent UI, separate from the text chat panel — an
- * animated "avatar" orb (CSS-only, reacts live to the agent speaking) plus
- * Skip and Mute controls, styled after HeyGen/D-ID/Tavus-style avatar
- * widgets. This is a stand-in for a real photorealistic avatar: swapping in
- * an actual talking-face video (Tavus, D-ID, HeyGen) is a separate feature
- * that needs a paid third-party API account — not implemented here.
- */
-export function VoiceAgentPanel({ voice, onClose }: { voice: VoiceSession; onClose: () => void }) {
+export function VoiceAgentPanel({
+  voice,
+  onClose,
+}: {
+  voice: VoiceSession;
+  onClose: () => void;
+}) {
   const speaking = voice.status === "connected" && voice.agentSpeaking && !voice.audioBlocked;
-  const listening = voice.status === "connected" && !voice.agentSpeaking && !voice.audioBlocked;
+  const isConnecting = voice.status === "connecting";
+
+  const defaultAvatar =
+    AVATAR_CONFIG.avatars[AVATAR_CONFIG.defaultGender as keyof typeof AVATAR_CONFIG.avatars] ||
+    AVATAR_CONFIG.avatars.male;
 
   return (
     <div
       role="dialog"
-      aria-label="NIVREN Voice Agent"
-      className="fixed bottom-24 end-5 z-40 flex h-[min(560px,75vh)] w-[min(340px,90vw)] flex-col overflow-hidden rounded-[28px] bg-[linear-gradient(160deg,#0b1220_0%,#0f2942_60%,#0b1220_100%)] text-white shadow-2xl"
+      aria-label="NIVREN Voice Assistant"
+      className="fixed bottom-24 end-5 z-50 flex h-[min(580px,80vh)] w-[min(360px,92vw)] flex-col items-center justify-between p-4 text-white"
     >
-      <div className="flex items-center justify-between px-4 pt-4">
-        <span className="text-xs font-semibold uppercase tracking-wide text-white/50">NIVREN Assistant</span>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-        >
-          Skip
-        </button>
-      </div>
+      {/* Center Circular Avatar Container with LiveKit Real-Time Audio Waves */}
+      <div className="relative flex flex-col items-center justify-end mt-auto mb-4">
+        <div className="relative flex h-72 w-72 items-center justify-center sm:h-80 sm:w-80">
+          {/* Outer Pulsing Glow while speaking */}
+          <span
+            aria-hidden
+            className={cn(
+              "absolute inset-0 rounded-full bg-cyan-500/25 blur-3xl transition-[transform,opacity] duration-500",
+              speaking ? "scale-110 opacity-90 animate-pulse" : "scale-100 opacity-20"
+            )}
+          />
 
-      <div className="relative flex flex-1 flex-col items-center justify-center gap-6 px-6">
-        <div className="relative flex h-44 w-44 items-center justify-center">
-          {/* Outer glow: soft continuous breathing at rest, bigger/brighter pulse while speaking */}
-          <span
-            aria-hidden
-            className={cn(
-              "absolute inset-0 rounded-full bg-primary/40 blur-2xl transition-[transform,opacity] duration-700",
-              speaking ? "scale-125 opacity-90 animate-pulse" : "scale-100 opacity-50 animate-[pulse_3s_ease-in-out_infinite]",
-            )}
-          />
-          {/* Voice rings: expand outward only while the agent is actually speaking */}
-          <span
-            aria-hidden
-            className={cn(
-              "absolute inset-2 rounded-full border-2 border-primary/40 transition-all duration-700",
-              speaking ? "scale-125 opacity-0" : "scale-100 opacity-0",
-            )}
-            style={speaking ? { animation: "voiceRing 1.6s ease-out infinite" } : undefined}
-          />
-          <span
-            aria-hidden
-            className={cn("absolute inset-2 rounded-full border-2 border-primary/40 opacity-0")}
-            style={speaking ? { animation: "voiceRing 1.6s ease-out infinite 0.5s" } : undefined}
-          />
-          <span
-            aria-hidden
-            className={cn(
-              "absolute inset-6 rounded-full ring-2 ring-white/20 transition-transform duration-500",
-              speaking && "scale-105",
-            )}
-          />
+          {/* Big Circular Avatar Frame */}
           <div
             className={cn(
-              "relative h-28 w-28 overflow-hidden rounded-full bg-cover bg-center shadow-[0_0_50px_rgba(59,130,246,0.55)] ring-4 ring-white/90 transition-transform duration-300",
-              speaking
-                ? "scale-105"
-                : listening
-                  ? "scale-100 animate-[pulse_2.5s_ease-in-out_infinite]"
-                  : "scale-95 opacity-90",
+              "relative h-68 w-68 sm:h-76 sm:w-76 overflow-hidden rounded-full border-4 border-white/90 bg-slate-950 shadow-[0_15px_50px_rgba(0,0,0,0.8)] transition-transform duration-300",
+              speaking ? "scale-105 ring-4 ring-cyan-400/50" : "scale-100"
             )}
-            style={{ backgroundImage: `url(${VOICE_AVATAR_URL})` }}
-          />
+          >
+            {/* Photorealistic Avatar Image */}
+            <div
+              className={cn(
+                "relative h-full w-full overflow-hidden transition-transform duration-200",
+                speaking && "animate-[pulse_0.4s_ease-in-out_infinite] scale-[1.03]"
+              )}
+            >
+              <img
+                src={defaultAvatar.imageUrl}
+                alt={defaultAvatar.name}
+                className="h-full w-full object-cover object-center"
+              />
+
+              {/* Dynamic Lip-Sync Motion Layer */}
+              {speaking && (
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute bottom-[26%] left-1/2 -translate-x-1/2 h-8 w-14 rounded-full bg-rose-950/20 blur-[1px] animate-[ping_0.5s_cubic-bezier(0,0,0.2,1)_infinite]"
+                />
+              )}
+            </div>
+
+            {/* Connecting Spinner Overlay */}
+            {isConnecting && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-xs">
+                <Loader2 className="h-9 w-9 animate-spin text-cyan-400" />
+                <span className="mt-2 text-[10px] font-semibold uppercase tracking-widest text-white/80">Connecting LiveKit…</span>
+              </div>
+            )}
+
+            {/* Mute/Speaker Toggle Button (Embedded directly on image at bottom center) */}
+            <button
+              type="button"
+              onClick={voice.toggleMute}
+              disabled={voice.status !== "connected"}
+              aria-label={voice.muted ? "Unmute microphone" : "Mute microphone"}
+              className={cn(
+                "absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex h-11 w-11 items-center justify-center rounded-full backdrop-blur-md transition-transform hover:scale-110 active:scale-95 shadow-lg disabled:opacity-40",
+                voice.muted
+                  ? "bg-red-500/85 text-white ring-2 ring-white/70"
+                  : "bg-black/60 text-white ring-1 ring-white/35 hover:bg-black/80"
+              )}
+            >
+              {voice.muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+            </button>
+
+            {/* Dynamic Audio Visualizer Waves inside the Avatar */}
+            <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5">
+              <span className={cn("h-1 w-9 rounded-full bg-white/45 transition-all duration-150", speaking && "h-2.5 bg-cyan-300 animate-pulse")} />
+              <span className={cn("h-1.5 w-14 rounded-full bg-white/80 transition-all duration-150", speaking && "h-3.5 bg-cyan-200 animate-[pulse_0.4s_ease-in-out_infinite]")} />
+              <span className={cn("h-1 w-9 rounded-full bg-white/45 transition-all duration-150", speaking && "h-2.5 bg-cyan-300 animate-pulse")} />
+            </div>
+          </div>
         </div>
 
-        <p className="text-center text-sm text-white/70">
-          {voice.status === "idle" && "Starting…"}
-          {voice.status === "connecting" && "Connecting…"}
-          {voice.status === "connected" && voice.audioBlocked && "Tap below to enable audio"}
-          {voice.status === "connected" && !voice.audioBlocked && speaking && "Speaking…"}
-          {voice.status === "connected" && !voice.audioBlocked && listening && (voice.muted ? "Muted" : "Listening…")}
-          {voice.status === "error" && (voice.error ?? "Something went wrong.")}
-        </p>
-
+        {/* Audio blocked notification if browser blocked autoplay */}
         {voice.status === "connected" && voice.audioBlocked && (
           <button
             type="button"
             onClick={() => voice.enableAudio()}
-            className="rounded-full bg-amber-500/20 px-4 py-2 text-xs font-medium text-amber-300 hover:bg-amber-500/30"
+            className="mt-3 rounded-full bg-cyan-500 px-5 py-1.5 text-xs font-bold text-slate-950 shadow-lg animate-bounce"
           >
-            🔊 Enable audio
+            🔊 Tap to Enable Audio
           </button>
         )}
       </div>
 
-      <div className="flex items-center justify-center pb-6">
+      {/* Bottom SKIP Button */}
+      <div className="w-full flex justify-center pb-2">
         <button
           type="button"
-          aria-label={voice.muted ? "Unmute microphone" : "Mute microphone"}
-          aria-pressed={voice.muted}
-          onClick={() => voice.toggleMute()}
-          disabled={voice.status !== "connected"}
-          className={cn(
-            "inline-flex h-12 w-12 items-center justify-center rounded-full transition-colors disabled:opacity-40",
-            voice.muted ? "bg-destructive text-destructive-foreground" : "bg-white/10 text-white hover:bg-white/20",
-          )}
+          onClick={onClose}
+          className="rounded-full bg-slate-900/80 px-9 py-2.5 text-xs font-bold uppercase tracking-[0.22em] text-white/90 shadow-xl backdrop-blur-md transition-all hover:bg-slate-800 hover:scale-105 active:scale-95 border border-white/10"
         >
-          {voice.muted ? <MicOff className="h-5 w-5" aria-hidden /> : <Mic className="h-5 w-5" aria-hidden />}
+          SKIP
         </button>
       </div>
     </div>

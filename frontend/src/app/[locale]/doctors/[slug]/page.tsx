@@ -44,7 +44,9 @@ export default async function DoctorDetailPage({
     <>
       <PageHeader
         title={doctor.name}
-        subtitle={doctor.specialty}
+        subtitle={`${doctor.specialty} • ${doctor.experience}+ years experience`}
+        eyebrow="Specialist Doctor"
+        image={doctor.image}
         crumbs={[
           { label: dict.common.nav.home, href: "/" },
           { label: dict.doctors.title, href: "/doctors" },

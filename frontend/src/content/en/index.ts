@@ -18,7 +18,7 @@ export const en: Dictionary = {
       accessibilityStatement: "Accessibility Statement",
     },
     actions: {
-      bookAppointment: "Book Now",
+      bookAppointment: "Get Started",
       findDoctor: "Find a Doctor",
       learnMore: "Learn More",
       viewAll: "View All",
@@ -70,7 +70,7 @@ export const en: Dictionary = {
       description:
         "NIVREN runs a connected hospital network — and helps other healthcare organizations run theirs profitably, with end-to-end billing, coding, and revenue cycle management.",
       primaryAction: "Explore RCM Services",
-      secondaryAction: "Book a Patient Visit",
+      secondaryAction: "Request a Consultation",
     },
     emergency: {
       title: "Need urgent medical assistance?",
@@ -105,9 +105,9 @@ export const en: Dictionary = {
       description: "Real stories from the people we care for.",
     },
     appointmentCta: {
-      title: "Ready to prioritize your health?",
-      description: "Book an appointment in minutes with the specialist of your choice.",
-      action: "Book Now",
+      title: "Ready to improve your collections?",
+      description: "Get a free revenue cycle assessment and see where you're leaving money on the table.",
+      action: "Request a Free Assessment",
     },
     locations: {
       title: "Our Locations",
@@ -115,7 +115,7 @@ export const en: Dictionary = {
     },
     faq: {
       title: "Frequently Asked Questions",
-      description: "Everything you need to know before your visit.",
+      description: "Everything providers ask before switching their revenue cycle over to us.",
     },
     contact: {
       title: "Get in Touch",
@@ -218,7 +218,7 @@ export const en: Dictionary = {
   },
   faq: {
     title: "Frequently Asked Questions",
-    subtitle: "Answers to common questions about our care and services.",
+    subtitle: "Answers to common questions about partnering with NIVREN for your revenue cycle.",
   },
   legal: {
     intro:

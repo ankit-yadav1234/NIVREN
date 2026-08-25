@@ -28,11 +28,11 @@ export function Footer({ locale }: { locale: Locale }) {
               {siteConfig.name}
             </div>
             <p className="max-w-xs text-sm text-muted-foreground">
-              {dict.common.footer.tagline} Board-certified specialists, modern diagnostics, and
-              round-the-clock emergency care — all in one connected network.
+              {dict.common.footer.tagline} Certified coders, transparent reporting, and a team that
+              treats your revenue like it's our own.
             </p>
             <Link
-              href={localePath("/appointment", locale)}
+              href={localePath("/contact", locale)}
               className={buttonVariants({ size: "sm", className: "mt-5 uppercase tracking-wide" })}
             >
               <CalendarPlus className="h-4 w-4" aria-hidden />

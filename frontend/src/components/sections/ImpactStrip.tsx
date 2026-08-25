@@ -16,7 +16,7 @@ const STATS = [
  */
 export function ImpactStrip() {
   return (
-    <section className="relative isolate overflow-hidden py-20 md:py-28">
+    <section className="relative isolate overflow-hidden py-20 sm:py-24 md:py-28 lg:py-32 flex items-center min-h-[540px]">
       <Image
         src="https://images.unsplash.com/photo-1758873271761-6cfe9b4f000c?auto=format&fit=crop&w=1800&q=80"
         alt=""
@@ -26,30 +26,32 @@ export function ImpactStrip() {
       />
       <div
         aria-hidden
-        className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.85)_0%,rgba(2,6,23,0.55)_45%,rgba(2,6,23,0.9)_100%)]"
+        className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,6,23,0.85)_0%,rgba(2,6,23,0.6)_45%,rgba(2,6,23,0.9)_100%)]"
       />
 
       <div className="relative z-10 mx-auto w-full max-w-[var(--container-width)] px-4 text-center sm:px-6 lg:px-8">
         <Reveal>
-          <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary">
+          <span className="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-cyan-300">
             Revenue Cycle Management
           </span>
-          <h2 className="mx-auto mt-3 max-w-2xl text-[length:var(--text-h2)] font-bold text-white">
+          <h2 className="mx-auto mt-4 max-w-3xl text-2xl sm:text-3xl md:text-4xl lg:text-[42px] font-bold leading-tight text-white tracking-tight drop-shadow-sm">
             Numbers our RCM partners see
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-white/75">
+          <p className="mx-auto mt-3 max-w-2xl text-sm sm:text-base leading-relaxed text-white/80 font-normal">
             The same discipline we bring to our own hospital network, now working for other
             healthcare organizations too.
           </p>
         </Reveal>
 
-        <dl className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-8 sm:grid-cols-4">
+        <dl className="mx-auto mt-12 sm:mt-16 md:mt-20 grid max-w-5xl grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 lg:gap-14">
           {STATS.map((s, i) => (
             <Reveal key={s.label} delay={i * 0.08}>
-              <dt className="text-3xl font-bold text-white sm:text-4xl">
-                <CountUp value={s.value} delay={0.2 + i * 0.1} />
-              </dt>
-              <dd className="mt-1.5 text-xs text-white/70 sm:text-sm">{s.label}</dd>
+              <div className="flex flex-col items-center justify-center text-center">
+                <dt className="text-3xl font-extrabold text-white sm:text-4xl lg:text-5xl tracking-tight drop-shadow-md">
+                  <CountUp value={s.value} delay={0.2 + i * 0.1} />
+                </dt>
+                <dd className="mt-2.5 text-xs sm:text-sm font-medium text-white/80 leading-snug drop-shadow-sm">{s.label}</dd>
+              </div>
             </Reveal>
           ))}
         </dl>

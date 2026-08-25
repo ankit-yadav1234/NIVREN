@@ -39,8 +39,9 @@
   --text-body: clamp(1rem, 1.2vw, 1.0625rem);
 
   /* Font stacks (font-family variables injected by next/font) */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-roboto), var(--font-inter), sans-serif;
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: var(--font-besley), Georgia, "Times New Roman", serif;
+  --font-serif: var(--font-besley), Georgia, "Times New Roman", serif;
   --font-devanagari: var(--font-noto-devanagari), var(--font-inter), sans-serif;
   --font-arabic: var(--font-noto-arabic), var(--font-inter), sans-serif;
 }

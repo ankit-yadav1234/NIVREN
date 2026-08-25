@@ -46,6 +46,9 @@ export default async function LocationDetailPage({
     <>
       <PageHeader
         title={location.name}
+        subtitle={`${location.address}, ${location.city}`}
+        eyebrow="Hospital Location"
+        image={location.image}
         crumbs={[
           { label: dict.common.nav.home, href: "/" },
           { label: dict.locations.title, href: "/locations" },

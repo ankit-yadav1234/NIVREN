@@ -16,14 +16,14 @@ const quickLinks = [
 export default function NotFound() {
   const { dict, locale } = useLocale();
   return (
-    <Container className="flex min-h-[70vh] flex-col items-center justify-center py-24 text-center">
+    <Container className="flex min-h-[100dvh] min-h-screen flex-col items-center justify-center py-24 pt-32 sm:pt-36 md:pt-40 text-center">
       <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
         <HeartPulse className="h-8 w-8" aria-hidden />
       </span>
-      <p className="mt-6 text-7xl font-bold text-primary md:text-8xl">
+      <p className="mt-6 font-serif text-7xl font-bold text-primary md:text-8xl">
         404
       </p>
-      <h1 className="mt-4 text-2xl font-semibold">{dict.common.labels.notFoundTitle}</h1>
+      <h1 className="mt-4 font-serif text-2xl sm:text-3xl font-bold">{dict.common.labels.notFoundTitle}</h1>
       <p className="mt-2 max-w-md text-muted-foreground">{dict.common.labels.notFoundBody}</p>
       <Link href={localePath("/", locale)} className={buttonVariants({ size: "lg", className: "mt-7" })}>
         {dict.common.labels.backHome}

@@ -17,7 +17,7 @@ export function AuthShell({
   footer?: React.ReactNode;
 }) {
   return (
-    <section className="flex min-h-[80vh] items-center justify-center bg-background [background-image:radial-gradient(ellipse_65%_90%_at_top_right,hsl(var(--primary)/0.18),transparent_65%)] px-4 py-16 dark:[background-image:radial-gradient(ellipse_65%_90%_at_top_right,hsl(var(--primary)/0.24),transparent_65%)] md:py-24">
+    <section className="flex min-h-[100dvh] min-h-screen items-center justify-center bg-background [background-image:radial-gradient(ellipse_65%_90%_at_top_right,hsl(var(--primary)/0.18),transparent_65%)] px-4 py-20 pt-28 md:pt-36 dark:[background-image:radial-gradient(ellipse_65%_90%_at_top_right,hsl(var(--primary)/0.24),transparent_65%)] md:py-24">
       <div className="w-full max-w-md">
         <Reveal>
           <Card className="p-8">
@@ -28,7 +28,7 @@ export function AuthShell({
               <p className="mt-3 text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                 {eyebrow}
               </p>
-              <h1 className="mt-1 text-[length:var(--text-h2)] font-bold text-primary">
+              <h1 className="mt-2 font-serif text-2xl sm:text-3xl font-bold text-primary">
                 {title}
               </h1>
               {subtitle && <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>}

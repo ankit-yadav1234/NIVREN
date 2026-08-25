@@ -14,24 +14,24 @@ export const glanceAccordion: GlanceAccordionItem[] = [
       "End-to-end billing, coding, and denial management for hospitals and clinics — built on two decades of running our own network.",
     link: { label: "Explore RCM Services", href: "/rcm" },
   },
+  // {
+  //   id: "specialties",
+  //   title: "Specialties We Bill For",
+  //   description:
+  //     "Deep coding and billing expertise across cardiology, neurology, orthopedics, pediatrics, oncology, and dermatology — proven on our own hospital network.",
+  //   link: { label: "See Our Specialties", href: "/departments" },
+  // },
   {
-    id: "departments",
-    title: "Our Departments",
-    description:
-      "The network we operate ourselves — board-certified specialists across cardiology, neurology, orthopedics, pediatrics, oncology, and dermatology.",
-    link: { label: "Browse Departments", href: "/departments" },
-  },
-  {
-    id: "billing",
-    title: "Insurance & Billing",
-    description: "Transparent pricing, insurance support, and clear answers on coverage before your visit.",
+    id: "analytics",
+    title: "Real-Time Reporting",
+    description: "Transparent, real-time KPIs on every claim — no more waiting for a monthly summary to know where you stand.",
     link: { label: "View RCM Services", href: "/rcm" },
   },
   {
-    id: "doctors",
-    title: "Meet Our Doctors",
-    description: "Search our full directory of specialists by department, language, and consultation type.",
-    link: { label: "Find a Doctor", href: "/doctors" },
+    id: "onboarding",
+    title: "Fast, Clean Onboarding",
+    description: "Most practices are fully transitioned within 2–3 weeks, with zero disruption to cash flow.",
+    link: { label: "Request a Consultation", href: "/contact" },
   },
 ];
 
@@ -45,7 +45,9 @@ export interface QuickLink {
 /** Powers the dark quick-links band in components/sections/QuickLinksBand.tsx. */
 export const quickLinks: QuickLink[] = [
   { label: "Explore RCM Services", href: "/rcm" },
-  { label: "Book a Patient Visit", href: "/appointment" },
-  { label: "Contact Our Care Team", href: "/contact" },
-  { label: "Find a Location Near You", href: "/locations" },
+  { label: "Request a Free Assessment", href: "/contact" },
+  { label: "Read Client Results", href: "/about" },
+  { label: "Find Doctors & Specialists", href: "/doctors" },
+  { label: "Book a Patient Appointment", href: "/appointment" },
+  { label: "Hospital Locations & Emergency", href: "/locations" },
 ];

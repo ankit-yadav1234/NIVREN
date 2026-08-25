@@ -7,9 +7,10 @@ import { siteConfig } from "@/config/site";
 import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Reveal } from "@/components/animations/Reveal";
-import { HeroBanner } from "@/components/sections/HeroBanner";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { HospitalInfo } from "@/components/healthcare/HospitalInfo";
 import { ContactForm } from "@/components/sections/ContactForm";
+import { AppointmentCTA } from "@/components/sections/AppointmentCTA";
 import { telHref } from "@/lib/utils/format";
 
 export async function generateMetadata({
@@ -45,20 +46,12 @@ export default async function ContactPage({
 
   return (
     <>
-      <HeroBanner
+      <PageHeader
+        title={dict.contact.title}
+        subtitle="Questions about our RCM services, clinical departments, billing, or partnerships? Our care team is here to support you."
+        crumbs={[{ label: dict.common.nav.home, href: "/" }, { label: dict.contact.title }]}
+        eyebrow="Get In Touch"
         locale={locale}
-        data={{
-          id: "contact-hero",
-          eyebrow: "Contact",
-          headingBefore: "We are here to ",
-          headingAccent: "support",
-          headingAfter: " you",
-          body: "Questions about a visit, billing, or a specific department? Our care team responds to every message within one business day.",
-          icon: "HeartHandshake",
-          image: "https://images.unsplash.com/photo-1764727291644-5dcb0b1a0375?auto=format&fit=crop&w=1200&q=80",
-          link: { label: "Call Us Now", href: telHref(siteConfig.phone) },
-          imageSide: "right",
-        }}
       />
 
       <section className="bg-background [background-image:radial-gradient(ellipse_65%_90%_at_top_right,hsl(var(--primary)/0.18),transparent_65%)] py-12 dark:[background-image:radial-gradient(ellipse_65%_90%_at_top_right,hsl(var(--primary)/0.24),transparent_65%)] md:py-20">
@@ -72,44 +65,44 @@ export default async function ContactPage({
 
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
             <Reveal className="lg:col-span-1">
-              <Card className="h-full p-6">
-                <h3 className="mb-2 font-semibold">Address</h3>
-                <p className="text-sm text-muted-foreground">
+              <Card className="h-full rounded-2xl p-6 sm:p-8 shadow-sm">
+                <h3 className="mb-2 font-semibold text-[18px]">Address</h3>
+                <p className="text-sm sm:text-[15px] leading-relaxed text-muted-foreground">
                   12 Wellness Avenue
                   <br />
                   Mumbai, Maharashtra 400001
                   <br />
                   India
                 </p>
-                <h3 className="mb-2 mt-6 font-semibold">{dict.contact.info.phone}</h3>
+                <h3 className="mb-2 mt-6 font-semibold text-[18px]">{dict.contact.info.phone}</h3>
                 <HospitalInfo dict={dict} />
               </Card>
             </Reveal>
             <Reveal delay={0.1} className="lg:col-span-2">
-              <Card className="p-6 md:p-8">
+              <Card className="rounded-2xl p-6 sm:p-8 md:p-10 shadow-sm">
                 <ContactForm dict={dict} />
               </Card>
             </Reveal>
           </div>
 
-          <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-14 sm:mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {quickContacts.map((c, i) => (
               <Reveal key={c.label} delay={i * 0.05}>
                 <a
                   href={c.href}
-                  className="group flex h-full flex-col items-start gap-3 rounded-[var(--radius-lg)] border border-border bg-card p-5 shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-md"
+                  className="group flex h-full flex-col items-start gap-3 rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
                 >
                   <span
                     className={
-                      "inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] transition-transform duration-300 group-hover:scale-110 " +
+                      "inline-flex h-12 w-12 items-center justify-center rounded-[var(--radius-md)] transition-transform duration-300 group-hover:scale-105 " +
                       (c.accent ? "bg-emergency/10 text-emergency" : "bg-primary/10 text-primary")
                     }
                   >
                     <c.icon className="h-5 w-5" aria-hidden />
                   </span>
                   <span>
-                    <span className="block text-sm font-semibold text-foreground">{c.label}</span>
-                    <span className="mt-0.5 block text-sm text-muted-foreground">{c.value}</span>
+                    <span className="block text-[15px] font-semibold text-foreground">{c.label}</span>
+                    <span className="mt-1 block text-sm text-muted-foreground">{c.value}</span>
                   </span>
                 </a>
               </Reveal>
@@ -117,6 +110,8 @@ export default async function ContactPage({
           </div>
         </Container>
       </section>
+
+      <AppointmentCTA dict={dict} locale={locale} />
     </>
   );
 }

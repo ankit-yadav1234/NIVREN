@@ -48,6 +48,8 @@ export default async function ServiceDetailPage({
       <PageHeader
         title={service.title}
         subtitle={service.description}
+        eyebrow="Clinical Service"
+        image={service.image}
         crumbs={[
           { label: dict.common.nav.home, href: "/" },
           { label: dict.services.title, href: "/services" },

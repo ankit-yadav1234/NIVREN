@@ -7,6 +7,7 @@ import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { DepartmentCard } from "@/components/healthcare/DepartmentCard";
 import { HeroBanner } from "@/components/sections/HeroBanner";
+import { AppointmentCTA } from "@/components/sections/AppointmentCTA";
 import { departmentsBanner } from "@/data/heroBanners";
 
 export async function generateMetadata({
@@ -37,13 +38,14 @@ export default async function DepartmentsPage({
         locale={locale}
       />
       <HeroBanner data={departmentsBanner} locale={locale} />
-      <Container className="py-12">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <Container className="py-12 md:py-16">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {departments.map((d) => (
             <DepartmentCard key={d.id} department={d} locale={locale} />
           ))}
         </div>
       </Container>
+      <AppointmentCTA dict={dict} locale={locale} />
     </>
   );
 }

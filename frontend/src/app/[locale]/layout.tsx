@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { notFound } from "next/navigation";
 import "../globals.css";
-import { inter, roboto, notoDevanagari, notoArabic } from "../fonts";
+import { inter, besley, notoDevanagari, notoArabic } from "../fonts";
 import type { Locale } from "@/types";
 import { getContent } from "@/content";
 import { locales, supportedLocales, isLocale } from "@/config/locales";
@@ -38,14 +39,16 @@ export default async function LocaleLayout({
 
   const dict = getContent(locale);
   const dir = locales[locale].direction;
-  const fontVars = `${inter.variable} ${roboto.variable} ${notoDevanagari.variable} ${notoArabic.variable}`;
+  const fontVars = `${inter.variable} ${besley.variable} ${notoDevanagari.variable} ${notoArabic.variable}`;
 
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning className={fontVars}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <script
+        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <Script
+          id="organization-jsonld"
           type="application/ld+json"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }}
         />
       </head>

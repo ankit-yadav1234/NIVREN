@@ -4,6 +4,7 @@ export { QuickLinksBand } from "./QuickLinksBand";
 export { Departments } from "./Departments";
 export { Doctors } from "./Doctors";
 export { Services } from "./Services";
+export { RcmServicesHome } from "./RcmServicesHome";
 export { Testimonials } from "./Testimonials";
 export { AppointmentCTA } from "./AppointmentCTA";
 export { Locations } from "./Locations";

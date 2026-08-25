@@ -6,12 +6,15 @@ import { getLiveKitToken } from "@/lib/api/livekit";
 
 export type VoiceStatus = "idle" | "connecting" | "connected" | "error";
 
-export type VoiceAgentAction = { type: "navigate"; path: string } | { type: "scroll"; sectionId: string };
+export type VoiceAgentAction =
+  | { type: "navigate"; path: string }
+  | { type: "scroll"; sectionId: string }
+  | { type: "consultation_requested"; data: { name: string; phone: string; serviceOrSpecialty?: string } };
 
 /**
  * Manages a LiveKit voice session with the NIVREN voice agent: mic capture,
  * agent audio playback, and "agent-action" data messages (the agent's
- * navigate/book_appointment/scroll_to_section tool calls — see
+ * navigate/request_consultation/scroll_to_section tool calls — see
  * backend/src/voice-agent/agent.ts), forwarded via onAction since only the
  * caller (the page) knows how to route/scroll.
  *

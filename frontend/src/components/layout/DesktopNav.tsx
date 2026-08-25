@@ -36,6 +36,8 @@ function NavItemWithDropdown({
     closeTimer.current = setTimeout(() => setOpen(false), 120);
   };
 
+  const isMultiCol = (item.children?.length ?? 0) >= 6;
+
   return (
     <li
       className="relative"
@@ -62,7 +64,7 @@ function NavItemWithDropdown({
       >
         {item.label}
         <ChevronDown
-          className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")}
+          className={cn("h-3.5 w-3.5 transition-transform duration-200", open && "rotate-180")}
           aria-hidden
         />
       </button>
@@ -70,8 +72,9 @@ function NavItemWithDropdown({
       <ul
         id={menuId}
         className={cn(
-          "absolute start-0 top-full z-50 mt-1 grid w-[min(90vw,560px)] grid-cols-1 gap-1 rounded-[var(--radius-lg)] border border-border bg-card p-2 shadow-lg transition sm:grid-cols-2",
-          open ? "visible opacity-100 translate-y-0" : "invisible opacity-0 -translate-y-1",
+          "absolute start-0 top-full z-50 mt-1 grid gap-1.5 rounded-[var(--radius-lg)] border border-border/80 bg-card/95 p-2.5 shadow-xl backdrop-blur-md transition-all duration-200",
+          isMultiCol ? "w-[min(90vw,560px)] grid-cols-1 sm:grid-cols-2" : "w-[min(90vw,300px)] grid-cols-1",
+          open ? "visible opacity-100 translate-y-0" : "invisible opacity-0 -translate-y-1 pointer-events-none",
         )}
       >
         {item.children!.map((child) => (
@@ -79,24 +82,24 @@ function NavItemWithDropdown({
             <Link
               href={localePath(child.href, locale)}
               className={cn(
-                "flex items-start gap-3 rounded-md p-2.5 text-start transition-colors hover:bg-accent hover:text-accent-foreground",
-                isActive(pathname, child.href, locale) && "bg-accent/60",
+                "group flex items-start gap-3 rounded-md p-2 text-start transition-all duration-200 bg-transparent",
+                isActive(pathname, child.href, locale) && "text-primary",
               )}
             >
-              <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-primary/10 text-primary">
-                <Icon name={child.icon ?? "Activity"} className="h-4.5 w-4.5" />
+              <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-primary/10 text-primary transition-all duration-200 group-hover:scale-110 group-hover:bg-primary/20 group-hover:text-primary">
+                <Icon name={child.icon ?? "Activity"} className="h-4 w-4" />
               </span>
-              <span className="min-w-0">
+              <span className="min-w-0 transition-transform duration-200 group-hover:translate-x-1">
                 <span
                   className={cn(
-                    "block text-sm font-semibold text-foreground",
+                    "block text-sm font-semibold text-foreground transition-colors duration-200 group-hover:text-primary",
                     isActive(pathname, child.href, locale) && "text-primary",
                   )}
                 >
                   {child.label}
                 </span>
                 {child.description && (
-                  <span className="mt-0.5 line-clamp-2 block text-xs text-muted-foreground">
+                  <span className="mt-0.5 line-clamp-2 block text-xs text-muted-foreground transition-colors duration-200 group-hover:text-foreground/80">
                     {child.description}
                   </span>
                 )}

@@ -166,7 +166,7 @@ export function MobileNav({
 
               <div className="space-y-2 border-t border-border p-4">
                 <Link
-                  href={localePath("/appointment", locale)}
+                  href={localePath("/contact", locale)}
                   className={buttonVariants({ fullWidth: true, className: "uppercase tracking-wide" })}
                 >
                   {dict.common.actions.bookAppointment}

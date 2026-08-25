@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, FileWarning, Clock, ShieldAlert, TrendingDown, Star } from "lucide-react";
 import type { Locale } from "@/types";
+import { getContent } from "@/content";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { getRcmServices } from "@/lib/api/rcm";
 import { Container } from "@/components/ui/Container";
@@ -9,11 +10,10 @@ import { Card } from "@/components/ui/Card";
 import { Section, SectionHeading } from "@/components/ui/Section";
 import { Icon } from "@/components/ui/Icon";
 import { Avatar } from "@/components/ui/Avatar";
-import { buttonVariants } from "@/components/ui/Button";
 import { RcmHero } from "@/components/sections/RcmHero";
+import { AppointmentCTA } from "@/components/sections/AppointmentCTA";
 import { FAQ } from "@/components/healthcare/FAQ";
 import { Reveal } from "@/components/animations/Reveal";
-import { cn } from "@/lib/utils/cn";
 import { localePath } from "@/lib/utils/format";
 
 const WHY = [
@@ -96,6 +96,7 @@ export async function generateMetadata({
 export default async function RcmPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   const services = await getRcmServices();
+  const dict = getContent(locale);
 
   return (
     <>
@@ -109,29 +110,32 @@ export default async function RcmPage({ params }: { params: Promise<{ locale: Lo
       {/* Pain points */}
       <Section>
         <SectionHeading
+          eyebrow="Challenges"
           title="Where practices lose revenue without knowing it"
           description="Generic billing teams miss these every day — ours don't."
         />
         <Reveal className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {PAIN_POINTS.map((p) => (
-            <Card key={p.title} className="p-6">
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] bg-destructive/10 text-destructive">
-                <p.icon className="h-5 w-5" aria-hidden />
-              </span>
-              <h3 className="mt-4 font-semibold">{p.title}</h3>
-              <p className="mt-1.5 text-sm text-muted-foreground">{p.body}</p>
+            <Card key={p.title} className="p-6 sm:p-7 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+              <div>
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-[var(--radius-md)] bg-destructive/10 text-destructive">
+                  <p.icon className="h-6 w-6" aria-hidden />
+                </span>
+                <h3 className="mt-4 text-[18px] font-semibold tracking-tight">{p.title}</h3>
+                <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">{p.body}</p>
+              </div>
             </Card>
           ))}
         </Reveal>
       </Section>
 
       {/* Why choose us */}
-      <Container className="py-12">
-        <Reveal className="grid grid-cols-2 gap-6 rounded-[var(--radius-lg)] border border-border bg-card p-8 sm:grid-cols-4">
+      <Container className="py-8 sm:py-12">
+        <Reveal className="grid grid-cols-2 gap-6 rounded-2xl border border-border bg-card p-6 sm:p-8 sm:grid-cols-4 shadow-sm">
           {WHY.map((w) => (
             <div key={w.label} className="text-center">
-              <div className="text-2xl font-bold text-primary sm:text-3xl">{w.value}</div>
-              <div className="mt-1 text-xs text-muted-foreground sm:text-sm">{w.label}</div>
+              <div className="text-2xl font-bold text-primary sm:text-3xl lg:text-4xl">{w.value}</div>
+              <div className="mt-1.5 text-xs font-medium text-muted-foreground sm:text-sm">{w.label}</div>
             </div>
           ))}
         </Reveal>
@@ -140,22 +144,25 @@ export default async function RcmPage({ params }: { params: Promise<{ locale: Lo
       {/* Services */}
       <Section muted>
         <SectionHeading
+          eyebrow="Modular Solutions"
           title="Our RCM Services"
           description="A complete, modular revenue cycle — pick the services you need or let us run it all."
         />
         <Reveal className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {services.map((s) => (
             <Link key={s.id} href={localePath(`/rcm/${s.slug}`, locale)} className="group focus-visible:outline-none">
-              <Card className="h-full p-6 transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-xl group-focus-visible:ring-2 group-focus-visible:ring-ring">
-                <span className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-[var(--radius-md)] bg-primary/10 text-primary">
-                  <Icon name={s.icon} className="h-6 w-6" />
-                </span>
-                <h3 className="text-lg font-semibold">{s.title}</h3>
-                <p className="mt-1 text-sm font-medium text-primary">{s.tagline}</p>
-                <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{s.description}</p>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
+              <Card className="flex h-full min-h-[250px] flex-col justify-between p-6 sm:p-7 transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-xl group-focus-visible:ring-2 group-focus-visible:ring-ring">
+                <div>
+                  <span className="mb-4 inline-flex h-13 w-13 items-center justify-center rounded-[var(--radius-md)] bg-primary/10 text-primary">
+                    <Icon name={s.icon} className="h-[26px] w-[26px]" />
+                  </span>
+                  <h3 className="text-[19px] font-semibold tracking-tight">{s.title}</h3>
+                  <p className="mt-1.5 text-[15px] font-medium text-primary leading-snug">{s.tagline}</p>
+                  <p className="mt-2 line-clamp-3 text-[14px] text-muted-foreground leading-relaxed">{s.description}</p>
+                </div>
+                <span className="mt-5 inline-flex items-center gap-1.5 text-[15px] font-medium text-primary">
                   Learn more
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 rtl:rotate-180" aria-hidden />
+                  <ArrowRight className="h-4.5 w-4.5 transition-transform duration-300 group-hover:translate-x-1.5 rtl:rotate-180" aria-hidden />
                 </span>
               </Card>
             </Link>
@@ -165,47 +172,30 @@ export default async function RcmPage({ params }: { params: Promise<{ locale: Lo
 
       {/* Value props */}
       <Section muted>
-        <SectionHeading title="Why providers choose us" description="Technology-driven, compliance-first, and relentlessly focused on your bottom line." />
-        <Reveal className="mx-auto grid max-w-3xl gap-3">
+        <SectionHeading
+          eyebrow="Why NIVREN"
+          title="Why providers choose us"
+          description="Technology-driven, compliance-first, and relentlessly focused on your bottom line."
+        />
+        <Reveal className="mx-auto grid max-w-3xl gap-3.5">
           {[
             "HIPAA-compliant, secure workflows end to end",
             "Certified coders and dedicated account managers",
             "Transparent reporting with real-time KPIs",
             "Specialty-specific expertise across practices",
           ].map((point) => (
-            <div key={point} className="flex items-start gap-3 rounded-[var(--radius-md)] bg-card p-4 shadow-sm">
-              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-success" aria-hidden />
-              <span className="text-sm">{point}</span>
+            <div key={point} className="flex items-start gap-3.5 rounded-xl border border-border/80 bg-card p-4 sm:p-5 shadow-sm">
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden />
+              <span className="text-sm sm:text-base font-medium text-foreground">{point}</span>
             </div>
           ))}
-        </Reveal>
-      </Section>
-
-      {/* Client testimonial */}
-      <Section>
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <div className="mx-auto flex justify-center" aria-label="5 / 5">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className="h-4 w-4 fill-warning text-warning" aria-hidden />
-            ))}
-          </div>
-          <p className="mt-4 text-[length:var(--text-h3)] font-semibold leading-snug text-foreground">
-            &ldquo;Switching our billing over to NIVREN&apos;s RCM team cut our denial rate almost in
-            half within two quarters. We finally have visibility into where every claim stands.&rdquo;
-          </p>
-          <div className="mx-auto mt-6 flex w-fit items-center gap-3">
-            <Avatar name="Rohit Malhotra" size={48} className="ring-2 ring-background" />
-            <div className="text-start">
-              <p className="text-sm font-semibold">Rohit Malhotra</p>
-              <p className="text-xs text-muted-foreground">Practice Administrator, Sunrise Multispecialty Clinic</p>
-            </div>
-          </div>
         </Reveal>
       </Section>
 
       {/* FAQ */}
       <Section muted>
         <SectionHeading
+          eyebrow="Common Questions"
           title="Frequently asked questions"
           description="Everything providers ask before switching their revenue cycle over to us."
         />
@@ -214,23 +204,8 @@ export default async function RcmPage({ params }: { params: Promise<{ locale: Lo
         </Reveal>
       </Section>
 
-      {/* CTA */}
-      <section className="py-16 md:py-20">
-        <Container>
-          <div className="rounded-[var(--radius-xl)] bg-primary px-6 py-12 text-center text-primary-foreground md:px-12">
-            <h2 className="text-[length:var(--text-h2)] font-bold">Ready to improve your collections?</h2>
-            <p className="mx-auto mt-3 max-w-xl text-primary-foreground/85">
-              Get a free revenue cycle assessment and see where you&apos;re leaving money on the table.
-            </p>
-            <Link
-              href={localePath("/contact", locale)}
-              className={cn(buttonVariants({ size: "lg", variant: "secondary" }), "mt-7")}
-            >
-              Request a free assessment
-            </Link>
-          </div>
-        </Container>
-      </section>
+      {/* Standardized CTA */}
+      <AppointmentCTA dict={dict} locale={locale} />
     </>
   );
 }

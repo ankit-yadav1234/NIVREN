@@ -17,13 +17,13 @@ export interface HeroBannerData {
 export const heroBanners: HeroBannerData[] = [
   {
     id: "rcm-for-providers",
-    eyebrow: "For Healthcare Organizations",
+    eyebrow: "Healthcare Revenue Cycle Management",
     headingBefore: "Running a practice? ",
-    headingAccent: "We manage your revenue cycle",
+    headingAccent: "We optimize your revenue cycle",
     headingAfter: "",
-    body: "Beyond patient care, our RCM team partners with hospitals and clinics on coding, claims, and AR follow-up — so their staff spend less time on paperwork and more time with patients.",
+    body: "Beyond clinical excellence, our dedicated RCM team partners with hospitals, physician groups, and clinics on medical billing, clean claims coding, and denial recovery — accelerating reimbursements and maximizing collections.",
     icon: "BarChart3",
-    image: "https://images.unsplash.com/photo-1504813184591-01572f98c85f?auto=format&fit=crop&w=1200&q=80",
+    image: "/images/general/rcm-hero-banner.jpg",
     link: { label: "Explore RCM Services", href: "/rcm" },
     imageSide: "left",
   },

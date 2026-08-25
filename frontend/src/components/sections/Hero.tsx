@@ -46,18 +46,18 @@ export function Hero({
         className="absolute left-1/2 top-1/3 -z-10 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/25 blur-[120px]"
       />
 
-      <Container className="relative z-10 py-20 md:py-28">
-        <div className="mx-auto max-w-3xl text-center">
+      <Container className="relative z-10 py-20 sm:py-24 md:py-28 pt-40 sm:pt-48 md:pt-56">
+        <div className="mx-auto max-w-3xl text-center mt-2 sm:mt-4 md:mt-6">
           <span
             style={delay(0.05)}
-            className="animate-reveal inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-white/90 backdrop-blur"
+            className="animate-reveal inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-950/40 px-3.5 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-cyan-300 backdrop-blur-sm"
           >
-            <ShieldCheck className="h-3.5 w-3.5 text-primary" aria-hidden />
+            <ShieldCheck className="h-3.5 w-3.5 text-cyan-400" aria-hidden />
             {t.badge}
           </span>
-          <h1 className="mt-5 text-[length:var(--text-display)] font-bold leading-[1.05] tracking-tight text-white">
+          <h1 className="mt-6 font-serif text-[length:var(--text-display)] font-medium leading-[1.08] tracking-tight text-white">
             <RevealText
-              segments={[{ text: t.title }, { text: t.titleAccent, className: "text-primary" }]}
+              segments={[{ text: t.title }, { text: t.titleAccent, className: "text-cyan-400 font-serif" }]}
               baseDelay={0.15}
               step={0.05}
             />
@@ -80,7 +80,7 @@ export function Hero({
               {t.primaryAction}
             </Link>
             <Link
-              href={localePath("/appointment", locale)}
+              href={localePath("/contact", locale)}
               className={cn(
                 buttonVariants({ size: "lg", variant: "outline" }),
                 "border-white/40 bg-transparent text-white hover:bg-white/10 hover:text-white",
