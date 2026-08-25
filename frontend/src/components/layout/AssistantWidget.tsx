@@ -116,8 +116,18 @@ export function AssistantWidget() {
         type="button"
         aria-label={voiceOpen ? "Close AI Voice Agent" : "Open AI Voice Agent"}
         aria-pressed={voiceOpen}
-        onClick={() => (voiceOpen ? closeVoice() : openVoice())}
-        className="fixed bottom-24 end-5 z-40 h-14 w-14 rounded-full transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+        onClick={(e) => {
+          e.stopPropagation();
+          if (voiceOpen) {
+            closeVoice();
+          } else {
+            openVoice();
+          }
+        }}
+        className={cn(
+          "fixed bottom-24 end-5 h-14 w-14 rounded-full transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 cursor-pointer",
+          voiceOpen ? "z-60" : "z-40"
+        )}
       >
         <span
           aria-hidden
@@ -131,8 +141,8 @@ export function AssistantWidget() {
           style={{ backgroundImage: `url(${defaultAvatar.imageUrl})` }}
         >
           {voiceOpen && (
-            <span className="absolute inset-0 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs">
-              <X className="h-6 w-6 text-white" aria-hidden />
+            <span className="absolute inset-0 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs">
+              <X className="h-7 w-7 text-white" aria-hidden />
             </span>
           )}
         </span>

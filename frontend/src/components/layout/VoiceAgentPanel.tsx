@@ -86,17 +86,19 @@ export function VoiceAgentPanel({
             {/* Mute/Speaker Toggle Button (Embedded directly on image at bottom center) */}
             <button
               type="button"
-              onClick={voice.toggleMute}
-              disabled={voice.status !== "connected"}
+              onClick={(e) => {
+                e.stopPropagation();
+                voice.toggleMute();
+              }}
               aria-label={voice.muted ? "Unmute microphone" : "Mute microphone"}
               className={cn(
-                "absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex h-11 w-11 items-center justify-center rounded-full backdrop-blur-md transition-transform hover:scale-110 active:scale-95 shadow-lg disabled:opacity-40",
+                "absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex h-11 w-11 items-center justify-center rounded-full backdrop-blur-md transition-transform hover:scale-110 active:scale-95 shadow-xl cursor-pointer",
                 voice.muted
-                  ? "bg-red-500/85 text-white ring-2 ring-white/70"
-                  : "bg-black/60 text-white ring-1 ring-white/35 hover:bg-black/80"
+                  ? "bg-red-600 text-white ring-2 ring-white"
+                  : "bg-black/70 text-white ring-2 ring-white/50 hover:bg-black/90"
               )}
             >
-              {voice.muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+              {voice.muted ? <VolumeX className="h-5 w-5 text-white" /> : <Volume2 className="h-5 w-5 text-white" />}
             </button>
 
             {/* Dynamic Audio Visualizer Waves inside the Avatar */}
@@ -121,11 +123,15 @@ export function VoiceAgentPanel({
       </div>
 
       {/* Bottom SKIP Button */}
-      <div className="w-full flex justify-center pb-2">
+      <div className="w-full flex justify-center pb-2 z-30">
         <button
           type="button"
-          onClick={onClose}
-          className="rounded-full bg-slate-900/80 px-9 py-2.5 text-xs font-bold uppercase tracking-[0.22em] text-white/90 shadow-xl backdrop-blur-md transition-all hover:bg-slate-800 hover:scale-105 active:scale-95 border border-white/10"
+          onClick={(e) => {
+            e.stopPropagation();
+            voice.stop();
+            onClose();
+          }}
+          className="rounded-full bg-slate-900/90 px-9 py-2.5 text-xs font-bold uppercase tracking-[0.22em] text-white shadow-xl backdrop-blur-md transition-all hover:bg-slate-800 hover:scale-105 active:scale-95 border border-white/20 cursor-pointer"
         >
           SKIP
         </button>

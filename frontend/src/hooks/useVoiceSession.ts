@@ -41,34 +41,50 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
   const routeRef = React.useRef(route);
   routeRef.current = route;
 
-  /** Tears down the room/audio element without touching status — callers decide the resulting status. */
+  /** Tears down the room/audio element cleanly */
   const cleanup = React.useCallback(async () => {
     const room = roomRef.current;
     roomRef.current = null;
-    await room?.disconnect();
-    audioElRef.current?.remove();
-    audioElRef.current = null;
+    if (audioElRef.current) {
+      try {
+        audioElRef.current.pause();
+        audioElRef.current.srcObject = null;
+        audioElRef.current.remove();
+      } catch (_) {}
+      audioElRef.current = null;
+    }
+    try {
+      await room?.disconnect();
+    } catch (_) {}
     setAgentSpeaking(false);
     setAudioBlocked(false);
     setMuted(false);
+    setStatus("idle");
   }, []);
 
   /** Retries playback from inside a real click — the browser's fix for autoplay-blocked audio. */
   const enableAudio = React.useCallback(async () => {
+    if (audioElRef.current) {
+      audioElRef.current.play().catch(() => {});
+    }
     await roomRef.current?.startAudio();
   }, []);
 
   const toggleMute = React.useCallback(async () => {
-    const room = roomRef.current;
-    if (!room) return;
-    const enable = !room.localParticipant.isMicrophoneEnabled;
-    await room.localParticipant.setMicrophoneEnabled(enable);
-    setMuted(!enable);
+    setMuted((prev) => {
+      const nextMuted = !prev;
+      if (roomRef.current?.localParticipant) {
+        roomRef.current.localParticipant.setMicrophoneEnabled(!nextMuted).catch(() => {});
+      }
+      if (audioElRef.current) {
+        audioElRef.current.muted = nextMuted;
+      }
+      return nextMuted;
+    });
   }, []);
 
   const stop = React.useCallback(async () => {
     await cleanup();
-    setStatus("idle");
   }, [cleanup]);
 
   const start = React.useCallback(async () => {
