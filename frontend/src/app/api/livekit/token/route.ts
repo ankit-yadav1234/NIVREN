@@ -6,9 +6,9 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { room, identity } = body;
 
-    const apiKey = process.env.LIVEKIT_API_KEY;
-    const apiSecret = process.env.LIVEKIT_API_SECRET;
-    const wsUrl = process.env.LIVEKIT_URL;
+    const apiKey = process.env.LIVEKIT_API_KEY?.trim();
+    const apiSecret = process.env.LIVEKIT_API_SECRET?.trim();
+    const wsUrl = process.env.LIVEKIT_URL?.trim();
 
     if (!apiKey || !apiSecret || !wsUrl) {
       return NextResponse.json(

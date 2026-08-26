@@ -34,3 +34,5 @@ yarn-error.log*
 
 # Local git credential store (never commit tokens)
 .git-credentials
+
+.vercel
