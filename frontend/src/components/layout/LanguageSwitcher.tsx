@@ -7,6 +7,7 @@ import { locales, supportedLocales } from "@/config/locales";
 import type { Locale } from "@/types";
 import { useLocale } from "@/hooks/useLocale";
 import { cn } from "@/lib/utils/cn";
+import { trackEvent } from "@/lib/analytics";
 
 export function LanguageSwitcher() {
   const { locale } = useLocale();
@@ -28,6 +29,7 @@ export function LanguageSwitcher() {
     segments[1] = next; // first segment after leading slash is the locale
     router.push(segments.join("/") || "/");
     setOpen(false);
+    trackEvent({ name: "language_change", locale: next });
   };
 
   return (

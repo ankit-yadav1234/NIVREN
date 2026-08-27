@@ -1,6 +1,21 @@
 import type { Dictionary } from "../schema";
 
 export const ar: Dictionary = {
+  assistant: {
+    openVoice: "افتح مساعد الصوت الذكي",
+    closeVoice: "أغلق مساعد الصوت الذكي",
+    openChat: "افتح مساعد الدردشة",
+    closeChat: "أغلق مساعد الدردشة",
+    dialogLabel: "مساعد NIVREN للدردشة",
+    title: "مساعد NIVREN",
+    emptyHint:
+      'اسألني عن الأقسام أو خدمات إدارة دورة الإيرادات، أو قل شيئًا مثل "افتح صفحة الخدمات" أو "احجز موعدًا". أو اضغط على زر الصورة الرمزية أعلاه للتحدث صوتيًا!',
+    thinking: "أفكر…",
+    errorMessage: "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    inputPlaceholder: "اطرح سؤالاً…",
+    sendLabel: "إرسال الرسالة",
+    doneFallback: "تم.",
+  },
   common: {
     nav: {
       home: "الرئيسية",
@@ -212,6 +227,19 @@ export const ar: Dictionary = {
       phone: "رقم الهاتف",
       message: "الرسالة",
       send: "إرسال الرسالة",
+      interestLabel: "بخصوص ماذا تتواصل معنا؟",
+      interestOptions: [
+        { value: "", label: "اختر خيارًا" },
+        { value: "patient-care", label: "رعاية المرضى / المواعيد" },
+        { value: "rcm", label: "إدارة دورة الإيرادات (لمقدمي الرعاية)" },
+        { value: "billing", label: "سؤال عن الفوترة أو التأمين" },
+        { value: "general", label: "استفسار عام" },
+      ],
+      validation: {
+        nameRequired: "يرجى إدخال اسمك.",
+        emailInvalid: "يرجى إدخال بريد إلكتروني صحيح.",
+        messageMinLength: "يرجى إدخال 10 أحرف على الأقل.",
+      },
     },
     info: { address: "العنوان", phone: "الهاتف", email: "البريد الإلكتروني", hours: "ساعات العمل" },
     success: "شكرًا لتواصلك معنا! سنعاود الاتصال بك قريبًا.",

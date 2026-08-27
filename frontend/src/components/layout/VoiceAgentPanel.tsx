@@ -1,20 +1,34 @@
 "use client";
 
 import * as React from "react";
-import { Volume2, VolumeX, Loader2 } from "lucide-react";
+import { Volume2, VolumeX, Loader2, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-import type { useVoiceSession } from "@/hooks/useVoiceSession";
+import type { useVoiceSession, ConsultationField } from "@/hooks/useVoiceSession";
 import { AVATAR_CONFIG } from "@/config/avatar";
 
 type VoiceSession = ReturnType<typeof useVoiceSession>;
 
+const FORM_FIELD_LABELS: Record<ConsultationField, string> = {
+  name: "Name",
+  phone: "Phone",
+  email: "Email",
+  service: "Service",
+  message: "Message",
+};
+const FORM_FIELD_ORDER: ConsultationField[] = ["name", "phone", "email", "service", "message"];
+
 export function VoiceAgentPanel({
   voice,
   onClose,
+  form,
+  formSubmitted,
 }: {
   voice: VoiceSession;
   onClose: () => void;
+  form?: Partial<Record<ConsultationField, string>>;
+  formSubmitted?: boolean;
 }) {
+  const filledFields = FORM_FIELD_ORDER.filter((f) => form?.[f]);
   React.useEffect(() => {
     if (voice.status === "idle") {
       voice.start();
@@ -121,6 +135,29 @@ export function VoiceAgentPanel({
           </button>
         )}
       </div>
+
+      {/* Live consultation form — fills in as the agent collects each field via voice */}
+      {filledFields.length > 0 && (
+        <div className="mb-3 w-full max-w-xs rounded-2xl border border-white/15 bg-slate-900/85 p-4 shadow-xl backdrop-blur-md">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/60">Consultation Request</span>
+            {formSubmitted && (
+              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-emerald-400">
+                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+                Submitted
+              </span>
+            )}
+          </div>
+          <dl className="space-y-1.5">
+            {filledFields.map((field) => (
+              <div key={field} className="flex items-baseline gap-2 text-sm">
+                <dt className="w-16 shrink-0 text-white/50">{FORM_FIELD_LABELS[field]}</dt>
+                <dd className="truncate font-medium text-white">{form?.[field]}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
 
       {/* Bottom SKIP Button */}
       <div className="w-full flex justify-center pb-2 z-30">

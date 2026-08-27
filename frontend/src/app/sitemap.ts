@@ -1,37 +1,44 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/config/site";
 import { supportedLocales } from "@/config/locales";
-import { getDoctorSlugs } from "@/lib/api/doctors";
+import { getRcmServiceSlugs } from "@/lib/api/rcm";
 import { getDepartmentSlugs } from "@/lib/api/departments";
-import { getServiceSlugs } from "@/lib/api/services";
-import { getLocationSlugs } from "@/lib/api/locations";
 
+/**
+ * Only the pages that are actually live for the current RCM-provider
+ * business — the old patient-facing pages (doctors, locations, patient
+ * services, appointment) are dormant (see siteConfig.features) and marked
+ * noindex in their own metadata, so they're deliberately left out here too.
+ */
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPaths = [
-    "",
-    "/doctors",
-    "/departments",
-    "/services",
-    "/locations",
-    "/appointment",
-    "/about",
-    "/contact",
+    { path: "", priority: 1 },
+    { path: "/rcm", priority: 0.9 },
+    { path: "/who-we-serve", priority: 0.8 },
+    { path: "/departments", priority: 0.7 },
+    { path: "/case-studies", priority: 0.7 },
+    { path: "/about", priority: 0.6 },
+    { path: "/about/leadership", priority: 0.5 },
+    { path: "/about/careers", priority: 0.5 },
+    { path: "/faq", priority: 0.6 },
+    { path: "/contact", priority: 0.8 },
   ];
 
   const dynamicPaths = [
-    ...getDoctorSlugs().map((s) => `/doctors/${s}`),
-    ...getDepartmentSlugs().map((s) => `/departments/${s}`),
-    ...getServiceSlugs().map((s) => `/services/${s}`),
-    ...getLocationSlugs().map((s) => `/locations/${s}`),
+    ...getRcmServiceSlugs().map((s) => ({ path: `/rcm/${s}`, priority: 0.8 })),
+    ...getDepartmentSlugs().map((s) => ({ path: `/departments/${s}`, priority: 0.6 })),
   ];
 
   const all = [...staticPaths, ...dynamicPaths];
 
   return supportedLocales.flatMap((locale) =>
-    all.map((path) => ({
+    all.map(({ path, priority }) => ({
       url: `${siteConfig.url}/${locale}${path}`,
       changeFrequency: "weekly" as const,
-      priority: path === "" ? 1 : 0.7,
+      priority,
+      alternates: {
+        languages: Object.fromEntries(supportedLocales.map((l) => [l, `${siteConfig.url}/${l}${path}`])),
+      },
     })),
   );
 }

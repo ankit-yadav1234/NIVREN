@@ -13,7 +13,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const dict = getContent(locale);
-  return buildMetadata({ title: dict.common.nav.accessibilityStatement, path: "/accessibility" });
+  return buildMetadata({ locale, title: dict.common.nav.accessibilityStatement, path: "/accessibility" });
 }
 
 export default async function AccessibilityPage({ params }: { params: Promise<{ locale: Locale }> }) {

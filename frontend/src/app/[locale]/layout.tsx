@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { notFound } from "next/navigation";
 import "../globals.css";
 import { inter, besley, notoDevanagari, notoArabic } from "../fonts";
@@ -21,6 +22,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: { default: seoConfig.defaultTitle, template: seoConfig.titleTemplate },
   description: seoConfig.defaultDescription,
+  // Only emits the <meta name="google-site-verification"> tag once the real
+  // code from Search Console is set — never a placeholder.
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
 };
 
 export function generateStaticParams() {
@@ -68,6 +74,10 @@ export default async function LocaleLayout({
             </LocaleProvider>
           </QueryProvider>
         </ThemeProvider>
+        {/* No fake Measurement ID — analytics only loads once a real GA4 ID is configured. */}
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+        )}
       </body>
     </html>
   );

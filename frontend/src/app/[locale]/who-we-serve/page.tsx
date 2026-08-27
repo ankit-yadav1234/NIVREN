@@ -20,8 +20,9 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: Locale }>;
 }): Promise<Metadata> {
-  await params;
+  const { locale } = await params;
   return buildMetadata({
+    locale,
     title: "Who We Serve",
     description: "RCM support built for hospitals, physician groups, clinics, and healthcare organizations of every size.",
     path: "/who-we-serve",

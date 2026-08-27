@@ -84,8 +84,9 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: Locale }>;
 }): Promise<Metadata> {
-  await params;
+  const { locale } = await params;
   return buildMetadata({
+    locale,
     title: "Revenue Cycle Management",
     description:
       "End-to-end RCM services — medical billing, coding, denial management, AR follow-up, credentialing and analytics that help providers collect more, faster.",

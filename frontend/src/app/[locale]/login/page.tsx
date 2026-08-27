@@ -11,7 +11,7 @@ export async function generateMetadata({
   params: Promise<{ locale: Locale }>;
 }): Promise<Metadata> {
   await params;
-  return { title: "Sign In" };
+  return { title: "Sign In", robots: { index: false, follow: false } };
 }
 
 export default async function LoginPage({

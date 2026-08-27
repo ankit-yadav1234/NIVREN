@@ -24,8 +24,9 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: Locale }>;
 }): Promise<Metadata> {
-  await params;
+  const { locale } = await params;
   return buildMetadata({
+    locale,
     title: "Careers",
     description: "Join the team behind NIVREN's revenue cycle operations.",
     path: "/about/careers",

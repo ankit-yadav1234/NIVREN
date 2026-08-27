@@ -13,7 +13,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const dict = getContent(locale);
-  return buildMetadata({ title: dict.common.nav.medicalDisclaimer, path: "/disclaimer" });
+  return buildMetadata({ locale, title: dict.common.nav.medicalDisclaimer, path: "/disclaimer" });
 }
 
 export default async function DisclaimerPage({ params }: { params: Promise<{ locale: Locale }> }) {

@@ -15,7 +15,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const dict = getContent(locale);
-  return buildMetadata({ title: dict.locations.title, description: dict.locations.subtitle, path: "/locations" });
+  return buildMetadata({ locale, title: dict.locations.title, description: dict.locations.subtitle, path: "/locations", noindex: true });
 }
 
 export default async function LocationsPage({

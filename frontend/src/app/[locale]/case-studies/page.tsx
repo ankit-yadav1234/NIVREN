@@ -19,8 +19,9 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: Locale }>;
 }): Promise<Metadata> {
-  await params;
+  const { locale } = await params;
   return buildMetadata({
+    locale,
     title: "Case Studies",
     description: "Real revenue cycle outcomes from providers who partnered with NIVREN.",
     path: "/case-studies",

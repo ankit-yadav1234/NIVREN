@@ -20,7 +20,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const dict = getContent(locale);
-  return buildMetadata({ title: dict.contact.title, description: dict.contact.subtitle, path: "/contact" });
+  return buildMetadata({ locale, title: dict.contact.title, description: dict.contact.subtitle, path: "/contact" });
 }
 
 export default async function ContactPage({

@@ -1,6 +1,21 @@
 import type { Dictionary } from "../schema";
 
 export const hi: Dictionary = {
+  assistant: {
+    openVoice: "AI वॉइस एजेंट खोलें",
+    closeVoice: "AI वॉइस एजेंट बंद करें",
+    openChat: "चैट असिस्टेंट खोलें",
+    closeChat: "चैट असिस्टेंट बंद करें",
+    dialogLabel: "NIVREN चैट असिस्टेंट",
+    title: "NIVREN असिस्टेंट",
+    emptyHint:
+      'हमारी सेवाओं या RCM सेवाओं के बारे में पूछें, या ऐसा कुछ कहें: "सेवाएं पेज खोलो" या "अपॉइंटमेंट बुक करो"। या ऊपर वॉइस के लिए अवतार बटन दबाएं!',
+    thinking: "सोच रहा हूँ…",
+    errorMessage: "कुछ गलत हो गया। कृपया दोबारा प्रयास करें।",
+    inputPlaceholder: "एक सवाल पूछें…",
+    sendLabel: "संदेश भेजें",
+    doneFallback: "हो गया।",
+  },
   common: {
     nav: {
       home: "होम",
@@ -212,6 +227,19 @@ export const hi: Dictionary = {
       phone: "फ़ोन नंबर",
       message: "संदेश",
       send: "संदेश भेजें",
+      interestLabel: "आप किस बारे में संपर्क कर रहे हैं?",
+      interestOptions: [
+        { value: "", label: "एक विकल्प चुनें" },
+        { value: "patient-care", label: "रोगी देखभाल / अपॉइंटमेंट" },
+        { value: "rcm", label: "रेवेन्यू साइकल मैनेजमेंट (प्रदाताओं के लिए)" },
+        { value: "billing", label: "बिलिंग या बीमा प्रश्न" },
+        { value: "general", label: "सामान्य पूछताछ" },
+      ],
+      validation: {
+        nameRequired: "कृपया अपना नाम दर्ज करें।",
+        emailInvalid: "कृपया एक मान्य ईमेल दर्ज करें।",
+        messageMinLength: "कृपया कम से कम 10 अक्षर दर्ज करें।",
+      },
     },
     info: { address: "पता", phone: "फ़ोन", email: "ईमेल", hours: "समय" },
     success: "संपर्क करने के लिए धन्यवाद! हम शीघ्र ही आपसे संपर्क करेंगे।",

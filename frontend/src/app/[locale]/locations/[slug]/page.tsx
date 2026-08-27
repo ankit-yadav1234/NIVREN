@@ -25,10 +25,10 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: Locale; slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const location = await getLocationBySlug(slug);
   if (!location) return {};
-  return getLocationMetadata(location);
+  return getLocationMetadata(location, locale);
 }
 
 export default async function LocationDetailPage({

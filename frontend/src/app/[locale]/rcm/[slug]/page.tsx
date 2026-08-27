@@ -25,10 +25,11 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: Locale; slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const service = await getRcmServiceBySlug(slug);
   if (!service) return {};
   return buildMetadata({
+    locale,
     title: service.title,
     description: service.description,
     path: `/rcm/${service.slug}`,

@@ -1,6 +1,21 @@
 import type { Dictionary } from "../schema";
 
 export const en: Dictionary = {
+  assistant: {
+    openVoice: "Open AI Voice Agent",
+    closeVoice: "Close AI Voice Agent",
+    openChat: "Open chat assistant",
+    closeChat: "Close chat assistant",
+    dialogLabel: "NIVREN Chat Assistant",
+    title: "NIVREN Assistant",
+    emptyHint:
+      'Ask me about departments, RCM services, or say things like "open the services page" or "book an appointment". Or tap the avatar button above to talk via voice!',
+    thinking: "Thinking…",
+    errorMessage: "Something went wrong. Please try again.",
+    inputPlaceholder: "Ask a question…",
+    sendLabel: "Send message",
+    doneFallback: "Done.",
+  },
   common: {
     nav: {
       home: "Home",
@@ -212,6 +227,19 @@ export const en: Dictionary = {
       phone: "Phone Number",
       message: "Message",
       send: "Send Message",
+      interestLabel: "What are you reaching out about?",
+      interestOptions: [
+        { value: "", label: "Select an option" },
+        { value: "patient-care", label: "Patient Care / Appointments" },
+        { value: "rcm", label: "Revenue Cycle Management (for providers)" },
+        { value: "billing", label: "Billing or Insurance Question" },
+        { value: "general", label: "General Inquiry" },
+      ],
+      validation: {
+        nameRequired: "Please enter your name.",
+        emailInvalid: "Please enter a valid email.",
+        messageMinLength: "Please enter at least 10 characters.",
+      },
     },
     info: { address: "Address", phone: "Phone", email: "Email", hours: "Hours" },
     success: "Thanks for reaching out! We'll get back to you soon.",

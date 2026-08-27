@@ -20,10 +20,10 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: Locale; slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const doctor = await getDoctorBySlug(slug);
   if (!doctor) return {};
-  return getDoctorMetadata(doctor);
+  return getDoctorMetadata(doctor, locale);
 }
 
 export default async function DoctorDetailPage({

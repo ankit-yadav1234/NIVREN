@@ -8,6 +8,7 @@ import { localePath, telHref } from "@/lib/utils/format";
 import { localizeNav } from "@/lib/utils/nav";
 import { Container } from "@/components/ui/Container";
 import { buttonVariants } from "@/components/ui/Button";
+import { TrackedContactLink } from "./TrackedContactLink";
 
 const socialIcons = { facebook: Facebook, instagram: Instagram, linkedin: Linkedin, youtube: Youtube };
 
@@ -67,14 +68,22 @@ export function Footer({ locale }: { locale: Locale }) {
             <h3 className="mb-3 text-sm font-semibold">{dict.common.footer.contactUs}</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <a href={telHref(siteConfig.phone)} className="inline-flex items-center gap-2 hover:text-primary">
+                <TrackedContactLink
+                  method="phone"
+                  href={telHref(siteConfig.phone)}
+                  className="inline-flex items-center gap-2 hover:text-primary"
+                >
                   <Phone className="h-4 w-4" aria-hidden /> {siteConfig.phone}
-                </a>
+                </TrackedContactLink>
               </li>
               <li>
-                <a href={`mailto:${siteConfig.email}`} className="inline-flex items-center gap-2 hover:text-primary">
+                <TrackedContactLink
+                  method="email"
+                  href={`mailto:${siteConfig.email}`}
+                  className="inline-flex items-center gap-2 hover:text-primary"
+                >
                   <Mail className="h-4 w-4" aria-hidden /> {siteConfig.email}
-                </a>
+                </TrackedContactLink>
               </li>
             </ul>
             <h3 className="mb-3 mt-6 text-sm font-semibold">{dict.common.footer.legal}</h3>

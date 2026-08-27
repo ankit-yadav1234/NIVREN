@@ -24,10 +24,10 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: Locale; slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const service = await getServiceBySlug(slug);
   if (!service) return {};
-  return getServiceMetadata(service);
+  return getServiceMetadata(service, locale);
 }
 
 export default async function ServiceDetailPage({

@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle2 } from "lucide-react";
 import type { Dictionary } from "@/content/schema";
-import { contactSchema, type ContactFormValues } from "@/lib/validation/contact";
+import { createContactSchema, type ContactFormValues } from "@/lib/validation/contact";
 import { submitContactMessage } from "@/lib/api/contact";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -14,23 +14,16 @@ import { Button } from "@/components/ui/Button";
 import { FormField, FormLabel, FormError } from "@/components/ui/FormField";
 import { ErrorState } from "@/components/ui/states";
 
-const INTEREST_OPTIONS = [
-  { value: "", label: "Select an option" },
-  { value: "patient-care", label: "Patient Care / Appointments" },
-  { value: "rcm", label: "Revenue Cycle Management (for providers)" },
-  { value: "billing", label: "Billing or Insurance Question" },
-  { value: "general", label: "General Inquiry" },
-];
-
 export function ContactForm({ dict }: { dict: Dictionary }) {
   const t = dict.contact;
   const [sent, setSent] = React.useState(false);
   const [submitError, setSubmitError] = React.useState(false);
+  const schema = React.useMemo(() => createContactSchema(dict), [dict]);
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<ContactFormValues>({ resolver: zodResolver(contactSchema) });
+  } = useForm<ContactFormValues>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (values: ContactFormValues) => {
     setSubmitError(false);
@@ -91,9 +84,9 @@ export function ContactForm({ dict }: { dict: Dictionary }) {
           <Input id="c-phone" type="tel" {...register("phone")} />
         </FormField>
         <FormField>
-          <FormLabel htmlFor="c-interest">What are you reaching out about?</FormLabel>
+          <FormLabel htmlFor="c-interest">{t.form.interestLabel}</FormLabel>
           <Select id="c-interest" {...register("interest")}>
-            {INTEREST_OPTIONS.map((o) => (
+            {t.form.interestOptions.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
               </option>

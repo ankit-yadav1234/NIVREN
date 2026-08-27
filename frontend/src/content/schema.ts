@@ -4,6 +4,20 @@
  * from this via getContent(locale) — never hard-coded strings.
  */
 export interface Dictionary {
+  assistant: {
+    openVoice: string;
+    closeVoice: string;
+    openChat: string;
+    closeChat: string;
+    dialogLabel: string;
+    title: string;
+    emptyHint: string;
+    thinking: string;
+    errorMessage: string;
+    inputPlaceholder: string;
+    sendLabel: string;
+    doneFallback: string;
+  };
   common: {
     nav: {
       home: string;
@@ -142,7 +156,16 @@ export interface Dictionary {
   contact: {
     title: string;
     subtitle: string;
-    form: { name: string; email: string; phone: string; message: string; send: string };
+    form: {
+      name: string;
+      email: string;
+      phone: string;
+      message: string;
+      send: string;
+      interestLabel: string;
+      interestOptions: { value: string; label: string }[];
+      validation: { nameRequired: string; emailInvalid: string; messageMinLength: string };
+    };
     info: { address: string; phone: string; email: string; hours: string };
     success: string;
   };

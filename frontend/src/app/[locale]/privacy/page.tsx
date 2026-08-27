@@ -13,7 +13,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const dict = getContent(locale);
-  return buildMetadata({ title: dict.common.nav.privacyPolicy, path: "/privacy" });
+  return buildMetadata({ locale, title: dict.common.nav.privacyPolicy, path: "/privacy" });
 }
 
 export default async function PrivacyPage({ params }: { params: Promise<{ locale: Locale }> }) {

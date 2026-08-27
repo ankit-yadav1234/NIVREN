@@ -7,6 +7,7 @@ import { AccessToken } from 'livekit-server-sdk';
 import { retrieveContext, warmIndex } from './ai/rag';
 import { toolDeclarations, toClientAction, type ClientAction } from './ai/tools';
 import { sectionsForRoute } from './ai/pageSections';
+import { buildTextSystemInstruction } from './ai/prompt';
 
 dotenv.config();
 
@@ -147,21 +148,8 @@ app.post('/api/contact', (req: Request, res: Response) => {
 function buildSystemInstruction(pageContext?: { route?: string; title?: string }): string {
   const route = pageContext?.route || "/";
   const sections = sectionsForRoute(route);
-  return (
-    "You are Dr. Dylan, the AI Healthcare & Revenue Cycle Management (RCM) specialist for NIVREN. " +
-    "NIVREN is a specialized technology-driven Healthcare Revenue Cycle Management partner — providing end-to-end " +
-    "medical billing, certified coding, denial management, AR recovery, provider credentialing, and revenue analytics for hospitals, clinics, and physician practices.\n\n" +
-    "Rules:\n" +
-    "- Use the search_knowledge tool before answering specific factual questions about NIVREN.\n" +
-    "- Use the navigate tool when the user explicitly asks to go to a different page.\n" +
-    "- Use the request_consultation tool whenever the user wants to get started, book an appointment, or request a free RCM assessment.\n" +
-    "- Use the scroll_to_section tool when the user asks to jump to a specific part of the CURRENT page.\n" +
-    "- Be concise, helpful, and professional." +
-    (pageContext?.route ? `\nThe user is currently on: ${pageContext.route}${pageContext.title ? ` ("${pageContext.title}")` : ""}.` : "") +
-    (sections.length
-      ? `\nSections available on this page:\n${sections.map((s) => `- ${s.id}: ${s.label}`).join("\n")}`
-      : "")
-  );
+  const sectionsBlock = sections.length ? sections.map((s) => `- ${s.id}: ${s.label}`).join("\n") : undefined;
+  return buildTextSystemInstruction(pageContext, sectionsBlock);
 }
 
 interface AIChatRequestBody {

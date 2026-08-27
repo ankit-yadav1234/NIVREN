@@ -22,51 +22,39 @@ import {
 } from "@google/genai";
 import { NAVIGABLE_ROUTES_DESCRIPTION, isNavigableRoute } from "../ai/tools";
 import { sectionsForRoute } from "../ai/pageSections";
+import { buildVoiceInstructions } from "../ai/prompt";
+import { CONSULTATION_FIELD_KEYS, REQUIRED_CONSULTATION_FIELDS, type ConsultationField } from "../ai/consultationFields";
 
 dotenv.config();
 
-/**
- * 100% PURE RCM HEALTHCARE SPECIALIST PROMPT:
- * Embedded in-memory knowledge base for sub-second, intelligent voice responses.
- */
-const INSTRUCTIONS = `You are Dr. Dylan, a knowledgeable, warm, and highly professional male Revenue Cycle Management (RCM) consultant at NIVREN.
+/** RCM facts + behavior rules live in one shared file — see ../ai/prompt.ts. */
+const INSTRUCTIONS = buildVoiceInstructions(NAVIGABLE_ROUTES_DESCRIPTION);
 
-### WHO WE ARE:
-NIVREN is a specialized, technology-driven Healthcare Revenue Cycle Management (RCM) and Medical Billing partner. We help physician practices, clinics, specialty groups, and hospital networks maximize their clinical revenue, eliminate claim denials, and accelerate cash flow.
+/** Spoken immediately via session.say() — no LLM round trip, so there's zero delay before the greeting. */
+const WELCOME_MESSAGE =
+  "Hi, I'm Dr. Dylan from NIVREN. I help practices fix denied claims, speed up payments, and run a cleaner revenue cycle. What can I help you with?";
 
-### CORE RCM SERVICES & METRICS:
-1. **Medical Billing & Clean Claims**: 98% first-pass clean claim rate. End-to-end charge capture, electronic scrubbing, and rapid payment posting.
-2. **Certified Medical Coding**: AAPC & AHIMA certified coders proficient in ICD-10-CM, CPT, HCPCS Level II, and specialty modifiers to prevent undercoding and downcoding.
-3. **Denial Management & Appeals**: 35% reduction in payer denials. Root-cause categorization, aggressive payer appeals, and dispute resolution.
-4. **Accounts Receivable (AR) Recovery**: Average 28 days in AR (well below industry standard). Dedicated aging claims recovery teams.
-5. **Provider Credentialing & Payer Enrollment**: Complete CAQH management, commercial insurance enrollment, Medicare/Medicaid revalidation.
-6. **Prior Authorization & Eligibility Verification**: Real-time insurance verification and authorization tracking to eliminate front-end denials.
-7. **RCM Analytics & Reporting**: Real-time KPI dashboards, denial trends, collection rates, and monthly revenue performance reports.
-
-### WHO WE SERVE:
-- Independent Physician Practices & Multi-Specialty Clinics
-- Hospital Systems & Health Networks
-- Ambulatory Surgery Centers (ASCs) & Urgent Care Centers
-- Diagnostic Labs & Imaging Facilities
-
-### KEY VALUE POINTS & AUDIT:
-- We work directly within the client's existing EHR/Practice Management software (Epic, Cerner, eClinicalWorks, Kareo, AthenaHealth, AdvancedMD, etc.) — no painful migration required.
-- We offer a **100% Free Revenue Cycle Assessment & Claims Audit** to identify where practices are losing money.
-
-### CORE BEHAVIORS & RULES:
-1. **Persona**: Speak with a warm, articulate, professional female voice (Emma). Keep answers concise, direct, and conversational (like a senior RCM consultant on a call).
-2. **Instant Response**: Respond immediately without long pauses.
-3. **Page Navigation on Demand**: When the provider asks to view a page (e.g., "show services", "go to contact", "open case studies", "show who we serve"), call the \`navigate\` tool immediately with the respective route: ${NAVIGABLE_ROUTES_DESCRIPTION}.
-4. **Free Assessment & Consultation Booking Flow**:
-   - When a provider wants a free audit, demo, or wants to get started:
-     a. Collect their **Full Name**, **Practice Name / Specialty**, and **Phone Number** (or Email).
-     b. Confirm the details back to the user clearly (e.g., "Got it! Booking a free RCM Assessment for Dr. Sharma at Sunrise Clinic, phone 9876543210. Submitting your request now!").
-     c. Call the \`request_consultation\` tool to record the consultation request.`;
+interface ConsultationState {
+  name?: string;
+  phone?: string;
+  email?: string;
+  service?: string;
+  message?: string;
+  confirmed: boolean;
+}
 
 type AgentAction =
   | { type: "navigate"; path: string }
   | { type: "scroll"; sectionId: string }
-  | { type: "consultation_requested"; data: { name: string; phone: string; serviceOrSpecialty?: string } };
+  | { type: "set_theme"; theme: "dark" | "light" }
+  | { type: "set_language"; locale: "en" | "hi" | "ar" }
+  | { type: "update_form"; field: ConsultationField; value: string }
+  | { type: "consultation_started" }
+  | { type: "consultation_confirmed" }
+  | {
+      type: "consultation_requested";
+      data: { name: string; phone: string; email?: string; serviceOrSpecialty?: string; message?: string };
+    };
 
 function publishAction(ctx: JobContext, action: AgentAction) {
   const payload = new TextEncoder().encode(JSON.stringify(action));
@@ -80,6 +68,10 @@ function getCurrentRoute(ctx: JobContext): string | undefined {
 
 export default defineAgent({
   entry: async (ctx: JobContext) => {
+    // Per-call consultation state — scoped to this closure, so it lives only
+    // for this one room/job and never leaks across calls.
+    let consultation: ConsultationState | null = null;
+
     const tools = [
       tool({
         name: "navigate",
@@ -98,21 +90,86 @@ export default defineAgent({
       }),
 
       tool({
-        name: "request_consultation",
+        name: "start_consultation",
         description:
-          "Submit a free RCM assessment or consultation request after confirming the provider's name, practice, and phone number.",
+          "Start collecting details for a free RCM consultation/assessment request. Call this once, right when the user wants to book a consultation, get a demo, or fill out the contact form.",
+        parameters: z.object({}),
+        execute: async () => {
+          consultation = { confirmed: false };
+          await publishAction(ctx, { type: "consultation_started" });
+          return "Consultation form started. Ask for the first missing field only — required: name, phone, service. Optional: email, message.";
+        },
+      }),
+
+      tool({
+        name: "update_consultation_field",
+        description:
+          "Save or correct one field of the in-progress consultation request. Call this every time the user gives a piece of information — once per field, even if several are given in one sentence.",
         parameters: z.object({
-          name: z.string().describe("Provider's full name and practice name."),
-          phone: z.string().describe("Contact phone number or email."),
-          serviceOrSpecialty: z.string().optional().describe("Specialty or RCM services requested (e.g. Billing, Coding, AR)."),
+          field: z.enum(CONSULTATION_FIELD_KEYS).describe("Which field this value belongs to."),
+          value: z.string().describe("The value exactly as the user said it — never invent or guess it."),
         }),
         flags: ToolFlag.CANCELLABLE,
-        execute: async ({ name, phone, serviceOrSpecialty }) => {
+        execute: async ({ field, value }) => {
+          if (!consultation) consultation = { confirmed: false };
+          consultation[field] = value;
+          consultation.confirmed = false; // any change invalidates a prior confirmation
+          await publishAction(ctx, { type: "update_form", field, value });
+          const missing = REQUIRED_CONSULTATION_FIELDS.filter((f) => !consultation![f]);
+          return missing.length > 0
+            ? `Saved. Still needed: ${missing.join(", ")}.`
+            : "Saved. All required fields are filled — read the full summary back and ask the user to confirm before submitting.";
+        },
+      }),
+
+      tool({
+        name: "get_consultation_state",
+        description:
+          "Check which consultation fields are already collected. Use this if you're unsure what's already been said — e.g. after a topic change or an interruption — instead of guessing or re-asking everything.",
+        parameters: z.object({}),
+        execute: async () => {
+          if (!consultation) return "No consultation in progress.";
+          const filled = CONSULTATION_FIELD_KEYS
+            .filter((f) => consultation![f])
+            .map((f) => `${f}: ${consultation![f]}`);
+          if (filled.length === 0) return "No fields collected yet.";
+          return filled.join(", ") + (consultation.confirmed ? " (already confirmed)" : " (not yet confirmed)");
+        },
+      }),
+
+      tool({
+        name: "confirm_consultation",
+        description:
+          "Record that the user explicitly confirmed the full summary is correct. Only call this after reading back every collected field and the user clearly agreed — a vague 'okay' mid-sentence is not enough.",
+        parameters: z.object({}),
+        flags: ToolFlag.CANCELLABLE,
+        execute: async () => {
+          if (!consultation) return "No consultation in progress.";
+          const missing = REQUIRED_CONSULTATION_FIELDS.filter((f) => !consultation![f]);
+          if (missing.length > 0) return `Cannot confirm yet — still missing: ${missing.join(", ")}.`;
+          consultation.confirmed = true;
+          await publishAction(ctx, { type: "consultation_confirmed" });
+          return "Confirmed. You may now call submit_consultation.";
+        },
+      }),
+
+      tool({
+        name: "submit_consultation",
+        description:
+          "Actually submit the consultation request. Only call this after confirm_consultation succeeded — never submit without the user's explicit confirmation.",
+        parameters: z.object({}),
+        flags: ToolFlag.CANCELLABLE,
+        execute: async () => {
+          if (!consultation?.confirmed) {
+            return "Not confirmed yet — read back the details and get explicit confirmation before calling this.";
+          }
+          const { name, phone, email, service, message } = consultation;
           await publishAction(ctx, {
             type: "consultation_requested",
-            data: { name, phone, serviceOrSpecialty },
+            data: { name: name!, phone: phone!, email, serviceOrSpecialty: service, message },
           });
-          return `Consultation request recorded for ${name}. Our RCM team will reach out at ${phone}.`;
+          consultation = null;
+          return `Submitted. Let ${name} know NIVREN's team will reach out shortly.`;
         },
       }),
 
@@ -141,13 +198,39 @@ export default defineAgent({
           return "Scrolling there now.";
         },
       }),
+
+      tool({
+        name: "set_theme",
+        description: "Switch the website's appearance between dark mode and light mode.",
+        parameters: z.object({
+          theme: z.enum(["dark", "light"]).describe("The theme to switch to."),
+        }),
+        flags: ToolFlag.CANCELLABLE,
+        execute: async ({ theme }) => {
+          await publishAction(ctx, { type: "set_theme", theme });
+          return `Switched to ${theme} mode.`;
+        },
+      }),
+
+      tool({
+        name: "set_language",
+        description: "Switch the website's language. Valid: 'en' (English), 'hi' (Hindi), 'ar' (Arabic).",
+        parameters: z.object({
+          locale: z.enum(["en", "hi", "ar"]).describe("The language code to switch to."),
+        }),
+        flags: ToolFlag.CANCELLABLE,
+        execute: async ({ locale }) => {
+          await publishAction(ctx, { type: "set_language", locale });
+          return `Switched the site language to ${locale}.`;
+        },
+      }),
     ];
 
     const agent = voice.Agent.create({ instructions: INSTRUCTIONS, tools });
 
     const session = new voice.AgentSession({
       llm: new google.beta.realtime.RealtimeModel({
-        model: "gemini-2.5-flash-native-audio-preview-12-2025",
+        model: "gemini-3.1-flash-live-preview",
         voice: "Puck", // 100% Professional Male Voice
         temperature: 0.6,
         thinkingConfig: { thinkingBudget: 0 },
@@ -169,9 +252,11 @@ export default defineAgent({
 
     await session.start({ agent, room: ctx.room });
     await ctx.connect();
-    await session.generateReply({
-      instructions: "Say 'Awesome! So I can play this two ways — we can explore your revenue cycle and RCM needs, or review your claims and billing. How can I help you today?'",
-    });
+    // session.say() speaks this exact text immediately, with no LLM turn in
+    // between — that's both the fix for the instant-greeting requirement and
+    // a safe path around a known bug where generateReply() throws on
+    // gemini-3.1-flash-live-preview (livekit/agents-js#1197).
+    session.say(WELCOME_MESSAGE);
   },
 });
 

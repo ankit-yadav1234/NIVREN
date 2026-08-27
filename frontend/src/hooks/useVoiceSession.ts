@@ -3,13 +3,24 @@
 import * as React from "react";
 import { Room, RoomEvent, Track, type RemoteTrack } from "livekit-client";
 import { getLiveKitToken } from "@/lib/api/livekit";
+import { trackEvent } from "@/lib/analytics";
 
 export type VoiceStatus = "idle" | "connecting" | "connected" | "error";
+
+export type ConsultationField = "name" | "phone" | "email" | "service" | "message";
 
 export type VoiceAgentAction =
   | { type: "navigate"; path: string }
   | { type: "scroll"; sectionId: string }
-  | { type: "consultation_requested"; data: { name: string; phone: string; serviceOrSpecialty?: string } };
+  | { type: "set_theme"; theme: "dark" | "light" }
+  | { type: "set_language"; locale: "en" | "hi" | "ar" }
+  | { type: "update_form"; field: ConsultationField; value: string }
+  | { type: "consultation_started" }
+  | { type: "consultation_confirmed" }
+  | {
+      type: "consultation_requested";
+      data: { name: string; phone: string; email?: string; serviceOrSpecialty?: string; message?: string };
+    };
 
 /**
  * Manages a LiveKit voice session with the NIVREN voice agent: mic capture,
@@ -157,6 +168,7 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
       });
       await room.localParticipant.setMicrophoneEnabled(true);
       setStatus("connected");
+      trackEvent({ name: "voice_conversation_start" });
     } catch (err) {
       console.error("Voice session error:", err);
       await cleanup();
