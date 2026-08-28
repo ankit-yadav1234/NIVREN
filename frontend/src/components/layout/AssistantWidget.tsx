@@ -52,12 +52,45 @@ export function AssistantWidget() {
     [pathname, router]
   );
 
+  const speakText = React.useCallback((text: string, onEnd?: () => void) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      onEnd?.();
+      return;
+    }
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.05;
+      utterance.pitch = 1.0;
+      utterance.lang = "en-US";
+
+      const voices = window.speechSynthesis.getVoices();
+      const preferred =
+        voices.find(
+          (v) =>
+            v.name.includes("Natural") ||
+            v.name.includes("Google US English") ||
+            v.name.includes("Guy") ||
+            (v.lang.startsWith("en") && !v.localService)
+        ) || voices.find((v) => v.lang.startsWith("en"));
+      if (preferred) utterance.voice = preferred;
+
+      utterance.onend = () => onEnd?.();
+      utterance.onerror = () => onEnd?.();
+      window.speechSynthesis.speak(utterance);
+    } catch {
+      onEnd?.();
+    }
+  }, []);
+
   const runClientAction = React.useCallback(
     (action: any) => {
       if (action.type === "navigate") {
         router.push(withLocale(action.path, pathname));
       } else if (action.type === "scroll") {
         document.getElementById(action.sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else if (action.type === "scroll_page") {
+        window.scrollBy({ top: action.amount || 600, behavior: "smooth" });
       } else if (action.type === "set_theme") {
         setTheme(action.theme);
         trackEvent({ name: "theme_change", theme: action.theme });
@@ -69,11 +102,14 @@ export function AssistantWidget() {
       } else if (action.type === "consultation_confirmed") {
         trackEvent({ name: "consultation_confirmation" });
       } else if (action.type === "end_session") {
-        setTimeout(() => {
-          voice.stop();
-          setVoiceForm({});
-          setVoiceFormSubmitted(false);
-        }, 4500);
+        speakText(
+          "Thank you for connecting with NIVREN Healthcare! I am disconnecting our session now to save resources. Have a wonderful and productive day!",
+          () => {
+            voice.stop();
+            setVoiceForm({});
+            setVoiceFormSubmitted(false);
+          }
+        );
       } else if (action.type === "update_form") {
         setVoiceFormSubmitted(false);
         setVoiceForm((prev) => ({ ...prev, [action.field]: action.value }));
@@ -100,11 +136,24 @@ export function AssistantWidget() {
           });
       }
     },
-    [router, pathname, setTheme, switchLanguage]
+    [router, pathname, setTheme, switchLanguage, speakText]
   );
 
   // LiveKit WebRTC Voice Session connected to Backend RAG & MCP tools
   const voice = useVoiceSession(runClientAction, pathname);
+
+  const hasSpokenWelcomeRef = React.useRef(false);
+  React.useEffect(() => {
+    if (voice.status === "connected" && !hasSpokenWelcomeRef.current) {
+      hasSpokenWelcomeRef.current = true;
+      speakText(
+        "Hi! I'm Dr. Dylan, your senior Revenue Cycle consultant at NIVREN. NIVREN is an advanced, technology-driven Healthcare Revenue Cycle Management and Medical Billing partner. We help physician practices, clinics, and hospital networks eliminate claim denials, streamline certified medical coding, accelerate AR recovery, and maximize overall practice revenue. What specific area of your revenue cycle can I help you with today?"
+      );
+    }
+    if (voice.status === "idle") {
+      hasSpokenWelcomeRef.current = false;
+    }
+  }, [voice.status, speakText]);
 
   const defaultAvatar =
     AVATAR_CONFIG.avatars[AVATAR_CONFIG.defaultGender as keyof typeof AVATAR_CONFIG.avatars] ||
@@ -117,6 +166,9 @@ export function AssistantWidget() {
   };
 
   const closeVoice = () => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
     voice.stop();
     setVoiceForm({});
     setVoiceFormSubmitted(false);

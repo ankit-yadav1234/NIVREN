@@ -46,6 +46,7 @@ interface ConsultationState {
 type AgentAction =
   | { type: "navigate"; path: string }
   | { type: "scroll"; sectionId: string }
+  | { type: "scroll_page"; amount: number; direction: "down" | "up" }
   | { type: "set_theme"; theme: "dark" | "light" }
   | { type: "set_language"; locale: "en" | "hi" | "ar" }
   | { type: "end_session" }
@@ -197,6 +198,22 @@ export default defineAgent({
         execute: async ({ sectionId }) => {
           await publishAction(ctx, { type: "scroll", sectionId });
           return "Scrolling there now.";
+        },
+      }),
+
+      tool({
+        name: "scroll_page",
+        description:
+          "Smoothly scroll the webpage down or up slowly when the user says scroll the page, scroll down, page scroll karo, neeche karo, upar karo, or asks to read the page while scrolling.",
+        parameters: z.object({
+          direction: z.enum(["down", "up"]).default("down").describe("Direction to scroll ('down' or 'up')."),
+          amount: z.number().optional().describe("Amount of pixels to scroll (default is 600px)."),
+        }),
+        flags: ToolFlag.CANCELLABLE,
+        execute: async ({ direction, amount }) => {
+          const px = direction === "down" ? (amount ?? 600) : -(amount ?? 600);
+          await publishAction(ctx, { type: "scroll_page", amount: px, direction });
+          return `Scrolled the page ${direction} by ${Math.abs(px)}px. Now explain or read what is visible.`;
         },
       }),
 

@@ -12,8 +12,10 @@ export type ConsultationField = "name" | "phone" | "email" | "service" | "messag
 export type VoiceAgentAction =
   | { type: "navigate"; path: string }
   | { type: "scroll"; sectionId: string }
+  | { type: "scroll_page"; amount: number; direction: "down" | "up" }
   | { type: "set_theme"; theme: "dark" | "light" }
   | { type: "set_language"; locale: "en" | "hi" | "ar" }
+  | { type: "end_session" }
   | { type: "update_form"; field: ConsultationField; value: string }
   | { type: "consultation_started" }
   | { type: "consultation_confirmed" }

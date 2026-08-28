@@ -126,7 +126,17 @@ export function PageHeader({
             <div className="hidden md:block" aria-hidden />
           </div>
         ) : (
-          <div className="max-w-3xl text-left">
+          <div
+            className={cn(
+              "max-w-3xl text-left",
+              // Only when something (OrbitAccent) is floating over the empty
+              // right side at lg+ — cap the text column to 40% of the
+              // container's width there so it can't grow wide enough to sit
+              // under/behind the accent as the accent's own size increases.
+              // Left untouched on pages that don't pass a headerAccent.
+              headerAccent && "lg:w-[40%] lg:max-w-none",
+            )}
+          >
             {headerAccent}
             {crumbs && crumbs.length > 0 && (
               <div className="mb-4">

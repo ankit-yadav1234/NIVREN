@@ -54,8 +54,6 @@ export default async function ContactPage({
       <PageHeader
         title={dict.contact.title}
         subtitle="Questions about our RCM services, clinical departments, billing, or partnerships? Our care team is here to support you."
-        crumbs={[{ label: dict.common.nav.home, href: "/" }, { label: dict.contact.title }]}
-        eyebrow="Get In Touch"
         locale={locale}
         headerAccent={<OrbitAccent />}
       />
