@@ -260,10 +260,10 @@ export default defineAgent({
 
     const session = new voice.AgentSession({
       llm: new google.realtime.RealtimeModel({
-        model: "gemini-3.1-flash-live-preview",
+        model: "gemini-2.5-flash-native-audio-preview-12-2025",
         voice: "Puck", // 100% Professional Male Voice
         temperature: 0.6,
-        thinkingConfig: { thinkingLevel: "low" as any },
+        thinkingConfig: { thinkingBudget: 0 },
         toolBehavior: Behavior.NON_BLOCKING,
         toolResponseScheduling: FunctionResponseScheduling.WHEN_IDLE,
         realtimeInputConfig: {
@@ -296,6 +296,10 @@ export default defineAgent({
 
       try {
         await publishAction(ctx, { type: "end_session" });
+        session.generateReply({
+          instructions:
+            "Say this complete farewell message clearly: 'Thank you for connecting with NIVREN Healthcare! I am disconnecting our session now to save resources. Have a wonderful and productive day!' and call the end_session tool.",
+        });
       } catch (err) {
         console.warn("Error publishing end_session action:", err);
       }
@@ -306,7 +310,7 @@ export default defineAgent({
         } catch {
           // ignore
         }
-      }, 4500);
+      }, 5000);
     };
 
     const resetInactivityTimer = () => {
@@ -334,6 +338,15 @@ export default defineAgent({
     maxSessionTimer = setTimeout(() => {
       terminateSession();
     }, MAX_SESSION_DURATION_MS);
+
+    // Dr. Dylan speaks welcome message automatically on connection
+    try {
+      session.generateReply({
+        instructions: `Greet the user immediately with this exact greeting in the conversation: "${WELCOME_MESSAGE}"`,
+      });
+    } catch (greetingErr) {
+      console.warn("Initial greeting could not be spoken:", greetingErr);
+    }
   },
 });
 

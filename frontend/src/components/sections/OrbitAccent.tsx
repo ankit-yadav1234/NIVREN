@@ -8,8 +8,8 @@ import * as React from "react";
  * two glowing nodes travelling it, plus two smaller, fainter DOTTED
  * ellipses behind it acting as a drop-shadow stack straight below it (no
  * extra nodes on them — pure decoration). Purely decorative (aria-hidden,
- * pointer-events-none). Used ONLY on the Contact page header — see
- * contact/page.tsx.
+ * pointer-events-none). Passed as PageHeader's `headerAccent` on the pages
+ * that want it (Contact, Who We Serve) — see those pages' page.tsx.
  *
  * SVG + SMIL animateMotion (not CSS keyframes) because it's the only way to
  * trace nodes precisely along a *tilted ellipse* — every node's/arrow's

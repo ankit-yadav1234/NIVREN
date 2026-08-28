@@ -9,6 +9,7 @@ import { Container } from "@/components/ui/Container";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { OrbitAccent } from "@/components/sections/OrbitAccent";
 import { AppointmentCTA } from "@/components/sections/AppointmentCTA";
 import { Reveal } from "@/components/animations/Reveal";
 import { buttonVariants } from "@/components/ui/Button";
@@ -40,6 +41,7 @@ export default async function WhoWeServePage({ params }: { params: Promise<{ loc
         subtitle="From a single-location practice to a multi-site health system — RCM support sized to how you actually operate."
         crumbs={[{ label: dict.common.nav.home, href: "/" }, { label: "Who We Serve" }]}
         locale={locale}
+        headerAccent={<OrbitAccent />}
       />
 
       <Container className="py-12 md:py-16">
