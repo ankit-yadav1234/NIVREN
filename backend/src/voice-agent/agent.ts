@@ -243,10 +243,10 @@ export default defineAgent({
 
     const session = new voice.AgentSession({
       llm: new google.realtime.RealtimeModel({
-        model: "gemini-2.5-flash-native-audio-preview-12-2025",
+        model: "gemini-3.1-flash-live-preview",
         voice: "Puck", // 100% Professional Male Voice
         temperature: 0.6,
-        thinkingConfig: { thinkingBudget: 0 },
+        thinkingConfig: { thinkingLevel: "low" as any },
         toolBehavior: Behavior.NON_BLOCKING,
         toolResponseScheduling: FunctionResponseScheduling.WHEN_IDLE,
         realtimeInputConfig: {
@@ -271,7 +271,7 @@ export default defineAgent({
     let maxSessionTimer: NodeJS.Timeout | null = null;
     let isTerminating = false;
 
-    const terminateSession = async (farewellMessage: string) => {
+    const terminateSession = async () => {
       if (isTerminating) return;
       isTerminating = true;
       if (inactivityTimer) clearTimeout(inactivityTimer);
@@ -279,11 +279,8 @@ export default defineAgent({
 
       try {
         await publishAction(ctx, { type: "end_session" });
-        session.generateReply({
-          instructions: `Say this final message politely: "${farewellMessage}" and immediately call the end_session tool.`,
-        });
       } catch (err) {
-        console.warn("Error during session termination:", err);
+        console.warn("Error publishing end_session action:", err);
       }
 
       setTimeout(() => {
@@ -292,16 +289,14 @@ export default defineAgent({
         } catch {
           // ignore
         }
-      }, 3500);
+      }, 1200);
     };
 
     const resetInactivityTimer = () => {
       if (isTerminating) return;
       if (inactivityTimer) clearTimeout(inactivityTimer);
       inactivityTimer = setTimeout(() => {
-        terminateSession(
-          "It looks like you have stepped away. I am disconnecting the session to save resources. Feel free to reconnect anytime. Have a great day!"
-        );
+        terminateSession();
       }, INACTIVITY_TIMEOUT_MS);
     };
 
@@ -320,18 +315,8 @@ export default defineAgent({
     // Start session timers right after connect
     resetInactivityTimer();
     maxSessionTimer = setTimeout(() => {
-      terminateSession(
-        "Our 10-minute consultation limit for this session has been reached. Thank you for connecting with NIVREN! Please feel free to book a free assessment on our website or start a new call anytime. Goodbye!"
-      );
+      terminateSession();
     }, MAX_SESSION_DURATION_MS);
-
-    try {
-      session.generateReply({
-        instructions: `Greet the user immediately with this exact greeting in the conversation: "${WELCOME_MESSAGE}"`,
-      });
-    } catch (greetingErr) {
-      console.warn("Initial greeting could not be spoken:", greetingErr);
-    }
   },
 });
 
