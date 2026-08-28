@@ -30,9 +30,9 @@ dotenv.config();
 /** RCM facts + behavior rules live in one shared file — see ../ai/prompt.ts. */
 const INSTRUCTIONS = buildVoiceInstructions(NAVIGABLE_ROUTES_DESCRIPTION);
 
-/** Spoken immediately via session.say() — instant greeting & clear NIVREN overview. */
+/** Spoken immediately via session.say() — expansive greeting with Dr. Dylan persona. */
 const WELCOME_MESSAGE =
-  "Hello and welcome to NIVREN! I am your AI assistant. NIVREN is a technology-driven Healthcare Revenue Cycle Management and Medical Billing partner. We help physician practices, clinics, and hospital networks eliminate claim denials, manage medical coding, and accelerate cash flow. What would you like to know about our services today?";
+  "Hi! I'm Dr. Dylan, your senior Revenue Cycle consultant at NIVREN. NIVREN is an advanced, technology-driven Healthcare Revenue Cycle Management and Medical Billing partner. We help physician practices, clinics, and hospital networks eliminate claim denials, streamline certified medical coding, accelerate AR recovery, and maximize overall practice revenue. What specific area of your revenue cycle can I help you with today?";
 
 interface ConsultationState {
   name?: string;

@@ -62,35 +62,38 @@ export function OrbitAccent() {
         // column (not a sibling section after it) — see contact/page.tsx
         // and PageHeader.tsx. That means:
         //
-        // Phone (<sm): normal document flow, first thing in the content
-        // column — the circle sits ABOVE the title/subtitle, and only
-        // adds as much page height as it actually needs (no separate
-        // full-height block, no big empty gap below the header text).
+        // Phone AND tablet (<lg): normal document flow, first thing in the
+        // content column — the circle sits ABOVE the title/subtitle, and
+        // only adds as much page height as it actually needs (no separate
+        // full-height block, no big empty gap below the header text). Kept
+        // the same on tablet as on phone on purpose — there's no reliable
+        // empty side-gutter until the two-column-width laptop tier.
         //
-        // sm+: absolute, positioned relative to the header's own content
-        // container and vertically centered at every tier (never pinned
-        // near the top edge), floating over the empty right side next to
-        // the left-aligned text. No z-index needed — it renders after the
-        // background layers in DOM order, which is enough to paint on top.
+        // lg+ (laptop, desktop): absolute, positioned relative to the
+        // header's own content container and vertically centered at every
+        // tier (never pinned near the top edge), floating over the empty
+        // right side next to the left-aligned text. No z-index needed — it
+        // renders after the background layers in DOM order, which is
+        // enough to paint on top of them.
         "pointer-events-none relative mx-auto mb-6 opacity-60 " +
-        "sm:absolute sm:mx-0 sm:mb-0 sm:right-[2%] sm:top-1/2 sm:-translate-y-1/2 sm:opacity-55 " +
-        "md:right-[3%] md:opacity-70 " +
-        "lg:right-[5%] lg:opacity-85 " +
+        "lg:absolute lg:mx-0 lg:mb-0 lg:right-[5%] lg:top-1/2 lg:-translate-y-1/2 lg:opacity-80 " +
         "xl:right-[4%] xl:opacity-90"
       }
-      style={{ width: "clamp(150px, 20vw, 480px)", height: "clamp(150px, 20vw, 480px)" }}
+      style={{ width: "clamp(190px, 26vw, 600px)", height: "clamp(190px, 26vw, 600px)" }}
     >
       {/* Soft ambient glow behind everything */}
       <div className="absolute inset-[12%] rounded-full bg-cyan-400/20 blur-[60px]" />
 
       <svg viewBox="0 0 300 300" className="relative h-full w-full" fill="none">
-        <g transform="rotate(-20 150 150)">
-          {/* Background orbit — one fainter ellipse made only of small dots, smaller and offset, sitting behind the main ring. Drawn first so the main ring paints over it. */}
+        <g transform="rotate(-12 150 150)">
+          {/* Background orbit — one fainter ellipse made only of small dots,
+              the SAME size as the main ring (just offset a little), sitting
+              behind it. Drawn first so the main ring paints over it. */}
           <ellipse
-            cx="175"
-            cy="172"
-            rx="95"
-            ry="50"
+            cx="164"
+            cy="162"
+            rx="130"
+            ry="68"
             stroke="rgba(165,243,252,0.22)"
             strokeWidth="2"
             strokeLinecap="round"
