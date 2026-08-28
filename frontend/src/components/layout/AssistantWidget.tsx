@@ -106,14 +106,12 @@ export function AssistantWidget() {
 
   const openVoice = () => {
     setOpen(false);
-    setVoiceOpen(true);
     trackEvent({ name: "voice_assistant_open" });
-    if (voice.status === "idle") voice.start();
+    voice.start();
   };
 
   const closeVoice = () => {
-    setVoiceOpen(false);
-    if (voice.status === "connected" || voice.status === "connecting") voice.stop();
+    voice.stop();
     setVoiceForm({});
     setVoiceFormSubmitted(false);
   };
@@ -160,11 +158,11 @@ export function AssistantWidget() {
       {/* 1. Upper Floating Button: AI Voice Agent Avatar */}
       <button
         type="button"
-        aria-label={voiceOpen ? t.closeVoice : t.openVoice}
-        aria-pressed={voiceOpen}
+        aria-label={voice.isVoiceOpen ? t.closeVoice : t.openVoice}
+        aria-pressed={voice.isVoiceOpen}
         onClick={(e) => {
           e.stopPropagation();
-          if (voiceOpen) {
+          if (voice.isVoiceOpen) {
             closeVoice();
           } else {
             openVoice();
@@ -172,7 +170,7 @@ export function AssistantWidget() {
         }}
         className={cn(
           "fixed bottom-24 end-5 h-14 w-14 rounded-full transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 cursor-pointer",
-          voiceOpen ? "z-60" : "z-40"
+          voice.isVoiceOpen ? "z-60" : "z-40"
         )}
       >
         <span
@@ -186,7 +184,7 @@ export function AssistantWidget() {
           className="relative z-10 block h-14 w-14 overflow-hidden rounded-full bg-cover bg-center shadow-lg ring-2 ring-white/90"
           style={{ backgroundImage: `url(${defaultAvatar.imageUrl})` }}
         >
-          {voiceOpen && (
+          {voice.isVoiceOpen && (
             <span className="absolute inset-0 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs">
               <X className="h-7 w-7 text-white" aria-hidden />
             </span>
@@ -199,7 +197,7 @@ export function AssistantWidget() {
         type="button"
         aria-label={open ? t.closeChat : t.openChat}
         onClick={() => {
-          if (voiceOpen) closeVoice();
+          if (voice.isVoiceOpen) closeVoice();
           setOpen((v) => !v);
         }}
         className="fixed bottom-5 end-5 z-40 inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl transition-transform hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -208,7 +206,7 @@ export function AssistantWidget() {
       </button>
 
       {/* Voice Agent Panel Modal */}
-      {voiceOpen && (
+      {voice.isVoiceOpen && (
         <VoiceAgentPanel voice={voice} onClose={closeVoice} form={voiceForm} formSubmitted={voiceFormSubmitted} />
       )}
 

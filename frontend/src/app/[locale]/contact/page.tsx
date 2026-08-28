@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { HospitalInfo } from "@/components/healthcare/HospitalInfo";
 import { ContactForm } from "@/components/sections/ContactForm";
 import { AppointmentCTA } from "@/components/sections/AppointmentCTA";
+import { OrbitAccent } from "@/components/sections/OrbitAccent";
 import { telHref } from "@/lib/utils/format";
 
 export async function generateMetadata({
@@ -46,12 +47,17 @@ export default async function ContactPage({
 
   return (
     <>
+      {/* headerAccent renders OrbitAccent INSIDE PageHeader's own section (on
+          top of the title on mobile, floating over the empty right side on
+          sm+) so it shares the section's existing min-h-screen height
+          instead of adding a separate block of page height below it. */}
       <PageHeader
         title={dict.contact.title}
         subtitle="Questions about our RCM services, clinical departments, billing, or partnerships? Our care team is here to support you."
         crumbs={[{ label: dict.common.nav.home, href: "/" }, { label: dict.contact.title }]}
         eyebrow="Get In Touch"
         locale={locale}
+        headerAccent={<OrbitAccent />}
       />
 
       <section className="bg-background [background-image:radial-gradient(ellipse_65%_90%_at_top_right,hsl(var(--primary)/0.18),transparent_65%)] py-12 dark:[background-image:radial-gradient(ellipse_65%_90%_at_top_right,hsl(var(--primary)/0.24),transparent_65%)] md:py-20">

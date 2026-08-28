@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { ReactNode } from "react";
 import type { Locale } from "@/types";
 import { Container } from "@/components/ui/Container";
 import { Breadcrumbs, type Crumb } from "./Breadcrumbs";
@@ -13,6 +14,7 @@ export function PageHeader({
   image,
   eyebrow,
   className,
+  headerAccent,
 }: {
   title: string;
   subtitle?: string;
@@ -21,6 +23,13 @@ export function PageHeader({
   image?: string;
   eyebrow?: string;
   className?: string;
+  /** Optional decorative element rendered above the title, inside the same
+   *  centered hero content — e.g. OrbitAccent on the Contact page. Kept
+   *  inside this section (not a sibling after it) so it shares the
+   *  section's own min-h-screen height instead of adding a separate block
+   *  of page height, and can be absolutely positioned relative to this
+   *  section on larger screens. */
+  headerAccent?: ReactNode;
 }) {
   return (
     <section
@@ -118,6 +127,7 @@ export function PageHeader({
           </div>
         ) : (
           <div className="max-w-3xl text-left">
+            {headerAccent}
             {crumbs && crumbs.length > 0 && (
               <div className="mb-4">
                 <Breadcrumbs items={crumbs} locale={locale} variant="dark" />

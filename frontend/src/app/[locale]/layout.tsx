@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { notFound } from "next/navigation";
 import "../globals.css";
@@ -48,13 +47,13 @@ export default async function LocaleLayout({
   const fontVars = `${inter.variable} ${besley.variable} ${notoDevanagari.variable} ${notoArabic.variable}`;
 
   return (
-    <html lang={locale} dir={dir} suppressHydrationWarning className={fontVars}>
+    <html lang={locale} dir={dir} suppressHydrationWarning className={`${fontVars} notranslate`}>
       <head>
-        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <Script
+        <meta name="google" content="notranslate" />
+        <script id="theme-init" dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script
           id="organization-jsonld"
           type="application/ld+json"
-          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }}
         />
       </head>

@@ -30,9 +30,9 @@ dotenv.config();
 /** RCM facts + behavior rules live in one shared file — see ../ai/prompt.ts. */
 const INSTRUCTIONS = buildVoiceInstructions(NAVIGABLE_ROUTES_DESCRIPTION);
 
-/** Spoken immediately via session.say() — no LLM round trip, so there's zero delay before the greeting. */
+/** Spoken immediately via session.say() — instant greeting & clear NIVREN overview. */
 const WELCOME_MESSAGE =
-  "Hi, I'm Dr. Dylan from NIVREN. I help practices fix denied claims, speed up payments, and run a cleaner revenue cycle. What can I help you with?";
+  "Hello and welcome to NIVREN! I am your AI assistant. NIVREN is a technology-driven Healthcare Revenue Cycle Management and Medical Billing partner. We help physician practices, clinics, and hospital networks eliminate claim denials, manage medical coding, and accelerate cash flow. What would you like to know about our services today?";
 
 interface ConsultationState {
   name?: string;
@@ -246,17 +246,28 @@ export default defineAgent({
           turnCoverage: TurnCoverage.TURN_INCLUDES_ONLY_ACTIVITY,
         },
       }),
+      tts: new google.beta.TTS({
+        model: "gemini-2.5-flash-tts",
+        voiceName: "Puck",
+      }),
     });
 
     session.on(AgentSessionEventTypes.MetricsCollected, (ev) => logMetrics(ev.metrics));
 
     await session.start({ agent, room: ctx.room });
     await ctx.connect();
-    // session.say() speaks this exact text immediately, with no LLM turn in
-    // between — that's both the fix for the instant-greeting requirement and
-    // a safe path around a known bug where generateReply() throws on
-    // gemini-3.1-flash-live-preview (livekit/agents-js#1197).
-    session.say(WELCOME_MESSAGE);
+    
+    try {
+      if (session.tts) {
+        session.say(WELCOME_MESSAGE);
+      } else {
+        session.generateReply({
+          instructions: `Greet the user immediately with: "${WELCOME_MESSAGE}"`,
+        });
+      }
+    } catch (greetingErr) {
+      console.warn("Initial greeting could not be spoken:", greetingErr);
+    }
   },
 });
 

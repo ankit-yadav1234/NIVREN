@@ -27,6 +27,9 @@ export type AnalyticsEvent =
   | { name: "contact_interaction"; method: "phone" | "email" | "form" };
 
 export function trackEvent(event: AnalyticsEvent) {
+  if (typeof window === "undefined" || !process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID) {
+    return;
+  }
   const { name, ...params } = event;
   try {
     sendGAEvent({ event: name, ...params });
