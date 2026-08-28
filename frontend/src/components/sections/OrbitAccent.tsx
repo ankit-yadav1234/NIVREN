@@ -86,25 +86,28 @@ export function OrbitAccent() {
       <svg viewBox="0 0 300 300" className="relative h-full w-full" fill="none">
         <g transform="rotate(-70 150 150)">
           {/* Background orbit — two fainter ellipses made only of small
-              dots, the SAME size as the main ring (just offset in opposite
-              directions), sitting behind it. Drawn first so the main ring
-              paints over both. */}
+              dots, the SAME size as the main ring, offset purely along its
+              OWN long axis (cy stays 150 — only cx shifts) so once the
+              whole group is tilted they trail cleanly before/after the
+              main ring along the same path, instead of a diagonal offset
+              that would cut across it and look like two crossing lenses.
+              Drawn first so the main ring paints over both. */}
           <ellipse
-            cx="164"
-            cy="162"
+            cx="174"
+            cy="150"
             rx="130"
             ry="68"
-            stroke="rgba(165,243,252,0.22)"
+            stroke="rgba(165,243,252,0.2)"
             strokeWidth="2"
             strokeLinecap="round"
             strokeDasharray="0.5 6"
           />
           <ellipse
-            cx="136"
-            cy="138"
+            cx="126"
+            cy="150"
             rx="130"
             ry="68"
-            stroke="rgba(165,243,252,0.22)"
+            stroke="rgba(165,243,252,0.2)"
             strokeWidth="2"
             strokeLinecap="round"
             strokeDasharray="0.5 6"

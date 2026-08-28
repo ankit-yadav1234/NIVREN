@@ -242,8 +242,8 @@ export default defineAgent({
     const agent = voice.Agent.create({ instructions: INSTRUCTIONS, tools });
 
     const session = new voice.AgentSession({
-      llm: new google.beta.realtime.RealtimeModel({
-        model: "gemini-3.1-flash-live-preview",
+      llm: new google.realtime.RealtimeModel({
+        model: "gemini-2.5-flash-native-audio-preview-12-2025",
         voice: "Puck", // 100% Professional Male Voice
         temperature: 0.6,
         thinkingConfig: { thinkingBudget: 0 },
