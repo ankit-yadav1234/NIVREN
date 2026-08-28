@@ -264,7 +264,7 @@ export default defineAgent({
     session.on(AgentSessionEventTypes.MetricsCollected, (ev) => logMetrics(ev.metrics));
 
     // LiveKit billing safeguard timers
-    const INACTIVITY_TIMEOUT_MS = 60 * 1000; // 1 minute of silence / no user speech
+    const INACTIVITY_TIMEOUT_MS = 30 * 1000; // 30 seconds of silence / no user speech
     const MAX_SESSION_DURATION_MS = 10 * 60 * 1000; // 10 minutes hard cap
 
     let inactivityTimer: NodeJS.Timeout | null = null;
@@ -289,7 +289,7 @@ export default defineAgent({
         } catch {
           // ignore
         }
-      }, 1200);
+      }, 4500);
     };
 
     const resetInactivityTimer = () => {

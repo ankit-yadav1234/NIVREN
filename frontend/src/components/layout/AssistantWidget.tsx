@@ -73,7 +73,7 @@ export function AssistantWidget() {
           voice.stop();
           setVoiceForm({});
           setVoiceFormSubmitted(false);
-        }, 2200);
+        }, 4500);
       } else if (action.type === "update_form") {
         setVoiceFormSubmitted(false);
         setVoiceForm((prev) => ({ ...prev, [action.field]: action.value }));
