@@ -85,7 +85,7 @@ export function OrbitAccent() {
       <div className="absolute inset-[12%] rounded-full bg-cyan-400/20 blur-[60px]" />
 
       <svg viewBox="0 0 300 300" className="relative h-full w-full" fill="none">
-        <g transform="rotate(-12 150 150)">
+        <g transform="rotate(70 150 150)">
           {/* Background orbit — one fainter ellipse made only of small dots,
               the SAME size as the main ring (just offset a little), sitting
               behind it. Drawn first so the main ring paints over it. */}

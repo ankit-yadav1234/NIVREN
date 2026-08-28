@@ -120,9 +120,16 @@ export function AssistantWidget() {
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, loading]);
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const text = input.trim();
+  const SUGGESTIONS = [
+    { label: "💡 Claim Denial Reduction", query: "How does NIVREN reduce claim denials by 35%?" },
+    { label: "📊 98% Clean Claims", query: "Tell me about your 98% first-pass clean claims rate." },
+    { label: "💰 AR Recovery (28 Days)", query: "How do you recover aging accounts receivable in under 30 days?" },
+    { label: "📋 Certified Medical Coding", query: "What certified medical coding services do you provide?" },
+    { label: "🚀 Free RCM Assessment", query: "How do I request a free Revenue Cycle Assessment & Claims Audit?" },
+  ];
+
+  const submitQuery = async (queryText: string) => {
+    const text = queryText.trim();
     if (!text || loading) return;
 
     const userEntry: ChatEntry = { id: crypto.randomUUID(), role: "user", content: text };
@@ -151,6 +158,11 @@ export function AssistantWidget() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    submitQuery(input);
   };
 
   return (
@@ -215,27 +227,66 @@ export function AssistantWidget() {
         <div
           role="dialog"
           aria-label={t.dialogLabel}
-          className="fixed bottom-24 end-5 z-40 flex h-[min(600px,70vh)] w-[min(380px,90vw)] flex-col overflow-hidden rounded-[var(--radius-lg)] border border-border bg-card text-card-foreground shadow-2xl"
+          className="fixed bottom-24 end-5 z-40 flex h-[min(620px,75vh)] w-[min(400px,92vw)] flex-col overflow-hidden rounded-[var(--radius-lg)] border border-border bg-card text-card-foreground shadow-2xl"
         >
-          <div className="flex items-center gap-2 border-b border-border bg-primary px-4 py-3 text-primary-foreground">
-            <Sparkles className="h-4 w-4" aria-hidden />
-            <span className="flex-1 text-sm font-semibold">{t.title}</span>
+          <div className="flex items-center gap-3 border-b border-border bg-primary px-4 py-3 text-primary-foreground">
+            <div className="relative h-9 w-9 overflow-hidden rounded-full ring-2 ring-white/30">
+              <img
+                src={defaultAvatar.imageUrl}
+                alt={defaultAvatar.name}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold leading-tight truncate">{defaultAvatar.name}</p>
+              <p className="text-xs text-primary-foreground/80 leading-tight">Senior RCM Consultant</p>
+            </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="text-primary-foreground/80 hover:text-white"
+              className="rounded-full p-1 text-primary-foreground/80 hover:bg-white/10 hover:text-white transition-colors"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
 
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto p-4">
-            {messages.length === 0 && <p className="text-sm text-muted-foreground">{t.emptyHint}</p>}
+            {/* Dr. Dylan Welcome Bubble */}
+            <div className="flex gap-2.5 items-start">
+              <div className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full ring-1 ring-border">
+                <img src={defaultAvatar.imageUrl} alt={defaultAvatar.name} className="h-full w-full object-cover" />
+              </div>
+              <div className="max-w-[85%] rounded-[var(--radius-md)] bg-muted p-3 text-sm leading-relaxed text-foreground shadow-xs">
+                <p className="font-semibold text-primary text-xs mb-1">Dr. Dylan • NIVREN</p>
+                Hi! I&apos;m Dr. Dylan, senior Revenue Cycle consultant at NIVREN. How can I help optimize your practice&apos;s medical billing, reduce claim denials, or accelerate revenue today?
+              </div>
+            </div>
+
+            {/* Quick Topic Chips */}
+            {messages.length === 0 && (
+              <div className="pt-2 space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground px-1">Quick reference options:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {SUGGESTIONS.map((s) => (
+                    <button
+                      key={s.label}
+                      type="button"
+                      onClick={() => submitQuery(s.query)}
+                      disabled={loading}
+                      className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-200 active:scale-95 disabled:opacity-50"
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {messages.map((m) => (
               <div
                 key={m.id}
                 className={cn(
-                  "max-w-[85%] rounded-[var(--radius-md)] px-3 py-2 text-sm leading-relaxed",
+                  "max-w-[85%] rounded-[var(--radius-md)] px-3 py-2.5 text-sm leading-relaxed shadow-xs",
                   m.role === "user"
                     ? "ms-auto bg-primary text-primary-foreground"
                     : "bg-muted text-foreground"
@@ -245,15 +296,15 @@ export function AssistantWidget() {
               </div>
             ))}
             {loading && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              <div className="flex items-center gap-2 text-sm text-muted-foreground px-2 py-1">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" aria-hidden />
                 {t.thinking}
               </div>
             )}
-            {error && <p className="text-sm text-destructive">{t.errorMessage}</p>}
+            {error && <p className="text-sm text-destructive px-2">{t.errorMessage}</p>}
           </div>
 
-          <form onSubmit={handleSend} className="flex items-center gap-2 border-t border-border p-3">
+          <form onSubmit={handleSend} className="flex items-center gap-2 border-t border-border p-3 bg-card">
             <input
               type="text"
               value={input}

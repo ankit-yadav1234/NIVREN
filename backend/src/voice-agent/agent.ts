@@ -246,10 +246,6 @@ export default defineAgent({
           turnCoverage: TurnCoverage.TURN_INCLUDES_ONLY_ACTIVITY,
         },
       }),
-      tts: new google.beta.TTS({
-        model: "gemini-2.5-flash-tts",
-        voiceName: "Puck",
-      }),
     });
 
     session.on(AgentSessionEventTypes.MetricsCollected, (ev) => logMetrics(ev.metrics));
@@ -258,13 +254,9 @@ export default defineAgent({
     await ctx.connect();
     
     try {
-      if (session.tts) {
-        session.say(WELCOME_MESSAGE);
-      } else {
-        session.generateReply({
-          instructions: `Greet the user immediately with: "${WELCOME_MESSAGE}"`,
-        });
-      }
+      session.generateReply({
+        instructions: `Greet the user immediately with this exact greeting in the conversation: "${WELCOME_MESSAGE}"`,
+      });
     } catch (greetingErr) {
       console.warn("Initial greeting could not be spoken:", greetingErr);
     }
