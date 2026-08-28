@@ -68,6 +68,12 @@ export function AssistantWidget() {
         trackEvent({ name: "consultation_start", source: "voice" });
       } else if (action.type === "consultation_confirmed") {
         trackEvent({ name: "consultation_confirmation" });
+      } else if (action.type === "end_session") {
+        setTimeout(() => {
+          voice.stop();
+          setVoiceForm({});
+          setVoiceFormSubmitted(false);
+        }, 2200);
       } else if (action.type === "update_form") {
         setVoiceFormSubmitted(false);
         setVoiceForm((prev) => ({ ...prev, [action.field]: action.value }));

@@ -48,6 +48,7 @@ type AgentAction =
   | { type: "scroll"; sectionId: string }
   | { type: "set_theme"; theme: "dark" | "light" }
   | { type: "set_language"; locale: "en" | "hi" | "ar" }
+  | { type: "end_session" }
   | { type: "update_form"; field: ConsultationField; value: string }
   | { type: "consultation_started" }
   | { type: "consultation_confirmed" }
@@ -222,6 +223,18 @@ export default defineAgent({
         execute: async ({ locale }) => {
           await publishAction(ctx, { type: "set_language", locale });
           return `Switched the site language to ${locale}.`;
+        },
+      }),
+
+      tool({
+        name: "end_session",
+        description:
+          "End the voice conversation and close the voice assistant window immediately when the user says bye, goodbye, end the session, disconnect, band karo, close this, or confirms they want to exit.",
+        parameters: z.object({}),
+        flags: ToolFlag.CANCELLABLE,
+        execute: async () => {
+          await publishAction(ctx, { type: "end_session" });
+          return "Voice session ending. Goodbye message spoken and closing signal sent.";
         },
       }),
     ];
