@@ -263,9 +263,68 @@ export default defineAgent({
 
     session.on(AgentSessionEventTypes.MetricsCollected, (ev) => logMetrics(ev.metrics));
 
+    // LiveKit billing safeguard timers
+    const INACTIVITY_TIMEOUT_MS = 60 * 1000; // 1 minute of silence / no user speech
+    const MAX_SESSION_DURATION_MS = 10 * 60 * 1000; // 10 minutes hard cap
+
+    let inactivityTimer: NodeJS.Timeout | null = null;
+    let maxSessionTimer: NodeJS.Timeout | null = null;
+    let isTerminating = false;
+
+    const terminateSession = async (farewellMessage: string) => {
+      if (isTerminating) return;
+      isTerminating = true;
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+      if (maxSessionTimer) clearTimeout(maxSessionTimer);
+
+      try {
+        await publishAction(ctx, { type: "end_session" });
+        session.generateReply({
+          instructions: `Say this final message politely: "${farewellMessage}" and immediately call the end_session tool.`,
+        });
+      } catch (err) {
+        console.warn("Error during session termination:", err);
+      }
+
+      setTimeout(() => {
+        try {
+          ctx.room.disconnect();
+        } catch {
+          // ignore
+        }
+      }, 3500);
+    };
+
+    const resetInactivityTimer = () => {
+      if (isTerminating) return;
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => {
+        terminateSession(
+          "It looks like you have stepped away. I am disconnecting the session to save resources. Feel free to reconnect anytime. Have a great day!"
+        );
+      }, INACTIVITY_TIMEOUT_MS);
+    };
+
+    session.on(AgentSessionEventTypes.UserInputTranscribed, () => resetInactivityTimer());
+    session.on(AgentSessionEventTypes.UserStateChanged, () => resetInactivityTimer());
+    session.on(AgentSessionEventTypes.ConversationItemAdded, () => resetInactivityTimer());
+
+    ctx.room.on("disconnected", () => {
+      if (inactivityTimer) clearTimeout(inactivityTimer);
+      if (maxSessionTimer) clearTimeout(maxSessionTimer);
+    });
+
     await session.start({ agent, room: ctx.room });
     await ctx.connect();
     
+    // Start session timers right after connect
+    resetInactivityTimer();
+    maxSessionTimer = setTimeout(() => {
+      terminateSession(
+        "Our 10-minute consultation limit for this session has been reached. Thank you for connecting with NIVREN! Please feel free to book a free assessment on our website or start a new call anytime. Goodbye!"
+      );
+    }, MAX_SESSION_DURATION_MS);
+
     try {
       session.generateReply({
         instructions: `Greet the user immediately with this exact greeting in the conversation: "${WELCOME_MESSAGE}"`,

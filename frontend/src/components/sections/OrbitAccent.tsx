@@ -3,13 +3,12 @@
 import * as React from "react";
 
 /**
- * Decorative tilted-ellipse orbit — matches the reference exactly: one
- * solid glowing main ellipse with two small arrowheads (top pointing
- * right, bottom pointing left) and exactly two glowing nodes travelling
- * it, plus one fainter DOTTED ellipse behind it (smaller, offset, no
- * extra nodes on it — pure decoration). Purely decorative (aria-hidden,
- * pointer-events-none). Used ONLY on the Contact page header — see
- * contact/page.tsx.
+ * Decorative tilted-ellipse orbit: one solid glowing main ellipse with two
+ * small arrowheads (top pointing right, bottom pointing left) and exactly
+ * two glowing nodes travelling it, plus two fainter DOTTED ellipses behind
+ * it (same size, offset in opposite directions, no extra nodes on them —
+ * pure decoration). Purely decorative (aria-hidden, pointer-events-none).
+ * Used ONLY on the Contact page header — see contact/page.tsx.
  *
  * SVG + SMIL animateMotion (not CSS keyframes) because it's the only way to
  * trace nodes precisely along a *tilted ellipse* — every node's/arrow's
@@ -79,19 +78,30 @@ export function OrbitAccent() {
         "lg:absolute lg:mx-0 lg:mb-0 lg:right-[5%] lg:top-1/2 lg:-translate-y-1/2 lg:opacity-80 " +
         "xl:right-[4%] xl:opacity-90"
       }
-      style={{ width: "clamp(190px, 26vw, 600px)", height: "clamp(190px, 26vw, 600px)" }}
+      style={{ width: "clamp(220px, 30vw, 650px)", height: "clamp(220px, 30vw, 650px)" }}
     >
       {/* Soft ambient glow behind everything */}
       <div className="absolute inset-[12%] rounded-full bg-cyan-400/20 blur-[60px]" />
 
       <svg viewBox="0 0 300 300" className="relative h-full w-full" fill="none">
-        <g transform="rotate(70 150 150)">
-          {/* Background orbit — one fainter ellipse made only of small dots,
-              the SAME size as the main ring (just offset a little), sitting
-              behind it. Drawn first so the main ring paints over it. */}
+        <g transform="rotate(-70 150 150)">
+          {/* Background orbit — two fainter ellipses made only of small
+              dots, the SAME size as the main ring (just offset in opposite
+              directions), sitting behind it. Drawn first so the main ring
+              paints over both. */}
           <ellipse
             cx="164"
             cy="162"
+            rx="130"
+            ry="68"
+            stroke="rgba(165,243,252,0.22)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeDasharray="0.5 6"
+          />
+          <ellipse
+            cx="136"
+            cy="138"
             rx="130"
             ry="68"
             stroke="rgba(165,243,252,0.22)"
@@ -105,18 +115,18 @@ export function OrbitAccent() {
 
           {reducedMotion ? (
             <>
-              <circle cx="20" cy="150" r="5.5" fill="#67e8f9" style={{ filter: "drop-shadow(0 0 7px rgba(103,232,249,0.9))" }} />
-              <circle cx="280" cy="150" r="5.5" fill="#67e8f9" style={{ filter: "drop-shadow(0 0 7px rgba(103,232,249,0.9))" }} />
+              <circle cx="20" cy="150" r="5.5" fill="#67e8f9" style={{ filter: "drop-shadow(0 0 5px rgba(103,232,249,1)) drop-shadow(0 0 13px rgba(103,232,249,0.75))" }} />
+              <circle cx="280" cy="150" r="5.5" fill="#67e8f9" style={{ filter: "drop-shadow(0 0 5px rgba(103,232,249,1)) drop-shadow(0 0 13px rgba(103,232,249,0.75))" }} />
               <path d="M -4,-3 L 4,0 L -4,3" transform="translate(176.85,66.5) rotate(-13.2)" stroke="rgba(165,243,252,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M -4,-3 L 4,0 L -4,3" transform="translate(123.15,233.5) rotate(166.8)" stroke="rgba(165,243,252,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </>
           ) : (
             <>
               {/* Exactly two glowing nodes travelling the main ring, opposite each other */}
-              <circle r="6" fill="#67e8f9" style={{ filter: "drop-shadow(0 0 8px rgba(103,232,249,0.9))" }}>
+              <circle r="6" fill="#67e8f9" style={{ filter: "drop-shadow(0 0 6px rgba(103,232,249,1)) drop-shadow(0 0 16px rgba(103,232,249,0.75))" }}>
                 <animateMotion dur="16s" repeatCount="indefinite" begin="0s" path={MAIN_PATH} />
               </circle>
-              <circle r="6" fill="#67e8f9" style={{ filter: "drop-shadow(0 0 8px rgba(103,232,249,0.9))" }}>
+              <circle r="6" fill="#67e8f9" style={{ filter: "drop-shadow(0 0 6px rgba(103,232,249,1)) drop-shadow(0 0 16px rgba(103,232,249,0.75))" }}>
                 <animateMotion dur="16s" repeatCount="indefinite" begin="-8s" path={MAIN_PATH} />
               </circle>
 
