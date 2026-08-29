@@ -295,15 +295,14 @@ export function ThreeDoctorAvatar({
     stethMesh.rotation.x = Math.PI / 2.3;
     bodyGroup.add(stethMesh);
 
-    // 5. Mouse tracking interaction
+    // 5. Mouse tracking interaction (Full Window tracking so doctor looks at cursor everywhere)
     const handleMouseMove = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect();
-      const normX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const normY = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+      const normX = (e.clientX / window.innerWidth) * 2 - 1;
+      const normY = -((e.clientY / window.innerHeight) * 2 - 1);
       stateRef.current.mouse.x = Math.max(-1, Math.min(1, normX));
       stateRef.current.mouse.y = Math.max(-1, Math.min(1, normY));
     };
-    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
 
     // 6. 60 FPS Real-time Animation Loop
     let animationFrameId: number;
@@ -337,9 +336,23 @@ export function ThreeDoctorAvatar({
       leftEye.upperEyelid.rotation.x = -Math.PI / 2 + blinkValue * (Math.PI / 2.1);
       rightEye.upperEyelid.rotation.x = -Math.PI / 2 + blinkValue * (Math.PI / 2.1);
 
-      // --- Head Tracking & Idle Sway ---
-      const targetLookX = state.mouse.x * 0.18;
-      const targetLookY = state.mouse.y * 0.12;
+      // --- Eye Gaze Tracking (Pupils follow mouse) ---
+      const eyeGazeX = state.mouse.x * 0.015;
+      const eyeGazeY = state.mouse.y * 0.012;
+      leftEye.irisMesh.position.x = eyeGazeX;
+      leftEye.irisMesh.position.y = eyeGazeY;
+      leftEye.pupilMesh.position.x = eyeGazeX;
+      leftEye.pupilMesh.position.y = eyeGazeY;
+
+      rightEye.irisMesh.position.x = eyeGazeX;
+      rightEye.irisMesh.position.y = eyeGazeY;
+      rightEye.pupilMesh.position.x = eyeGazeX;
+      rightEye.pupilMesh.position.y = eyeGazeY;
+
+      // --- Dynamic 3D Head Tracking & Sway ---
+      const targetLookX = state.mouse.x * 0.42; // Dynamic left/right look
+      const targetLookY = state.mouse.y * 0.28; // Dynamic up/down look
+      const targetLookZ = -state.mouse.x * 0.08; // Subtle natural head roll
 
       // Natural breathing sway
       const breathSway = Math.sin(elapsedTime * 1.8) * 0.015;
@@ -357,9 +370,9 @@ export function ThreeDoctorAvatar({
       }
       const nodOffset = isNodding ? Math.sin(state.nod * Math.PI * 2) * 0.05 : 0;
 
-      headGroup.rotation.y = THREE.MathUtils.lerp(headGroup.rotation.y, targetLookX, 0.08);
-      headGroup.rotation.x = THREE.MathUtils.lerp(headGroup.rotation.x, targetLookY + nodOffset, 0.08);
-      headGroup.rotation.z = Math.sin(elapsedTime * 1.2) * 0.02;
+      headGroup.rotation.y = THREE.MathUtils.lerp(headGroup.rotation.y, targetLookX, 0.09);
+      headGroup.rotation.x = THREE.MathUtils.lerp(headGroup.rotation.x, targetLookY + nodOffset, 0.09);
+      headGroup.rotation.z = THREE.MathUtils.lerp(headGroup.rotation.z, targetLookZ, 0.09);
 
       // --- Real-time Lip-Sync & Visemes Morphing ---
       if (state.speaking) {
