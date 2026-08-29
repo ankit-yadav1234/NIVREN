@@ -137,6 +137,12 @@ export function AssistantWidget() {
         trackEvent({ name: "consultation_start", source: "voice" });
       } else if (action.type === "consultation_confirmed") {
         trackEvent({ name: "consultation_confirmation" });
+      } else if (action.type === "consultation_cancelled") {
+        // User backed out mid-flow — clear the live-filled form so the UI
+        // doesn't keep showing a request that was never submitted.
+        setVoiceForm({});
+        setVoiceFormSubmitted(false);
+        trackEvent({ name: "consultation_cancelled", source: "voice" });
       } else if (action.type === "end_session") {
         stopContinuousScroll();
         setTimeout(() => {

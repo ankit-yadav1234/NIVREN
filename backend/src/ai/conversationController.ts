@@ -143,7 +143,7 @@ export class ConversationController {
     const controlPatterns = /^(stop|ruko|ruk jao|ruk|wait|cancel|don'?t|no|nahi|bas|close|exit|skip|chup|shant|hold on)/i;
     if (controlPatterns.test(clean)) {
       this.state.currentIntent = "CONTROL";
-      console.log(`[INTENT] intent=CONTROL text="${clean}" (priority=100)`);
+      console.log(`[INTENT] intent=CONTROL len=${clean.length} (priority=100)`);
       this.notify();
       return { intent: "CONTROL", isBackchannel: false };
     }
@@ -155,8 +155,8 @@ export class ConversationController {
       else if (/case.?stud/i.test(clean)) this.updateTopic("Case Studies", "Client Success Results");
       else if (/who we serve|client/i.test(clean)) this.updateTopic("Who We Serve", "Physicians & Hospitals");
       else if (/contact|appointment|consultation/i.test(clean)) this.updateTopic("Contact & Consultation", "Booking Request");
-      
-      console.log(`[INTENT] intent=NAVIGATION target="${clean}"`);
+
+      console.log(`[INTENT] intent=NAVIGATION topic=${this.state.topic}`);
       this.notify();
       return { intent: "NAVIGATION", isBackchannel: false };
     }
@@ -164,7 +164,7 @@ export class ConversationController {
     // 4. Scroll Intent
     if (/scroll|neeche|upar|down|up/i.test(clean)) {
       this.state.currentIntent = "SCROLL";
-      console.log(`[INTENT] intent=SCROLL direction="${clean}"`);
+      console.log(`[INTENT] intent=SCROLL len=${clean.length}`);
       this.notify();
       return { intent: "SCROLL", isBackchannel: false };
     }

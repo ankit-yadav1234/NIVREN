@@ -28,6 +28,9 @@ export function VoiceAgentPanel({
   form?: Partial<Record<ConsultationField, string>>;
   formSubmitted?: boolean;
 }) {
+  // Telemetry inspector (section 39 of the real-time spec) — development-only,
+  // never rendered in production regardless of user interaction.
+  const isDev = process.env.NODE_ENV !== "production";
   const [showDebug, setShowDebug] = React.useState(false);
   const filledFields = FORM_FIELD_ORDER.filter((f) => form?.[f]);
   const defaultAvatar = AVATAR_CONFIG.avatars.male;
@@ -305,8 +308,8 @@ export function VoiceAgentPanel({
         </div>
       )}
 
-      {/* Real-time Telemetry & Debug Inspector Card (P0/P1 Observability) */}
-      {showDebug && (
+      {/* Real-time Telemetry & Debug Inspector Card (P0/P1 Observability) — dev-only */}
+      {isDev && showDebug && (
         <div className="mb-3 w-full max-w-xs rounded-2xl border border-cyan-400/30 bg-slate-950/90 p-3 text-[11px] shadow-2xl backdrop-blur-lg">
           <div className="flex items-center justify-between pb-1.5 border-b border-white/10 font-mono">
             <span className="flex items-center gap-1 text-cyan-400 font-bold tracking-wider uppercase">
@@ -348,17 +351,21 @@ export function VoiceAgentPanel({
         </div>
       )}
 
-      {/* Bottom Controls: SKIP Button + Toggle Debug Metrics */}
+      {/* Bottom Controls: SKIP Button + Toggle Debug Metrics (dev-only toggle) */}
       <div className="w-full flex items-center justify-between px-2 pb-2 z-30">
-        <button
-          type="button"
-          onClick={() => setShowDebug((prev) => !prev)}
-          title="Toggle Real-Time Telemetry Inspector"
-          className="flex items-center gap-1 rounded-full bg-slate-900/80 px-2.5 py-1.5 text-[10px] font-mono text-cyan-400/90 border border-white/10 hover:bg-slate-800 transition-colors cursor-pointer"
-        >
-          <Activity className="h-3 w-3" />
-          {showDebug ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
-        </button>
+        {isDev ? (
+          <button
+            type="button"
+            onClick={() => setShowDebug((prev) => !prev)}
+            title="Toggle Real-Time Telemetry Inspector"
+            className="flex items-center gap-1 rounded-full bg-slate-900/80 px-2.5 py-1.5 text-[10px] font-mono text-cyan-400/90 border border-white/10 hover:bg-slate-800 transition-colors cursor-pointer"
+          >
+            <Activity className="h-3 w-3" />
+            {showDebug ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
+          </button>
+        ) : (
+          <div className="w-8" />
+        )}
 
         <button
           type="button"

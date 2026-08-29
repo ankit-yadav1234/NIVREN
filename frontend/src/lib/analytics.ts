@@ -20,6 +20,7 @@ export type AnalyticsEvent =
   | { name: "consultation_start"; source: "voice" | "text" | "form" }
   | { name: "consultation_field_completed"; field: string }
   | { name: "consultation_confirmation" }
+  | { name: "consultation_cancelled"; source: "voice" | "text" | "form" }
   | { name: "consultation_submit" }
   | { name: "consultation_submit_success" }
   | { name: "consultation_submit_failure" }

@@ -60,6 +60,7 @@ export interface AgentAction {
     | "update_form"
     | "consultation_started"
     | "consultation_confirmed"
+    | "consultation_cancelled"
     | "agent_speaking"
     | "consultation_requested"
     | "cancel_action"
@@ -238,6 +239,22 @@ export default defineAgent({
       }),
 
       tool({
+        name: "cancel_consultation",
+        description:
+          "Abandon an in-progress consultation request without submitting anything — call this the moment the user backs out mid-flow (e.g. 'actually skip this', 'never mind', 'cancel that', 'I don't want to do this right now'). Clears every field collected so far. Never call submit_consultation after this without the user explicitly starting over.",
+        parameters: z.object({}),
+        flags: ToolFlag.CANCELLABLE,
+        execute: async () => {
+          if (!consultation) return "No consultation was in progress.";
+          consultation = null;
+          controller.onToolStart("cancel_consultation");
+          await publishAction({ type: "consultation_cancelled", priority: 90 });
+          controller.onToolEnd("Consultation cancelled");
+          return "Consultation request cancelled — nothing was submitted. Back to normal conversation.";
+        },
+      }),
+
+      tool({
         name: "list_sections",
         description: "List the section IDs on the current page for in-page navigation.",
         parameters: z.object({}),
@@ -363,7 +380,7 @@ export default defineAgent({
 
     const session = new voice.AgentSession({
       llm: new google.realtime.RealtimeModel({
-        model: "gemini-2.5-flash-native-audio-preview-12-2025",
+        model: "gemini-3.1-flash-live-preview",
         voice: "Puck", // 100% Professional Male Voice
         temperature: 0.5,
         thinkingConfig: { thinkingBudget: 0 },

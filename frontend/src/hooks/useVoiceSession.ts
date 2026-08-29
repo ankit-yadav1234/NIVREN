@@ -45,6 +45,7 @@ export interface VoiceAgentAction {
     | "update_form"
     | "consultation_started"
     | "consultation_confirmed"
+    | "consultation_cancelled"
     | "agent_speaking"
     | "consultation_requested"
     | "cancel_action"
