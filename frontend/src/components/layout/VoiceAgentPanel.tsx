@@ -1,12 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { Volume2, VolumeX, Loader2, CheckCircle2 } from "lucide-react";
+import { Mic, MicOff, Loader2, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { useVoiceSession, ConsultationField } from "@/hooks/useVoiceSession";
-import { useDidAvatar } from "@/hooks/useDidAvatar";
 import { AVATAR_CONFIG } from "@/config/avatar";
-import { usePathname } from "next/navigation";
 
 type VoiceSession = ReturnType<typeof useVoiceSession>;
 
@@ -30,9 +28,9 @@ export function VoiceAgentPanel({
   form?: Partial<Record<ConsultationField, string>>;
   formSubmitted?: boolean;
 }) {
-  const pathname = usePathname();
   const filledFields = FORM_FIELD_ORDER.filter((f) => form?.[f]);
-  const did = useDidAvatar(pathname);
+  const avatarFrameRef = React.useRef<HTMLDivElement>(null);
+  const [tilt, setTilt] = React.useState({ x: 0, y: 0 });
 
   React.useEffect(() => {
     if (voice.status === "idle") {
@@ -40,30 +38,41 @@ export function VoiceAgentPanel({
     }
   }, [voice]);
 
-  // Connect D-ID video stream if available
+  // 3D Interactive Cursor-Following Parallax (Head tilt up, down, left, right)
   React.useEffect(() => {
-    if (voice.status === "connected" || voice.status === "connecting") {
-      did.startStream("male").catch(() => {});
-    }
-    return () => {
-      did.stopStream();
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!avatarFrameRef.current) return;
+      const rect = avatarFrameRef.current.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      const deltaX = (e.clientX - centerX) / (window.innerWidth / 2);
+      const deltaY = (e.clientY - centerY) / (window.innerHeight / 2);
+      
+      // Calculate smooth tilt angles clamped for natural head movement
+      const maxTiltX = 12; // up/down
+      const maxTiltY = 15; // left/right
+      
+      setTilt({
+        x: Math.max(-maxTiltX, Math.min(maxTiltX, deltaY * maxTiltX)),
+        y: Math.max(-maxTiltY, Math.min(maxTiltY, deltaX * maxTiltY)),
+      });
     };
-  }, [voice.status]);
+
+    const handleMouseLeave = () => {
+      setTilt({ x: 0, y: 0 });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    window.addEventListener("mouseleave", handleMouseLeave);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, []);
 
   const speaking = voice.status === "connected" && voice.agentSpeaking && !voice.audioBlocked;
   const isConnecting = voice.status === "connecting";
-
-  // Trigger D-ID lip sync animation when LiveKit agent speaks
-  const lastSpokenTextRef = React.useRef<string>("");
-  React.useEffect(() => {
-    if (speaking) {
-      const text = voice.latestAgentText || "I am analyzing your practice revenue cycle.";
-      if (text !== lastSpokenTextRef.current) {
-        lastSpokenTextRef.current = text;
-        did.triggerLipSync(text, "male").catch(() => {});
-      }
-    }
-  }, [speaking, voice.latestAgentText, did]);
 
   const defaultAvatar =
     AVATAR_CONFIG.avatars[AVATAR_CONFIG.defaultGender as keyof typeof AVATAR_CONFIG.avatars] ||
@@ -75,23 +84,28 @@ export function VoiceAgentPanel({
       aria-label="NIVREN Voice Assistant"
       className="fixed bottom-24 end-5 z-50 flex h-[min(580px,80vh)] w-[min(360px,92vw)] flex-col items-center justify-between p-4 text-white"
     >
-      {/* Center Circular Avatar Container with LiveKit Real-Time Audio Waves */}
+      {/* Center Circular Avatar Container with 3D Head Tracking */}
       <div className="relative flex flex-col items-center justify-end mt-auto mb-4">
         <div className="relative flex h-72 w-72 items-center justify-center sm:h-80 sm:w-80">
-          {/* Outer Pulsing Glow while speaking */}
+          {/* Soft Luminous Glow (Light & Aesthetic Aura) */}
           <span
             aria-hidden
             className={cn(
-              "absolute inset-0 rounded-full bg-cyan-500/25 blur-3xl transition-[transform,opacity] duration-500",
-              speaking ? "scale-110 opacity-90 animate-pulse" : "scale-100 opacity-20"
+              "absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-400/25 via-teal-300/20 to-blue-500/20 blur-3xl transition-[transform,opacity] duration-500 pointer-events-none",
+              speaking ? "scale-110 opacity-90 animate-pulse" : "scale-100 opacity-40"
             )}
           />
 
-          {/* Big Circular Avatar Frame */}
+          {/* 3D Circular Avatar Frame following cursor */}
           <div
+            ref={avatarFrameRef}
+            style={{
+              transform: `perspective(800px) rotateX(${-tilt.x}deg) rotateY(${tilt.y}deg) scale3d(${speaking ? 1.03 : 1}, ${speaking ? 1.03 : 1}, 1)`,
+              transition: "transform 0.12s ease-out",
+            }}
             className={cn(
-              "relative h-68 w-68 sm:h-76 sm:w-76 overflow-hidden rounded-full border-4 border-white/90 bg-slate-950 shadow-[0_15px_50px_rgba(0,0,0,0.8)] transition-transform duration-300",
-              speaking ? "scale-105 ring-4 ring-cyan-400/60" : "scale-100"
+              "relative h-68 w-68 sm:h-76 sm:w-76 overflow-hidden rounded-full border-4 border-white/90 bg-slate-950 shadow-[0_15px_45px_rgba(0,0,0,0.5)] will-change-transform",
+              speaking && "ring-4 ring-cyan-400/60"
             )}
           >
             {/* Real Human Photorealistic Doctor Avatar (Dr. Dylan) */}
@@ -101,34 +115,29 @@ export function VoiceAgentPanel({
                 speaking ? "animate-avatar-breath scale-[1.03]" : "scale-100"
               )}
             >
-              {/* Ultra High-Definition Real Human Presenter Photo */}
+              {/* Ultra High-Definition Presenter Photo */}
               <img
                 src={defaultAvatar.imageUrl}
                 alt={defaultAvatar.name}
-                className="h-full w-full object-cover object-center"
+                className="h-full w-full object-cover object-center select-none pointer-events-none"
               />
 
-              {/* D-ID Live WebRTC Video Stream overlay if stream is active */}
-              {did.hasVideoStream && (
-                <video
-                  ref={did.videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-500 opacity-100"
-                />
-              )}
+              {/* Natural Soft Light Face Highlight */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-black/30"
+              />
 
-              {/* Real-time Photorealistic Lip-Sync Motion Layer positioned precisely on mouth */}
+              {/* Natural Lip-Sync Motion Layer positioned precisely on mouth */}
               {speaking && (
                 <div
                   aria-hidden
                   className="pointer-events-none absolute top-[51.8%] left-[50.1%] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
                 >
-                  {/* Dynamic mouth opening / phoneme shape */}
-                  <span className="h-4 w-9 rounded-full bg-slate-950/75 blur-[1.5px] animate-avatar-lips" />
-                  {/* Subtle inner teeth/lip contour */}
-                  <span className="absolute h-1.5 w-6 rounded-full bg-rose-200/40 blur-[0.8px] animate-pulse" />
+                  {/* Dynamic natural mouth opening */}
+                  <span className="h-3.5 w-8 rounded-full bg-slate-950/70 blur-[1px] animate-avatar-lips" />
+                  {/* Subtle inner teeth/lip depth contour */}
+                  <span className="absolute h-1 w-5 rounded-full bg-rose-200/35 blur-[0.6px] animate-pulse" />
                 </div>
               )}
             </div>
@@ -141,29 +150,54 @@ export function VoiceAgentPanel({
               </div>
             )}
 
-            {/* Mute/Speaker Toggle Button (Embedded directly on image at bottom center) */}
+            {/* User Microphone Mute / Unmute Control Button */}
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 voice.toggleMute();
               }}
+              title={voice.muted ? "Unmute your microphone" : "Mute your microphone (Agent will speak uninterrupted)"}
               aria-label={voice.muted ? "Unmute microphone" : "Mute microphone"}
               className={cn(
-                "absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex h-11 w-11 items-center justify-center rounded-full backdrop-blur-md transition-transform hover:scale-110 active:scale-95 shadow-xl cursor-pointer",
+                "absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex h-11 w-11 items-center justify-center rounded-full backdrop-blur-md transition-all duration-200 hover:scale-110 active:scale-95 shadow-xl cursor-pointer",
                 voice.muted
-                  ? "bg-red-600 text-white ring-2 ring-white"
-                  : "bg-black/70 text-white ring-2 ring-white/50 hover:bg-black/90"
+                  ? "bg-rose-600 text-white ring-2 ring-white shadow-rose-600/50"
+                  : "bg-slate-900/85 text-cyan-300 ring-2 ring-cyan-400/50 hover:bg-slate-800"
               )}
             >
-              {voice.muted ? <VolumeX className="h-5 w-5 text-white" /> : <Volume2 className="h-5 w-5 text-white" />}
+              {voice.muted ? <MicOff className="h-5 w-5 text-white" /> : <Mic className="h-5 w-5 text-cyan-300" />}
             </button>
 
-            {/* Dynamic Audio Visualizer Waves inside the Avatar */}
-            <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5">
-              <span className={cn("h-1 w-9 rounded-full bg-white/45 transition-all duration-150", speaking && "h-2.5 bg-cyan-300 animate-pulse")} />
-              <span className={cn("h-1.5 w-14 rounded-full bg-white/80 transition-all duration-150", speaking && "h-3.5 bg-cyan-200 animate-[pulse_0.4s_ease-in-out_infinite]")} />
-              <span className={cn("h-1 w-9 rounded-full bg-white/45 transition-all duration-150", speaking && "h-2.5 bg-cyan-300 animate-pulse")} />
+            {/* 2px Height Sequential Wave Equalizer Bars */}
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5">
+              {/* Bar 1 - Sequential Wave */}
+              <span
+                className={cn(
+                  "h-[2px] w-8 rounded-full transition-all duration-300",
+                  speaking
+                    ? "bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.8)] animate-pulse"
+                    : "bg-white/40"
+                )}
+              />
+              {/* Bar 2 - Center Sequential Wave */}
+              <span
+                className={cn(
+                  "h-[2px] w-14 rounded-full transition-all duration-300",
+                  speaking
+                    ? "bg-cyan-100 shadow-[0_0_10px_rgba(255,255,255,0.9)] animate-[pulse_0.4s_ease-in-out_infinite_150ms]"
+                    : "bg-white/70"
+                )}
+              />
+              {/* Bar 3 - Sequential Wave */}
+              <span
+                className={cn(
+                  "h-[2px] w-8 rounded-full transition-all duration-300",
+                  speaking
+                    ? "bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.8)] animate-pulse [animation-delay:300ms]"
+                    : "bg-white/40"
+                )}
+              />
             </div>
           </div>
         </div>

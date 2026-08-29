@@ -52,13 +52,70 @@ export function AssistantWidget() {
     [pathname, router]
   );
 
+  const scrollAnimRef = React.useRef<number | null>(null);
+
+  const stopContinuousScroll = React.useCallback(() => {
+    if (scrollAnimRef.current !== null) {
+      cancelAnimationFrame(scrollAnimRef.current);
+      scrollAnimRef.current = null;
+    }
+  }, []);
+
+  const startContinuousScroll = React.useCallback(
+    (direction: "down" | "up" = "down", speed: "slow" | "normal" | "fast" = "normal") => {
+      stopContinuousScroll();
+      const speedPx = speed === "slow" ? 1.5 : speed === "fast" ? 6.5 : 3.5;
+      const delta = direction === "down" ? speedPx : -speedPx;
+
+      const step = () => {
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        const currentScroll = window.scrollY || window.pageYOffset;
+        if (direction === "down" && currentScroll >= maxScroll - 2) {
+          stopContinuousScroll();
+          return;
+        }
+        if (direction === "up" && currentScroll <= 2) {
+          stopContinuousScroll();
+          return;
+        }
+        window.scrollBy(0, delta);
+        scrollAnimRef.current = requestAnimationFrame(step);
+      };
+      scrollAnimRef.current = requestAnimationFrame(step);
+    },
+    [stopContinuousScroll]
+  );
+
+  // Stop auto scroll if user touches screen or uses mouse wheel manually
+  React.useEffect(() => {
+    const handleUserScroll = (e: Event) => {
+      if (e.isTrusted && scrollAnimRef.current !== null) {
+        stopContinuousScroll();
+      }
+    };
+    window.addEventListener("wheel", handleUserScroll, { passive: true });
+    window.addEventListener("touchmove", handleUserScroll, { passive: true });
+    return () => {
+      window.removeEventListener("wheel", handleUserScroll);
+      window.removeEventListener("touchmove", handleUserScroll);
+      stopContinuousScroll();
+    };
+  }, [stopContinuousScroll]);
+
   const runClientAction = React.useCallback(
     (action: any) => {
       if (action.type === "navigate") {
+        stopContinuousScroll();
         router.push(withLocale(action.path, pathname));
       } else if (action.type === "scroll") {
+        stopContinuousScroll();
         document.getElementById(action.sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else if (action.type === "start_smooth_scroll") {
+        startContinuousScroll(action.direction || "down", action.speed || "normal");
+      } else if (action.type === "stop_scroll") {
+        stopContinuousScroll();
       } else if (action.type === "scroll_page") {
+        stopContinuousScroll();
         window.scrollBy({ top: action.amount || 600, behavior: "smooth" });
       } else if (action.type === "set_theme") {
         setTheme(action.theme);
@@ -71,6 +128,7 @@ export function AssistantWidget() {
       } else if (action.type === "consultation_confirmed") {
         trackEvent({ name: "consultation_confirmation" });
       } else if (action.type === "end_session") {
+        stopContinuousScroll();
         setTimeout(() => {
           voice.stop();
           setVoiceForm({});
@@ -102,7 +160,7 @@ export function AssistantWidget() {
           });
       }
     },
-    [router, pathname, setTheme, switchLanguage]
+    [router, pathname, setTheme, switchLanguage, startContinuousScroll, stopContinuousScroll]
   );
 
   // LiveKit WebRTC Voice Session connected to Backend RAG & MCP tools

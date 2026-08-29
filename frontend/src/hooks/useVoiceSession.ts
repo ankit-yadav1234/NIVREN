@@ -13,6 +13,8 @@ export type VoiceAgentAction =
   | { type: "navigate"; path: string }
   | { type: "scroll"; sectionId: string }
   | { type: "scroll_page"; amount: number; direction: "down" | "up" }
+  | { type: "start_smooth_scroll"; direction: "down" | "up"; speed: "slow" | "normal" | "fast" }
+  | { type: "stop_scroll" }
   | { type: "set_theme"; theme: "dark" | "light" }
   | { type: "set_language"; locale: "en" | "hi" | "ar" }
   | { type: "end_session" }
@@ -43,7 +45,7 @@ interface GlobalVoiceState {
   latestAgentText: string;
   error: string | null;
   audioBlocked: boolean;
-  muted: boolean;
+  userMicMuted: boolean;
   isVoiceOpen: boolean;
 }
 
@@ -55,7 +57,7 @@ let globalState: GlobalVoiceState = {
   latestAgentText: "",
   error: null,
   audioBlocked: false,
-  muted: false,
+  userMicMuted: false,
   isVoiceOpen: false,
 };
 const stateListeners = new Set<(state: GlobalVoiceState) => void>();
@@ -108,7 +110,7 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
       status: "idle",
       agentSpeaking: false,
       audioBlocked: false,
-      muted: false,
+      userMicMuted: false,
       isVoiceOpen: false,
     });
   }, []);
@@ -121,15 +123,13 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
     await activeRoom?.startAudio();
   }, []);
 
+  // Mute/Unmute user's microphone so background noise doesn't interrupt agent
   const toggleMute = React.useCallback(async () => {
-    const nextMuted = !globalState.muted;
+    const nextMuted = !globalState.userMicMuted;
     if (activeRoom?.localParticipant) {
-      activeRoom.localParticipant.setMicrophoneEnabled(!nextMuted).catch(() => {});
+      await activeRoom.localParticipant.setMicrophoneEnabled(!nextMuted).catch(() => {});
     }
-    if (activeAudioEl) {
-      activeAudioEl.muted = nextMuted;
-    }
-    updateGlobalState({ muted: nextMuted });
+    updateGlobalState({ userMicMuted: nextMuted });
   }, []);
 
   const stop = React.useCallback(async () => {
@@ -141,13 +141,27 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
       updateGlobalState({ isVoiceOpen: true });
       return;
     }
-    updateGlobalState({ status: "connecting", error: null, isVoiceOpen: true });
+    // Pre-unlock AudioContext on direct click interaction
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtx) {
+        const dummyCtx = new AudioCtx();
+        if (dummyCtx.state === "suspended") {
+          dummyCtx.resume().catch(() => {});
+        }
+      }
+    } catch (_) {}
+
+    updateGlobalState({ status: "connecting", error: null, isVoiceOpen: true, userMicMuted: false });
     try {
       const identity = `user-${crypto.randomUUID()}`;
       const roomName = `voice-${crypto.randomUUID()}`;
       const { token, url } = await getLiveKitToken(roomName, identity);
 
-      const room = new Room();
+      const room = new Room({
+        adaptiveStream: true,
+        dynacast: true,
+      });
       activeRoom = room;
 
       room.on(RoomEvent.TrackSubscribed, (track: RemoteTrack) => {
@@ -164,7 +178,14 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
       });
 
       room.on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
-        updateGlobalState({ agentSpeaking: speakers.some((p) => !p.isLocal) });
+        const isAgentSpeaking = speakers.some((p) => !p.isLocal);
+        const isUserSpeaking = speakers.some((p) => p.isLocal);
+        // Zero-latency barge-in: If user speaks and mic is not muted, agent visually stops immediately
+        if (isUserSpeaking && !globalState.userMicMuted) {
+          updateGlobalState({ agentSpeaking: false });
+        } else {
+          updateGlobalState({ agentSpeaking: isAgentSpeaking });
+        }
       });
 
       room.on(RoomEvent.AudioPlaybackStatusChanged, () => {
@@ -193,7 +214,7 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
         updateGlobalState({ status: "idle", agentSpeaking: false, latestAgentText: "", isVoiceOpen: false });
       });
 
-      await room.connect(url, token);
+      await room.connect(url, token, { autoSubscribe: true });
       await room.startAudio().catch(() => {});
       updateGlobalState({ audioBlocked: !room.canPlaybackAudio });
       
@@ -201,7 +222,7 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
         console.error("Could not sync current route to the agent:", err);
       });
       await room.localParticipant.setMicrophoneEnabled(true);
-      updateGlobalState({ status: "connected" });
+      updateGlobalState({ status: "connected", userMicMuted: false });
       trackEvent({ name: "voice_conversation_start" });
     } catch (err) {
       console.error("Voice session error:", err);
@@ -227,7 +248,8 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
     agentSpeaking: state.agentSpeaking,
     latestAgentText: state.latestAgentText,
     audioBlocked: state.audioBlocked,
-    muted: state.muted,
+    muted: state.userMicMuted,
+    userMicMuted: state.userMicMuted,
     error: state.error,
     isVoiceOpen: state.isVoiceOpen,
     start,

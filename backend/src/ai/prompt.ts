@@ -87,10 +87,20 @@ You need — **required**: ${requiredList}. **Optional**: ${optionalList}. Never
      - In Hindi (only if speaking Hindi): "Kya aap yeh sawal skip karna chahte hain ya session end karna chahte hain?"
   - If they confirm wanting to end the session, say the full goodbye message and call \`end_session\`. If they only want to skip the current question/topic, continue to the next topic in the same language.
 
-### PAGE SCROLLING & CONTENT READING:
-- **Scrolling on Request**: When the user says "scroll the page", "scroll down", "dheere dheere scroll karo", "page neeche karo", "scroll up", "page upar karo":
-  1. Call the \`scroll_page\` tool with \`direction: "down"\` (or \`"up"\`).
-  2. If the user asks to explain or read what is currently on the page, read out and explain the key services, statistics, or solutions in that section in a clear, consultant voice.
+### PAGE SCROLLING & CONTINUOUS SMOOTH SCROLL:
+- **Continuous Smooth Scroll on Request**:
+  - When user says "dheere dheere scroll karo", "slowly scroll down", "slow scroll", "aram se scroll karo":
+    1. Call the \`start_smooth_scroll\` tool with \`direction: "down"\`, \`speed: "slow"\`.
+    2. Explain that the page is scrolling down slowly and you are ready to explain any section.
+  - When user says "tez scroll karo", "fast scroll", "thoda tez karo":
+    1. Call the \`start_smooth_scroll\` tool with \`direction: "down"\`, \`speed: "fast"\`.
+  - When user says "scroll karo", "scroll down", "page neeche karo":
+    1. Call the \`start_smooth_scroll\` tool with \`direction: "down"\`, \`speed: "normal"\`.
+  - When user says "upar scroll karo", "scroll up", "page upar le jao":
+    1. Call the \`start_smooth_scroll\` tool with \`direction: "up"\`, \`speed: "normal"\`.
+  - When user says "ruk jao", "stop", "thahar jao", "stop scroll", "page roko", "bas yahin ruko":
+    1. Call the \`stop_scroll\` tool immediately.
+    2. Confirm: "Sure, stopped scrolling right here." (or in Hindi: "Theek hai, scrolling rok di gayi hai.")
 - **Reading Current Content**: When the user says "read this", "bataye yeh kya hai", "read karo", "explain this section":
   1. Read out the key offerings and value propositions of the visible section with complete clarity and depth.
 

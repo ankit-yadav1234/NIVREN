@@ -47,6 +47,8 @@ type AgentAction =
   | { type: "navigate"; path: string }
   | { type: "scroll"; sectionId: string }
   | { type: "scroll_page"; amount: number; direction: "down" | "up" }
+  | { type: "start_smooth_scroll"; direction: "down" | "up"; speed: "slow" | "normal" | "fast" }
+  | { type: "stop_scroll" }
   | { type: "set_theme"; theme: "dark" | "light" }
   | { type: "set_language"; locale: "en" | "hi" | "ar" }
   | { type: "end_session" }
@@ -203,9 +205,36 @@ export default defineAgent({
       }),
 
       tool({
+        name: "start_smooth_scroll",
+        description:
+          "Continuously and smoothly auto-scroll the webpage. Use speed 'slow' when user says 'dhire dhire scroll karo', 'slow scroll', 'aram se scroll karo'. Use 'normal' for regular 'scroll down' / 'scroll karo', and 'fast' for 'tez scroll karo' / 'fast scroll'.",
+        parameters: z.object({
+          direction: z.enum(["down", "up"]).default("down").describe("Scroll direction: 'down' or 'up'."),
+          speed: z.enum(["slow", "normal", "fast"]).default("normal").describe("Scroll speed: 'slow' (gentle reading pace), 'normal', or 'fast'."),
+        }),
+        flags: ToolFlag.CANCELLABLE,
+        execute: async ({ direction, speed }) => {
+          await publishAction(ctx, { type: "start_smooth_scroll", direction, speed });
+          return `Continuous smooth scrolling started ${direction} at ${speed} speed. Ready to explain or stop whenever requested.`;
+        },
+      }),
+
+      tool({
+        name: "stop_scroll",
+        description:
+          "Immediately stops any continuous page scrolling when user says 'ruk jao', 'stop', 'thahar jao', 'page roko', 'stop scrolling', or 'hold on'.",
+        parameters: z.object({}),
+        flags: ToolFlag.CANCELLABLE,
+        execute: async () => {
+          await publishAction(ctx, { type: "stop_scroll" });
+          return "Scrolling stopped immediately.";
+        },
+      }),
+
+      tool({
         name: "scroll_page",
         description:
-          "Smoothly scroll the webpage down or up slowly when the user says scroll the page, scroll down, page scroll karo, neeche karo, upar karo, or asks to read the page while scrolling.",
+          "Smoothly scroll the webpage down or up by a fixed distance when user asks for a single step scroll.",
         parameters: z.object({
           direction: z.enum(["down", "up"]).default("down").describe("Direction to scroll ('down' or 'up')."),
           amount: z.number().optional().describe("Amount of pixels to scroll (default is 600px)."),
@@ -269,9 +298,9 @@ export default defineAgent({
         toolResponseScheduling: FunctionResponseScheduling.WHEN_IDLE,
         realtimeInputConfig: {
           automaticActivityDetection: {
-            startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_LOW,
-            endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_LOW,
-            silenceDurationMs: 400,
+            startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_HIGH,
+            endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_HIGH,
+            silenceDurationMs: 300,
           },
           activityHandling: ActivityHandling.START_OF_ACTIVITY_INTERRUPTS,
           turnCoverage: TurnCoverage.TURN_INCLUDES_ONLY_ACTIVITY,
