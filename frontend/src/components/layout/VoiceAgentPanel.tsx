@@ -50,17 +50,20 @@ export function VoiceAgentPanel({
     };
   }, [voice.status]);
 
-  // Trigger D-ID lip sync animation when LiveKit agent speaks with new text
-  const lastSpokenTextRef = React.useRef<string>("");
-  React.useEffect(() => {
-    if (voice.latestAgentText && voice.latestAgentText !== lastSpokenTextRef.current) {
-      lastSpokenTextRef.current = voice.latestAgentText;
-      did.triggerLipSync(voice.latestAgentText, "male").catch(() => {});
-    }
-  }, [voice.latestAgentText, did]);
-
   const speaking = voice.status === "connected" && voice.agentSpeaking && !voice.audioBlocked;
   const isConnecting = voice.status === "connecting";
+
+  // Trigger D-ID lip sync animation when LiveKit agent speaks
+  const lastSpokenTextRef = React.useRef<string>("");
+  React.useEffect(() => {
+    if (speaking) {
+      const text = voice.latestAgentText || "I am analyzing your practice revenue cycle.";
+      if (text !== lastSpokenTextRef.current) {
+        lastSpokenTextRef.current = text;
+        did.triggerLipSync(text, "male").catch(() => {});
+      }
+    }
+  }, [speaking, voice.latestAgentText, did]);
 
   const defaultAvatar =
     AVATAR_CONFIG.avatars[AVATAR_CONFIG.defaultGender as keyof typeof AVATAR_CONFIG.avatars] ||
@@ -88,14 +91,14 @@ export function VoiceAgentPanel({
           <div
             className={cn(
               "relative h-68 w-68 sm:h-76 sm:w-76 overflow-hidden rounded-full border-4 border-white/90 bg-slate-950 shadow-[0_15px_50px_rgba(0,0,0,0.8)] transition-transform duration-300",
-              speaking ? "scale-105 ring-4 ring-cyan-400/50" : "scale-100"
+              speaking ? "scale-105 ring-4 ring-cyan-400/60" : "scale-100"
             )}
           >
             {/* Photorealistic Avatar Image & D-ID WebRTC Video */}
             <div
               className={cn(
-                "relative h-full w-full overflow-hidden transition-transform duration-200",
-                speaking && "animate-[pulse_0.4s_ease-in-out_infinite] scale-[1.03]"
+                "relative h-full w-full overflow-hidden transition-transform duration-300",
+                speaking ? "animate-avatar-breath scale-[1.03]" : "scale-100"
               )}
             >
               {/* Fallback & Baseline Avatar Image */}
@@ -117,12 +120,17 @@ export function VoiceAgentPanel({
                 )}
               />
 
-              {/* Dynamic Lip-Sync Motion Layer */}
+              {/* Real-time Photorealistic Lip-Sync Motion Layer positioned precisely on mouth */}
               {speaking && (
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute bottom-[26%] left-1/2 -translate-x-1/2 h-8 w-14 rounded-full bg-rose-950/20 blur-[1px] animate-[ping_0.5s_cubic-bezier(0,0,0.2,1)_infinite]"
-                />
+                  className="pointer-events-none absolute top-[51.8%] left-[50.1%] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
+                >
+                  {/* Dynamic mouth opening / phoneme shape */}
+                  <span className="h-4 w-9 rounded-full bg-slate-950/75 blur-[1.5px] animate-avatar-lips" />
+                  {/* Subtle inner teeth/lip contour */}
+                  <span className="absolute h-1.5 w-6 rounded-full bg-rose-200/40 blur-[0.8px] animate-pulse" />
+                </div>
               )}
             </div>
 

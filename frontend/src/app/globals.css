@@ -256,6 +256,27 @@
 /* ------------------------------------------------------------------ */
 /* Smooth Non-Blinking Infinite Auto-Scroll Carousel (Testimonials)  */
 /* ------------------------------------------------------------------ */
+@keyframes avatarLips {
+  0% { transform: translate(-50%, -50%) scale(1, 0.4); opacity: 0.3; }
+  25% { transform: translate(-50%, -50%) scale(1.15, 1.35); opacity: 0.85; }
+  50% { transform: translate(-50%, -50%) scale(0.95, 0.55); opacity: 0.4; }
+  75% { transform: translate(-50%, -50%) scale(1.2, 1.5); opacity: 0.95; }
+  100% { transform: translate(-50%, -50%) scale(1, 0.4); opacity: 0.3; }
+}
+
+@keyframes avatarBreathing {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.animate-avatar-lips {
+  animation: avatarLips 0.25s ease-in-out infinite alternate;
+}
+
+.animate-avatar-breath {
+  animation: avatarBreathing 4s ease-in-out infinite;
+}
+
 @keyframes marquee-scroll {
   0% {
     transform: translate3d(0, 0, 0);

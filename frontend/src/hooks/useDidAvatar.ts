@@ -306,11 +306,16 @@ export function useDidAvatar(pathname: string) {
       });
 
       setStatus("connected");
+
+      // Initialize D-ID lip sync talking animation immediately on connect
+      setTimeout(() => {
+        triggerLipSync("Hello! I am Dr. Dylan, your NIVREN healthcare and medical billing revenue cycle specialist. How can I assist you today?", avatarKey);
+      }, 400);
     } catch (err) {
       console.warn("Using interactive RAG visual fallback:", err);
       setStatus("connected");
     }
-  }, [currentAvatarKey, activeAvatar]);
+  }, [currentAvatarKey, activeAvatar, triggerLipSync]);
 
   // Clean stop
   const stopStream = React.useCallback(() => {
