@@ -241,8 +241,22 @@ export function useDidAvatar(pathname: string) {
     setStatus("connecting");
     try {
       if (pcRef.current) {
-        pcRef.current.close();
+        try { pcRef.current.close(); } catch (_) {}
         pcRef.current = null;
+      }
+
+      // Close previous stream on D-ID server if exists to prevent 403 Max Sessions
+      if (streamIdRef.current && sessionIdRef.current) {
+        try {
+          fetch(`${API_BASE}/api/did/close`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              streamId: streamIdRef.current,
+              sessionId: sessionIdRef.current,
+            }),
+          }).catch(() => {});
+        } catch (_) {}
       }
 
       const targetAvatar = AVATAR_CONFIG.avatars[avatarKey] || activeAvatar;
