@@ -116,7 +116,7 @@ export function VoiceAgentPanel({
                 muted
                 className={cn(
                   "absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-500",
-                  did.status === "connected" || did.status === "speaking" ? "opacity-100" : "opacity-0"
+                  did.hasVideoStream ? "opacity-100" : "opacity-0"
                 )}
               />
 

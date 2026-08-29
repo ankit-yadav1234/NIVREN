@@ -19,6 +19,7 @@ export function useDidAvatar(pathname: string) {
   const [transcript, setTranscript] = React.useState("");
   const [lastReply, setLastReply] = React.useState("");
   const [audioLevel, setAudioLevel] = React.useState(0);
+  const [mediaStream, setMediaStream] = React.useState<MediaStream | null>(null);
 
   const videoRef = React.useRef<HTMLVideoElement>(null);
   const pcRef = React.useRef<RTCPeerConnection | null>(null);
@@ -31,6 +32,14 @@ export function useDidAvatar(pathname: string) {
   React.useEffect(() => {
     isMutedRef.current = isMuted;
   }, [isMuted]);
+
+  React.useEffect(() => {
+    if (videoRef.current && mediaStream) {
+      videoRef.current.muted = true;
+      videoRef.current.srcObject = mediaStream;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [mediaStream]);
 
   const activeAvatar: AvatarOption = AVATAR_CONFIG.avatars[currentAvatarKey] || AVATAR_CONFIG.avatars.male;
 
@@ -265,10 +274,13 @@ export function useDidAvatar(pathname: string) {
           return;
         }
 
-        if (videoRef.current && event.streams && event.streams[0]) {
-          videoRef.current.muted = true;
-          videoRef.current.srcObject = event.streams[0];
-          videoRef.current.play().catch(() => {});
+        if (event.streams && event.streams[0]) {
+          setMediaStream(event.streams[0]);
+          if (videoRef.current) {
+            videoRef.current.muted = true;
+            videoRef.current.srcObject = event.streams[0];
+            videoRef.current.play().catch(() => {});
+          }
         }
       };
 
@@ -346,6 +358,8 @@ export function useDidAvatar(pathname: string) {
     activeAvatar,
     status,
     videoRef,
+    mediaStream,
+    hasVideoStream: !!mediaStream,
     isListening,
     isMuted,
     transcript,
