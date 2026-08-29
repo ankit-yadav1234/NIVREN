@@ -5,7 +5,8 @@ import { sendAIMessage, type AIMessage, type AIClientAction } from "@/lib/api/ai
 import { AVATAR_CONFIG, type AvatarOption } from "@/config/avatar";
 import { useRouter } from "next/navigation";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+// Uses relative Next.js API routes (/api/did/...) so it functions seamlessly on Vercel production
+const API_BASE = "";
 
 export type DidAvatarStatus = "idle" | "connecting" | "connected" | "speaking" | "listening" | "error";
 
