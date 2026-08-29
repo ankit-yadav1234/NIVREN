@@ -166,14 +166,26 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
 
       room.on(RoomEvent.TrackSubscribed, (track: RemoteTrack) => {
         if (track.kind === Track.Kind.Audio) {
-          const el = track.attach();
-          el.autoplay = true;
-          document.body.appendChild(el);
-          activeAudioEl = el;
-          el.play().catch((err) => {
-            console.warn("Audio autoplay blocked by browser:", err);
-            updateGlobalState({ audioBlocked: true });
-          });
+          try {
+            let el = document.getElementById("livekit-remote-audio") as HTMLAudioElement;
+            if (!el) {
+              el = track.attach();
+              el.id = "livekit-remote-audio";
+              el.autoplay = true;
+              if (document.body) {
+                document.body.appendChild(el);
+              }
+            } else {
+              track.attach(el);
+            }
+            activeAudioEl = el;
+            el.play().catch((err) => {
+              console.warn("Audio autoplay blocked by browser:", err);
+              updateGlobalState({ audioBlocked: true });
+            });
+          } catch (e) {
+            console.warn("Could not attach remote audio track:", e);
+          }
         }
       });
 
