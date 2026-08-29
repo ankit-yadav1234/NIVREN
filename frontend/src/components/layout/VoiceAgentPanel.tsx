@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { Mic, MicOff, Loader2, CheckCircle2 } from "lucide-react";
+import { Mic, MicOff, Loader2, CheckCircle2, User, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { useVoiceSession, ConsultationField } from "@/hooks/useVoiceSession";
 import { AVATAR_CONFIG } from "@/config/avatar";
+import { ThreeDoctorAvatar } from "@/components/healthcare/ThreeDoctorAvatar";
 
 type VoiceSession = ReturnType<typeof useVoiceSession>;
 
@@ -31,6 +32,9 @@ export function VoiceAgentPanel({
   const filledFields = FORM_FIELD_ORDER.filter((f) => form?.[f]);
   const defaultAvatar = AVATAR_CONFIG.avatars.male;
 
+  // Avatar Display Mode: "3d" (Ready Player Me Rigged 3D Doctor) or "photo" (Photorealistic 3D Depth Parallax)
+  const [avatarMode, setAvatarMode] = React.useState<"3d" | "photo">("3d");
+
   // Real-time Smooth 3D Cursor Physics (Interpolated with Lerp for 60 FPS fluidity)
   const [mouse, setMouse] = React.useState({ x: 0, y: 0 });
   const targetMouseRef = React.useRef({ x: 0, y: 0 });
@@ -45,7 +49,6 @@ export function VoiceAgentPanel({
   // Global window cursor listener so Dr. Dylan looks at mouse anywhere on screen
   React.useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      // Normalized coordinates from -1.0 to 1.0
       const normX = (e.clientX / window.innerWidth) * 2 - 1;
       const normY = -((e.clientY / window.innerHeight) * 2 - 1);
       targetMouseRef.current.x = Math.max(-1, Math.min(1, normX));
@@ -84,7 +87,7 @@ export function VoiceAgentPanel({
   const speaking = voice.status === "connected" && voice.agentSpeaking && !voice.audioBlocked;
   const isConnecting = voice.status === "connecting";
 
-  // Calculate 3D transformation values
+  // Calculate 3D transformation values for Photo Parallax mode
   const rotateY = mouse.x * 20; // Head turns left/right (-20deg to +20deg)
   const rotateX = -mouse.y * 18; // Head tilts up/down (-18deg to +18deg)
   const rotateZ = mouse.x * 4; // Subtle natural head roll
@@ -95,8 +98,38 @@ export function VoiceAgentPanel({
     <div
       role="dialog"
       aria-label="NIVREN Voice Assistant"
-      className="fixed bottom-24 end-5 z-50 flex h-[min(580px,80vh)] w-[min(360px,92vw)] flex-col items-center justify-between p-4 text-white"
+      className="fixed bottom-24 end-5 z-50 flex h-[min(620px,85vh)] w-[min(360px,92vw)] flex-col items-center justify-between p-4 text-white"
     >
+      {/* Top Avatar Mode Switcher Pill */}
+      <div className="z-30 mb-2 flex items-center gap-1 rounded-full border border-white/20 bg-slate-950/80 p-1 backdrop-blur-md shadow-lg">
+        <button
+          type="button"
+          onClick={() => setAvatarMode("3d")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-all cursor-pointer",
+            avatarMode === "3d"
+              ? "bg-cyan-500 text-slate-950 shadow-md font-bold"
+              : "text-white/70 hover:text-white hover:bg-white/10"
+          )}
+        >
+          <User className="h-3.5 w-3.5" />
+          <span>3D Doctor</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setAvatarMode("photo")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-all cursor-pointer",
+            avatarMode === "photo"
+              ? "bg-cyan-500 text-slate-950 shadow-md font-bold"
+              : "text-white/70 hover:text-white hover:bg-white/10"
+          )}
+        >
+          <ImageIcon className="h-3.5 w-3.5" />
+          <span>Real Presenter</span>
+        </button>
+      </div>
+
       {/* Center Circular Avatar Container with 3D Head Tracking */}
       <div className="relative flex flex-col items-center justify-end mt-auto mb-4">
         <div className="relative flex h-72 w-72 items-center justify-center sm:h-80 sm:w-80">
@@ -112,65 +145,70 @@ export function VoiceAgentPanel({
           {/* 3D Circular Avatar Portal Frame */}
           <div
             className={cn(
-              "relative h-68 w-68 sm:h-76 sm:w-76 overflow-hidden rounded-full border-4 border-white/90 bg-slate-950 shadow-[0_18px_50px_rgba(0,0,0,0.65)]",
+              "relative h-68 w-68 sm:h-76 sm:w-76 overflow-hidden rounded-full border-4 border-white/90 bg-slate-950 shadow-[0_18px_50px_rgba(0,0,0,0.65)] transition-all duration-300",
               speaking && "ring-4 ring-cyan-400/60"
             )}
             style={{ perspective: "1000px" }}
           >
-            {/* Layer 1: Parallax Deep Background */}
-            <div
-              className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-cyan-950/40 transition-transform duration-100"
-              style={{
-                transform: `translateX(${-mouse.x * 12}px) translateY(${mouse.y * 10}px) scale(1.1)`,
-              }}
-            />
+            {/* OPTION 1: Ready Player Me Ultra-Realistic 3D Rigged Doctor Avatar */}
+            {avatarMode === "3d" ? (
+              <div className="relative h-full w-full overflow-hidden">
+                <ThreeDoctorAvatar
+                  speaking={speaking}
+                  avatarGender="male"
+                  className="h-full w-full"
+                />
+              </div>
+            ) : (
+              /* OPTION 2: Real Human Doctor Presenter Photo with Multi-Layer 3D Depth & Light Sheen */
+              <>
+                {/* Layer 1: Parallax Deep Background */}
+                <div
+                  className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-cyan-950/40 transition-transform duration-100"
+                  style={{
+                    transform: `translateX(${-mouse.x * 12}px) translateY(${mouse.y * 10}px) scale(1.1)`,
+                  }}
+                />
 
-            {/* Layer 2: 3D Interactive Doctor Dylan Photo with Real Head/Body Tilt */}
-            <div
-              className={cn(
-                "relative h-full w-full will-change-transform origin-center",
-                speaking && "animate-avatar-breath"
-              )}
-              style={{
-                transform: `scale(1.16) rotateY(${rotateY}deg) rotateX(${rotateX}deg) rotateZ(${rotateZ}deg) translateX(${translateX}px) translateY(${translateY}px)`,
-                transformStyle: "preserve-3d",
-              }}
-            >
-              {/* Ultra High-Definition Photo */}
-              <img
-                src={defaultAvatar.imageUrl}
-                alt={defaultAvatar.name}
-                className="h-full w-full object-cover object-center select-none pointer-events-none drop-shadow-2xl"
-              />
+                {/* Layer 2: 3D Interactive Doctor Dylan Photo with Real Head/Body Tilt */}
+                <div
+                  className={cn(
+                    "relative h-full w-full will-change-transform origin-center",
+                    speaking && "animate-avatar-breath"
+                  )}
+                  style={{
+                    transform: `scale(1.16) rotateY(${rotateY}deg) rotateX(${rotateX}deg) rotateZ(${rotateZ}deg) translateX(${translateX}px) translateY(${translateY}px)`,
+                    transformStyle: "preserve-3d",
+                  }}
+                >
+                  <img
+                    src={defaultAvatar.imageUrl}
+                    alt={defaultAvatar.name}
+                    className="h-full w-full object-cover object-center select-none pointer-events-none drop-shadow-2xl"
+                  />
 
-              {/* Layer 3: Realistic Lip-Sync Motion Layer Positioned on Mouth */}
-              {speaking && (
+                  {/* Layer 3: Realistic Lip-Sync Motion Layer Positioned on Mouth */}
+                  {speaking && (
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute top-[51.8%] left-[50.1%] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
+                    >
+                      <span className="h-3.5 w-8 rounded-full bg-slate-950/75 blur-[1px] animate-avatar-lips" />
+                      <span className="absolute h-1 w-5 rounded-full bg-rose-200/40 blur-[0.6px] animate-pulse" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Layer 4: Volumetric 3D Light Shading & Specular Sheen (Reacts to cursor direction) */}
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute top-[51.8%] left-[50.1%] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
-                >
-                  {/* Dynamic natural mouth phoneme shape */}
-                  <span className="h-3.5 w-8 rounded-full bg-slate-950/75 blur-[1px] animate-avatar-lips" />
-                  {/* Subtle inner teeth/lip depth contour */}
-                  <span className="absolute h-1 w-5 rounded-full bg-rose-200/40 blur-[0.6px] animate-pulse" />
-                </div>
-              )}
-            </div>
-
-            {/* Layer 4: Volumetric 3D Light Shading & Specular Sheen (Reacts to cursor direction) */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 rounded-full mix-blend-overlay"
-              style={{
-                background: `radial-gradient(circle at ${50 + mouse.x * 40}% ${50 - mouse.y * 40}%, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.5) 100%)`,
-              }}
-            />
-
-            {/* Top Soft Vignette & Rim Reflection */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 rounded-full border border-white/20 shadow-inner"
-            />
+                  className="pointer-events-none absolute inset-0 rounded-full mix-blend-overlay"
+                  style={{
+                    background: `radial-gradient(circle at ${50 + mouse.x * 40}% ${50 - mouse.y * 40}%, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.5) 100%)`,
+                  }}
+                />
+              </>
+            )}
 
             {/* Connecting Spinner Overlay */}
             {isConnecting && (
