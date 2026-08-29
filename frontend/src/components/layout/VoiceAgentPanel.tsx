@@ -84,11 +84,14 @@ export function VoiceAgentPanel({
   const isConnecting = voice.status === "connecting";
 
   // Calculate 3D transformation values for Photo Parallax mode
-  const rotateY = mouse.x * 20; // Head turns left/right (-20deg to +20deg)
-  const rotateX = -mouse.y * 18; // Head tilts up/down (-18deg to +18deg)
-  const rotateZ = mouse.x * 4; // Subtle natural head roll
-  const translateX = mouse.x * 16; // Parallax translation X
-  const translateY = -mouse.y * 14; // Parallax translation Y
+  const rotateY = mouse.x * 22; // Head turns left/right (-22deg to +22deg)
+  const rotateX = -mouse.y * 19; // Head tilts up/down (-19deg to +19deg)
+  const rotateZ = mouse.x * 5; // Subtle natural head roll
+  const translateX = mouse.x * 18; // Parallax translation X
+  const translateY = -mouse.y * 15; // Parallax translation Y
+
+  // Dynamic light angle calculation
+  const lightAngle = Math.atan2(-mouse.y, mouse.x) * (180 / Math.PI);
 
   return (
     <div
@@ -96,33 +99,74 @@ export function VoiceAgentPanel({
       aria-label="NIVREN Voice Assistant"
       className="fixed bottom-24 end-5 z-50 flex h-[min(580px,80vh)] w-[min(360px,92vw)] flex-col items-center justify-between p-4 text-white"
     >
-      {/* Center Circular Avatar Container with 3D Head Tracking */}
+      {/* Center Circular Avatar Container with 3D Head & Background Tracking */}
       <div className="relative flex flex-col items-center justify-end mt-auto mb-4">
         <div className="relative flex h-72 w-72 items-center justify-center sm:h-80 sm:w-80">
-          {/* Soft Luminous Glow (Light & Aesthetic Aura) */}
-          <span
+          
+          {/* Outer Floating 3D Ambient Aura Layer 1 (Translates in 3D with cursor) */}
+          <div
             aria-hidden
-            className={cn(
-              "absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-400/30 via-teal-300/25 to-blue-500/25 blur-3xl transition-[transform,opacity] duration-500 pointer-events-none",
-              speaking ? "scale-110 opacity-95 animate-pulse" : "scale-100 opacity-40"
-            )}
-          />
+            className="pointer-events-none absolute inset-[-20%] rounded-full transition-transform duration-100 will-change-transform"
+            style={{
+              transform: `translate3d(${mouse.x * 32}px, ${-mouse.y * 26}px, 0)`,
+            }}
+          >
+            {/* Soft Cyan & Blue Luminous Halo */}
+            <span
+              className={cn(
+                "absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500/35 via-teal-400/25 to-blue-600/30 blur-3xl transition-opacity duration-500",
+                speaking ? "opacity-100 animate-pulse scale-110" : "opacity-45 scale-100"
+              )}
+            />
+            {/* Floating Bokeh Light Orb Left */}
+            <span
+              className="absolute top-1/4 left-1/4 h-24 w-24 rounded-full bg-cyan-400/20 blur-2xl transition-transform duration-200"
+              style={{
+                transform: `translate3d(${-mouse.x * 20}px, ${mouse.y * 15}px, 0)`,
+              }}
+            />
+            {/* Floating Bokeh Light Orb Right */}
+            <span
+              className="absolute bottom-1/4 right-1/4 h-28 w-28 rounded-full bg-teal-300/20 blur-2xl transition-transform duration-200"
+              style={{
+                transform: `translate3d(${mouse.x * 25}px, ${-mouse.y * 20}px, 0)`,
+              }}
+            />
+          </div>
+
+          {/* Speaking Acoustic Wave Ring */}
+          {speaking && (
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-[-10px] rounded-full border-2 border-cyan-400/40 animate-ping"
+            />
+          )}
 
           {/* 3D Circular Avatar Portal Frame */}
           <div
             className={cn(
-              "relative h-68 w-68 sm:h-76 sm:w-76 overflow-hidden rounded-full border-4 border-white/90 bg-slate-950 shadow-[0_18px_50px_rgba(0,0,0,0.65)] transition-all duration-300",
-              speaking && "ring-4 ring-cyan-400/60"
+              "relative h-68 w-68 sm:h-76 sm:w-76 overflow-hidden rounded-full border-4 border-white/90 bg-slate-950 shadow-[0_20px_60px_rgba(0,0,0,0.75)] transition-all duration-300",
+              speaking && "ring-4 ring-cyan-400/70 shadow-cyan-500/20"
             )}
             style={{ perspective: "1000px" }}
           >
-            {/* Layer 1: Parallax Deep Background */}
+            {/* Layer 1: Parallax Deep Medical Background (Moves dynamically opposite to doctor) */}
             <div
-              className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-cyan-950/40 transition-transform duration-100"
+              className="absolute inset-[-15%] bg-gradient-to-br from-slate-900 via-slate-950 to-cyan-950/50 transition-transform duration-100 will-change-transform"
               style={{
-                transform: `translateX(${-mouse.x * 12}px) translateY(${mouse.y * 10}px) scale(1.1)`,
+                transform: `translate3d(${-mouse.x * 24}px, ${mouse.y * 18}px, 0) scale(1.18)`,
               }}
-            />
+            >
+              {/* Subtle Tech Grid / Matrix Depth Glow */}
+              <div
+                className="absolute inset-0 opacity-20 bg-[radial-gradient(#22d3ee_1px,transparent_1px)] [background-size:18px_18px]"
+                style={{
+                  transform: `translate3d(${-mouse.x * 12}px, ${mouse.y * 10}px, 0)`,
+                }}
+              />
+              {/* Soft Center Backlight behind Doctor */}
+              <div className="absolute inset-0 bg-radial from-cyan-500/20 via-transparent to-transparent" />
+            </div>
 
             {/* Layer 2: 3D Interactive Doctor Dylan Photo with Real Head/Body Tilt */}
             <div
@@ -131,14 +175,14 @@ export function VoiceAgentPanel({
                 speaking && "animate-avatar-breath"
               )}
               style={{
-                transform: `scale(1.16) rotateY(${rotateY}deg) rotateX(${rotateX}deg) rotateZ(${rotateZ}deg) translateX(${translateX}px) translateY(${translateY}px)`,
+                transform: `scale(1.18) rotateY(${rotateY}deg) rotateX(${rotateX}deg) rotateZ(${rotateZ}deg) translateX(${translateX}px) translateY(${translateY}px)`,
                 transformStyle: "preserve-3d",
               }}
             >
               <img
                 src={defaultAvatar.imageUrl}
                 alt={defaultAvatar.name}
-                className="h-full w-full object-cover object-center select-none pointer-events-none drop-shadow-2xl"
+                className="h-full w-full object-cover object-center select-none pointer-events-none drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)]"
               />
 
               {/* Layer 3: Realistic Lip-Sync Motion Layer Positioned on Mouth */}
@@ -156,16 +200,19 @@ export function VoiceAgentPanel({
             {/* Layer 4: Volumetric 3D Light Shading & Specular Sheen (Reacts to cursor direction) */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-0 rounded-full mix-blend-overlay"
+              className="pointer-events-none absolute inset-0 rounded-full mix-blend-overlay will-change-transform"
               style={{
-                background: `radial-gradient(circle at ${50 + mouse.x * 40}% ${50 - mouse.y * 40}%, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.5) 100%)`,
+                background: `radial-gradient(circle at ${50 + mouse.x * 45}% ${50 - mouse.y * 45}%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.08) 45%, rgba(0,0,0,0.55) 100%)`,
               }}
             />
 
-            {/* Top Soft Vignette & Rim Reflection */}
+            {/* Layer 5: Dynamic Outer Lens Gloss Glare */}
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-0 rounded-full border border-white/20 shadow-inner"
+              className="pointer-events-none absolute inset-0 rounded-full border border-white/25 shadow-inner"
+              style={{
+                boxShadow: `inset ${-mouse.x * 12}px ${mouse.y * 12}px 20px rgba(255,255,255,0.15)`,
+              }}
             />
 
             {/* Connecting Spinner Overlay */}
