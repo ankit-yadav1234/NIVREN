@@ -5,6 +5,7 @@ import { Volume2, VolumeX, Loader2, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { useVoiceSession, ConsultationField } from "@/hooks/useVoiceSession";
 import { useDidAvatar } from "@/hooks/useDidAvatar";
+import { ThreeDoctorAvatar } from "@/components/healthcare/ThreeDoctorAvatar";
 import { AVATAR_CONFIG } from "@/config/avatar";
 import { usePathname } from "next/navigation";
 
@@ -40,7 +41,7 @@ export function VoiceAgentPanel({
     }
   }, [voice]);
 
-  // Connect D-ID video stream when LiveKit session starts
+  // Connect D-ID video stream if available
   React.useEffect(() => {
     if (voice.status === "connected" || voice.status === "connecting") {
       did.startStream("male").catch(() => {});
@@ -94,43 +95,24 @@ export function VoiceAgentPanel({
               speaking ? "scale-105 ring-4 ring-cyan-400/60" : "scale-100"
             )}
           >
-            {/* Photorealistic Avatar Image & D-ID WebRTC Video */}
-            <div
-              className={cn(
-                "relative h-full w-full overflow-hidden transition-transform duration-300",
-                speaking ? "animate-avatar-breath scale-[1.03]" : "scale-100"
-              )}
-            >
-              {/* Fallback & Baseline Avatar Image */}
-              <img
-                src={defaultAvatar.imageUrl}
-                alt={defaultAvatar.name}
-                className="h-full w-full object-cover object-center"
+            {/* 3D WebGL Live Interactive Doctor Avatar (Dr. Dylan) */}
+            <div className="relative h-full w-full overflow-hidden bg-radial from-slate-900 via-slate-950 to-black">
+              <ThreeDoctorAvatar
+                speaking={speaking}
+                audioLevel={speaking ? 0.8 : 0}
+                avatarGender="male"
+                className="h-full w-full"
               />
 
-              {/* D-ID Live WebRTC Video Stream (Strictly Muted: LiveKit provides 100% of Audio) */}
-              <video
-                ref={did.videoRef}
-                autoPlay
-                playsInline
-                muted
-                className={cn(
-                  "absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-500",
-                  did.hasVideoStream ? "opacity-100" : "opacity-0"
-                )}
-              />
-
-              {/* Real-time Photorealistic Lip-Sync Motion Layer positioned precisely on mouth */}
-              {speaking && (
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute top-[51.8%] left-[50.1%] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
-                >
-                  {/* Dynamic mouth opening / phoneme shape */}
-                  <span className="h-4 w-9 rounded-full bg-slate-950/75 blur-[1.5px] animate-avatar-lips" />
-                  {/* Subtle inner teeth/lip contour */}
-                  <span className="absolute h-1.5 w-6 rounded-full bg-rose-200/40 blur-[0.8px] animate-pulse" />
-                </div>
+              {/* D-ID Live WebRTC Video Stream overlay if available */}
+              {did.hasVideoStream && (
+                <video
+                  ref={did.videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-500 opacity-100"
+                />
               )}
             </div>
 
