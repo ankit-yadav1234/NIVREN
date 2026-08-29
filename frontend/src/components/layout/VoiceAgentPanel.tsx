@@ -4,7 +4,9 @@ import * as React from "react";
 import { Volume2, VolumeX, Loader2, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { useVoiceSession, ConsultationField } from "@/hooks/useVoiceSession";
+import { useDidAvatar } from "@/hooks/useDidAvatar";
 import { AVATAR_CONFIG } from "@/config/avatar";
+import { usePathname } from "next/navigation";
 
 type VoiceSession = ReturnType<typeof useVoiceSession>;
 
@@ -28,12 +30,34 @@ export function VoiceAgentPanel({
   form?: Partial<Record<ConsultationField, string>>;
   formSubmitted?: boolean;
 }) {
+  const pathname = usePathname();
   const filledFields = FORM_FIELD_ORDER.filter((f) => form?.[f]);
+  const did = useDidAvatar(pathname);
+
   React.useEffect(() => {
     if (voice.status === "idle") {
       voice.start();
     }
   }, [voice]);
+
+  // Connect D-ID video stream when LiveKit session starts
+  React.useEffect(() => {
+    if (voice.status === "connected" || voice.status === "connecting") {
+      did.startStream("male").catch(() => {});
+    }
+    return () => {
+      did.stopStream();
+    };
+  }, [voice.status]);
+
+  // Trigger D-ID lip sync animation when LiveKit agent speaks with new text
+  const lastSpokenTextRef = React.useRef<string>("");
+  React.useEffect(() => {
+    if (voice.latestAgentText && voice.latestAgentText !== lastSpokenTextRef.current) {
+      lastSpokenTextRef.current = voice.latestAgentText;
+      did.triggerLipSync(voice.latestAgentText, "male").catch(() => {});
+    }
+  }, [voice.latestAgentText, did]);
 
   const speaking = voice.status === "connected" && voice.agentSpeaking && !voice.audioBlocked;
   const isConnecting = voice.status === "connecting";
@@ -67,17 +91,30 @@ export function VoiceAgentPanel({
               speaking ? "scale-105 ring-4 ring-cyan-400/50" : "scale-100"
             )}
           >
-            {/* Photorealistic Avatar Image */}
+            {/* Photorealistic Avatar Image & D-ID WebRTC Video */}
             <div
               className={cn(
                 "relative h-full w-full overflow-hidden transition-transform duration-200",
                 speaking && "animate-[pulse_0.4s_ease-in-out_infinite] scale-[1.03]"
               )}
             >
+              {/* Fallback & Baseline Avatar Image */}
               <img
                 src={defaultAvatar.imageUrl}
                 alt={defaultAvatar.name}
                 className="h-full w-full object-cover object-center"
+              />
+
+              {/* D-ID Live WebRTC Video Stream (Strictly Muted: LiveKit provides 100% of Audio) */}
+              <video
+                ref={did.videoRef}
+                autoPlay
+                playsInline
+                muted
+                className={cn(
+                  "absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-500",
+                  did.status === "connected" || did.status === "speaking" ? "opacity-100" : "opacity-0"
+                )}
               />
 
               {/* Dynamic Lip-Sync Motion Layer */}

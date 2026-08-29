@@ -53,6 +53,7 @@ type AgentAction =
   | { type: "update_form"; field: ConsultationField; value: string }
   | { type: "consultation_started" }
   | { type: "consultation_confirmed" }
+  | { type: "agent_speaking"; isSpeaking: boolean; text?: string }
   | {
       type: "consultation_requested";
       data: { name: string; phone: string; email?: string; serviceOrSpecialty?: string; message?: string };
@@ -323,7 +324,25 @@ export default defineAgent({
 
     session.on(AgentSessionEventTypes.UserInputTranscribed, () => resetInactivityTimer());
     session.on(AgentSessionEventTypes.UserStateChanged, () => resetInactivityTimer());
-    session.on(AgentSessionEventTypes.ConversationItemAdded, () => resetInactivityTimer());
+    session.on(AgentSessionEventTypes.ConversationItemAdded, (ev: any) => {
+      resetInactivityTimer();
+      try {
+        if (ev?.item?.role === "assistant" || ev?.item?.type === "message") {
+          const content = ev.item.content;
+          const text = typeof content === "string" ? content : Array.isArray(content) ? content.map((c: any) => c?.text || "").join(" ") : "";
+          if (text) {
+            publishAction(ctx, { type: "agent_speaking", isSpeaking: true, text });
+          }
+        }
+      } catch (_) {}
+    });
+
+    session.on(AgentSessionEventTypes.AgentStateChanged, (ev: any) => {
+      try {
+        const isSpeaking = ev?.newState === "speaking";
+        publishAction(ctx, { type: "agent_speaking", isSpeaking });
+      } catch (_) {}
+    });
 
     ctx.room.on("disconnected", () => {
       if (inactivityTimer) clearTimeout(inactivityTimer);

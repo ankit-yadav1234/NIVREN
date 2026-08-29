@@ -202,7 +202,31 @@ export function useDidAvatar(pathname: string) {
     });
   }, [stopListening, startListening]);
 
-  // Initialize WebRTC Stream with D-ID
+  // Trigger video lip-sync on D-ID stream with zero conflicting audio
+  const triggerLipSync = React.useCallback(async (text: string, avatarKey: keyof typeof AVATAR_CONFIG.avatars = currentAvatarKey) => {
+    if (!text?.trim()) return;
+    setStatus("speaking");
+    setLastReply(text);
+
+    if (streamIdRef.current && sessionIdRef.current) {
+      try {
+        await fetch(`${API_BASE}/api/did/talk`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            streamId: streamIdRef.current,
+            sessionId: sessionIdRef.current,
+            text,
+            gender: avatarKey,
+          }),
+        });
+      } catch (err) {
+        console.warn("D-ID lip-sync talk trigger error:", err);
+      }
+    }
+  }, [currentAvatarKey]);
+
+  // Initialize WebRTC Stream with D-ID (Video-Only for Lip-Sync)
   const startStream = React.useCallback(async (avatarKey: keyof typeof AVATAR_CONFIG.avatars = currentAvatarKey) => {
     setStatus("connecting");
     try {
@@ -219,7 +243,7 @@ export function useDidAvatar(pathname: string) {
       });
 
       if (!res.ok) {
-        throw new Error("D-ID session unavailable, activating fallback voice pipeline");
+        throw new Error("D-ID stream unavailable, running visual avatar pipeline");
       }
 
       const data = await res.json();
@@ -234,7 +258,14 @@ export function useDidAvatar(pathname: string) {
       pcRef.current = pc;
 
       pc.ontrack = (event) => {
+        // Strip out D-ID audio completely so ONLY LiveKit AI Voice is heard
+        if (event.track.kind === "audio") {
+          event.track.enabled = false;
+          return;
+        }
+
         if (videoRef.current && event.streams && event.streams[0]) {
+          videoRef.current.muted = true;
           videoRef.current.srcObject = event.streams[0];
           videoRef.current.play().catch(() => {});
         }
@@ -274,25 +305,11 @@ export function useDidAvatar(pathname: string) {
       });
 
       setStatus("connected");
-
-      // Initial Greeting
-      setTimeout(() => {
-        speakText(
-          `Awesome! So I can play this two ways — we can explore your revenue cycle and RCM needs, or review your claims and billing. How can I help you today?`,
-          avatarKey
-        );
-      }, 500);
     } catch (err) {
-      console.warn("Using interactive RAG voice pipeline:", err);
+      console.warn("Using interactive RAG visual fallback:", err);
       setStatus("connected");
-      setTimeout(() => {
-        speakText(
-          `Awesome! So I can play this two ways — we can explore your revenue cycle and RCM needs, or review your claims and billing. How can I help you today?`,
-          avatarKey
-        );
-      }, 500);
     }
-  }, [currentAvatarKey, activeAvatar.name, speakText]);
+  }, [currentAvatarKey, activeAvatar]);
 
   // Clean stop
   const stopStream = React.useCallback(() => {
@@ -333,5 +350,6 @@ export function useDidAvatar(pathname: string) {
     toggleMute,
     startListening,
     askAndSpeak,
+    triggerLipSync,
   };
 }

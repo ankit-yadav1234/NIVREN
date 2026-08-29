@@ -19,6 +19,7 @@ export type VoiceAgentAction =
   | { type: "update_form"; field: ConsultationField; value: string }
   | { type: "consultation_started" }
   | { type: "consultation_confirmed" }
+  | { type: "agent_speaking"; isSpeaking: boolean; text?: string }
   | {
       type: "consultation_requested";
       data: { name: string; phone: string; email?: string; serviceOrSpecialty?: string; message?: string };
@@ -39,6 +40,7 @@ export type VoiceAgentAction =
 interface GlobalVoiceState {
   status: VoiceStatus;
   agentSpeaking: boolean;
+  latestAgentText: string;
   error: string | null;
   audioBlocked: boolean;
   muted: boolean;
@@ -50,6 +52,7 @@ let activeAudioEl: HTMLAudioElement | null = null;
 let globalState: GlobalVoiceState = {
   status: "idle",
   agentSpeaking: false,
+  latestAgentText: "",
   error: null,
   audioBlocked: false,
   muted: false,
@@ -172,6 +175,12 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
         if (topic !== "agent-action") return;
         try {
           const action = JSON.parse(new TextDecoder().decode(payload)) as VoiceAgentAction;
+          if (action.type === "agent_speaking") {
+            updateGlobalState({
+              agentSpeaking: action.isSpeaking,
+              ...(action.text ? { latestAgentText: action.text } : {}),
+            });
+          }
           globalActionHandler?.(action);
         } catch {
           // ignore malformed payloads
@@ -181,7 +190,7 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
       room.on(RoomEvent.Disconnected, () => {
         if (activeRoom !== room) return;
         activeRoom = null;
-        updateGlobalState({ status: "idle", agentSpeaking: false, isVoiceOpen: false });
+        updateGlobalState({ status: "idle", agentSpeaking: false, latestAgentText: "", isVoiceOpen: false });
       });
 
       await room.connect(url, token);
@@ -216,6 +225,7 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
   return {
     status: state.status,
     agentSpeaking: state.agentSpeaking,
+    latestAgentText: state.latestAgentText,
     audioBlocked: state.audioBlocked,
     muted: state.muted,
     error: state.error,
