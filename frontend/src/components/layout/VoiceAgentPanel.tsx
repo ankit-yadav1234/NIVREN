@@ -1,11 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { Mic, MicOff, Loader2, CheckCircle2, User, Image as ImageIcon } from "lucide-react";
+import { Mic, MicOff, Loader2, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { useVoiceSession, ConsultationField } from "@/hooks/useVoiceSession";
 import { AVATAR_CONFIG } from "@/config/avatar";
-import { ThreeDoctorAvatar } from "@/components/healthcare/ThreeDoctorAvatar";
 
 type VoiceSession = ReturnType<typeof useVoiceSession>;
 
@@ -31,9 +30,6 @@ export function VoiceAgentPanel({
 }) {
   const filledFields = FORM_FIELD_ORDER.filter((f) => form?.[f]);
   const defaultAvatar = AVATAR_CONFIG.avatars.male;
-
-  // Default to Real Presenter Doctor (Dr. Dylan) with Deep 3D Parallax & Lip Sync
-  const [avatarMode, setAvatarMode] = React.useState<"photo" | "3d">("photo");
 
   // Real-time Smooth 3D Cursor Physics (Interpolated with Lerp for 60 FPS fluidity)
   const [mouse, setMouse] = React.useState({ x: 0, y: 0 });
@@ -98,38 +94,8 @@ export function VoiceAgentPanel({
     <div
       role="dialog"
       aria-label="NIVREN Voice Assistant"
-      className="fixed bottom-24 end-5 z-50 flex h-[min(620px,85vh)] w-[min(360px,92vw)] flex-col items-center justify-between p-4 text-white"
+      className="fixed bottom-24 end-5 z-50 flex h-[min(580px,80vh)] w-[min(360px,92vw)] flex-col items-center justify-between p-4 text-white"
     >
-      {/* Top Avatar Mode Switcher Pill */}
-      <div className="z-30 mb-2 flex items-center gap-1 rounded-full border border-white/20 bg-slate-950/80 p-1 backdrop-blur-md shadow-lg">
-        <button
-          type="button"
-          onClick={() => setAvatarMode("3d")}
-          className={cn(
-            "flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-all cursor-pointer",
-            avatarMode === "3d"
-              ? "bg-cyan-500 text-slate-950 shadow-md font-bold"
-              : "text-white/70 hover:text-white hover:bg-white/10"
-          )}
-        >
-          <User className="h-3.5 w-3.5" />
-          <span>3D Doctor</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setAvatarMode("photo")}
-          className={cn(
-            "flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-all cursor-pointer",
-            avatarMode === "photo"
-              ? "bg-cyan-500 text-slate-950 shadow-md font-bold"
-              : "text-white/70 hover:text-white hover:bg-white/10"
-          )}
-        >
-          <ImageIcon className="h-3.5 w-3.5" />
-          <span>Real Presenter</span>
-        </button>
-      </div>
-
       {/* Center Circular Avatar Container with 3D Head Tracking */}
       <div className="relative flex flex-col items-center justify-end mt-auto mb-4">
         <div className="relative flex h-72 w-72 items-center justify-center sm:h-80 sm:w-80">
@@ -150,65 +116,57 @@ export function VoiceAgentPanel({
             )}
             style={{ perspective: "1000px" }}
           >
-            {/* OPTION 1: Ready Player Me Ultra-Realistic 3D Rigged Doctor Avatar */}
-            {avatarMode === "3d" ? (
-              <div className="relative h-full w-full overflow-hidden">
-                <ThreeDoctorAvatar
-                  speaking={speaking}
-                  avatarGender="male"
-                  className="h-full w-full"
-                />
-              </div>
-            ) : (
-              /* OPTION 2: Real Human Doctor Presenter Photo with Multi-Layer 3D Depth & Light Sheen */
-              <>
-                {/* Layer 1: Parallax Deep Background */}
-                <div
-                  className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-cyan-950/40 transition-transform duration-100"
-                  style={{
-                    transform: `translateX(${-mouse.x * 12}px) translateY(${mouse.y * 10}px) scale(1.1)`,
-                  }}
-                />
+            {/* Layer 1: Parallax Deep Background */}
+            <div
+              className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-cyan-950/40 transition-transform duration-100"
+              style={{
+                transform: `translateX(${-mouse.x * 12}px) translateY(${mouse.y * 10}px) scale(1.1)`,
+              }}
+            />
 
-                {/* Layer 2: 3D Interactive Doctor Dylan Photo with Real Head/Body Tilt */}
-                <div
-                  className={cn(
-                    "relative h-full w-full will-change-transform origin-center",
-                    speaking && "animate-avatar-breath"
-                  )}
-                  style={{
-                    transform: `scale(1.16) rotateY(${rotateY}deg) rotateX(${rotateX}deg) rotateZ(${rotateZ}deg) translateX(${translateX}px) translateY(${translateY}px)`,
-                    transformStyle: "preserve-3d",
-                  }}
-                >
-                  <img
-                    src={defaultAvatar.imageUrl}
-                    alt={defaultAvatar.name}
-                    className="h-full w-full object-cover object-center select-none pointer-events-none drop-shadow-2xl"
-                  />
+            {/* Layer 2: 3D Interactive Doctor Dylan Photo with Real Head/Body Tilt */}
+            <div
+              className={cn(
+                "relative h-full w-full will-change-transform origin-center",
+                speaking && "animate-avatar-breath"
+              )}
+              style={{
+                transform: `scale(1.16) rotateY(${rotateY}deg) rotateX(${rotateX}deg) rotateZ(${rotateZ}deg) translateX(${translateX}px) translateY(${translateY}px)`,
+                transformStyle: "preserve-3d",
+              }}
+            >
+              <img
+                src={defaultAvatar.imageUrl}
+                alt={defaultAvatar.name}
+                className="h-full w-full object-cover object-center select-none pointer-events-none drop-shadow-2xl"
+              />
 
-                  {/* Layer 3: Realistic Lip-Sync Motion Layer Positioned on Mouth */}
-                  {speaking && (
-                    <div
-                      aria-hidden
-                      className="pointer-events-none absolute top-[51.8%] left-[50.1%] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
-                    >
-                      <span className="h-3.5 w-8 rounded-full bg-slate-950/75 blur-[1px] animate-avatar-lips" />
-                      <span className="absolute h-1 w-5 rounded-full bg-rose-200/40 blur-[0.6px] animate-pulse" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Layer 4: Volumetric 3D Light Shading & Specular Sheen (Reacts to cursor direction) */}
+              {/* Layer 3: Realistic Lip-Sync Motion Layer Positioned on Mouth */}
+              {speaking && (
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 rounded-full mix-blend-overlay"
-                  style={{
-                    background: `radial-gradient(circle at ${50 + mouse.x * 40}% ${50 - mouse.y * 40}%, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.5) 100%)`,
-                  }}
-                />
-              </>
-            )}
+                  className="pointer-events-none absolute top-[51.8%] left-[50.1%] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
+                >
+                  <span className="h-3.5 w-8 rounded-full bg-slate-950/75 blur-[1px] animate-avatar-lips" />
+                  <span className="absolute h-1 w-5 rounded-full bg-rose-200/40 blur-[0.6px] animate-pulse" />
+                </div>
+              )}
+            </div>
+
+            {/* Layer 4: Volumetric 3D Light Shading & Specular Sheen (Reacts to cursor direction) */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-full mix-blend-overlay"
+              style={{
+                background: `radial-gradient(circle at ${50 + mouse.x * 40}% ${50 - mouse.y * 40}%, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.5) 100%)`,
+              }}
+            />
+
+            {/* Top Soft Vignette & Rim Reflection */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-full border border-white/20 shadow-inner"
+            />
 
             {/* Connecting Spinner Overlay */}
             {isConnecting && (
