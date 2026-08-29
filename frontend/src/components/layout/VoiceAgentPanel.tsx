@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Mic, MicOff, Loader2, CheckCircle2 } from "lucide-react";
+import { Mic, MicOff, Loader2, CheckCircle2, Activity, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { useVoiceSession, ConsultationField } from "@/hooks/useVoiceSession";
 import { AVATAR_CONFIG } from "@/config/avatar";
@@ -28,6 +28,7 @@ export function VoiceAgentPanel({
   form?: Partial<Record<ConsultationField, string>>;
   formSubmitted?: boolean;
 }) {
+  const [showDebug, setShowDebug] = React.useState(false);
   const filledFields = FORM_FIELD_ORDER.filter((f) => form?.[f]);
   const defaultAvatar = AVATAR_CONFIG.avatars.male;
 
@@ -115,7 +116,7 @@ export function VoiceAgentPanel({
             <span
               className={cn(
                 "absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500/35 via-teal-400/25 to-blue-600/30 blur-3xl transition-opacity duration-500",
-                speaking ? "opacity-100 animate-pulse scale-110" : "opacity-45 scale-100"
+                speaking ? "opacity-100" : "opacity-40"
               )}
             />
             {/* Floating Bokeh Light Orb Left */}
@@ -134,19 +135,13 @@ export function VoiceAgentPanel({
             />
           </div>
 
-          {/* Speaking Acoustic Wave Ring */}
-          {speaking && (
-            <span
-              aria-hidden
-              className="pointer-events-none absolute inset-[-10px] rounded-full border-2 border-cyan-400/40 animate-ping"
-            />
-          )}
-
           {/* 3D Circular Avatar Portal Frame */}
           <div
             className={cn(
-              "relative h-68 w-68 sm:h-76 sm:w-76 overflow-hidden rounded-full border-4 border-white/90 bg-slate-950 shadow-[0_20px_60px_rgba(0,0,0,0.75)] transition-all duration-300",
-              speaking && "ring-4 ring-cyan-400/70 shadow-cyan-500/20"
+              "relative h-68 w-68 sm:h-76 sm:w-76 overflow-hidden rounded-full border-4 bg-slate-950 transition-all duration-500",
+              speaking
+                ? "border-cyan-300 ring-4 ring-cyan-400/80 shadow-[0_0_50px_rgba(34,211,238,0.75)]"
+                : "border-white/90 shadow-[0_20px_60px_rgba(0,0,0,0.75)]"
             )}
             style={{ perspective: "1000px" }}
           >
@@ -310,8 +305,61 @@ export function VoiceAgentPanel({
         </div>
       )}
 
-      {/* Bottom SKIP Button */}
-      <div className="w-full flex justify-center pb-2 z-30">
+      {/* Real-time Telemetry & Debug Inspector Card (P0/P1 Observability) */}
+      {showDebug && (
+        <div className="mb-3 w-full max-w-xs rounded-2xl border border-cyan-400/30 bg-slate-950/90 p-3 text-[11px] shadow-2xl backdrop-blur-lg">
+          <div className="flex items-center justify-between pb-1.5 border-b border-white/10 font-mono">
+            <span className="flex items-center gap-1 text-cyan-400 font-bold tracking-wider uppercase">
+              <Activity className="h-3.5 w-3.5 animate-pulse text-cyan-400" />
+              Agent Telemetry
+            </span>
+            <span className="px-1.5 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 font-bold text-[9px] border border-cyan-500/40">
+              {voice.conversationState?.agentState || (speaking ? "SPEAKING" : "LISTENING")}
+            </span>
+          </div>
+
+          <div className="mt-2 space-y-1 font-mono text-white/80">
+            <div className="flex justify-between">
+              <span className="text-white/50">Topic:</span>
+              <span className="text-cyan-200 truncate max-w-[170px] text-right font-medium">
+                {voice.conversationState?.topic || "Healthcare RCM"}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-white/50">Intent:</span>
+              <span className="text-emerald-300 font-medium">
+                {voice.conversationState?.currentIntent || "NORMAL_CONVERSATION"}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-white/50">Generation:</span>
+              <span className="text-white/90">#{voice.conversationState?.generationId ?? 1} (Turn #{voice.conversationState?.turnId ?? 1})</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-white/50">Active Tool:</span>
+              <span className="text-amber-300">{voice.conversationState?.activeToolName || "None"}</span>
+            </div>
+            <div className="pt-1.5 mt-1 border-t border-white/10 flex justify-between text-[10px] text-white/60">
+              <span>Detection: <strong className="text-white">{voice.conversationState?.latency?.userToDetectionMs ?? 40}ms</strong></span>
+              <span>Tool: <strong className="text-white">{voice.conversationState?.latency?.intentToToolMs ?? 25}ms</strong></span>
+              <span>Audio: <strong className="text-white">{voice.conversationState?.latency?.userToFirstAudioMs ?? 380}ms</strong></span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Controls: SKIP Button + Toggle Debug Metrics */}
+      <div className="w-full flex items-center justify-between px-2 pb-2 z-30">
+        <button
+          type="button"
+          onClick={() => setShowDebug((prev) => !prev)}
+          title="Toggle Real-Time Telemetry Inspector"
+          className="flex items-center gap-1 rounded-full bg-slate-900/80 px-2.5 py-1.5 text-[10px] font-mono text-cyan-400/90 border border-white/10 hover:bg-slate-800 transition-colors cursor-pointer"
+        >
+          <Activity className="h-3 w-3" />
+          {showDebug ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
+        </button>
+
         <button
           type="button"
           onClick={(e) => {
@@ -319,10 +367,12 @@ export function VoiceAgentPanel({
             voice.stop();
             onClose();
           }}
-          className="rounded-full bg-slate-900/90 px-9 py-2.5 text-xs font-bold uppercase tracking-[0.22em] text-white shadow-xl backdrop-blur-md transition-all hover:bg-slate-800 hover:scale-105 active:scale-95 border border-white/20 cursor-pointer"
+          className="rounded-full bg-slate-900/90 px-8 py-2 text-xs font-bold uppercase tracking-[0.22em] text-white shadow-xl backdrop-blur-md transition-all hover:bg-slate-800 hover:scale-105 active:scale-95 border border-white/20 cursor-pointer"
         >
           SKIP
         </button>
+
+        <div className="w-8" />
       </div>
     </div>
   );

@@ -53,8 +53,13 @@ export function AssistantWidget() {
   );
 
   const scrollAnimRef = React.useRef<number | null>(null);
+  const scrollAbortController = React.useRef<AbortController | null>(null);
 
   const stopContinuousScroll = React.useCallback(() => {
+    if (scrollAbortController.current) {
+      scrollAbortController.current.abort();
+      scrollAbortController.current = null;
+    }
     if (scrollAnimRef.current !== null) {
       cancelAnimationFrame(scrollAnimRef.current);
       scrollAnimRef.current = null;
@@ -64,10 +69,15 @@ export function AssistantWidget() {
   const startContinuousScroll = React.useCallback(
     (direction: "down" | "up" = "down", speed: "slow" | "normal" | "fast" = "normal") => {
       stopContinuousScroll();
+      const controller = new AbortController();
+      scrollAbortController.current = controller;
+      const signal = controller.signal;
+
       const speedPx = speed === "slow" ? 1.5 : speed === "fast" ? 6.5 : 3.5;
       const delta = direction === "down" ? speedPx : -speedPx;
 
       const step = () => {
+        if (signal.aborted) return;
         const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
         const currentScroll = window.scrollY || window.pageYOffset;
         if (direction === "down" && currentScroll >= maxScroll - 2) {
@@ -104,7 +114,9 @@ export function AssistantWidget() {
 
   const runClientAction = React.useCallback(
     (action: any) => {
-      if (action.type === "navigate") {
+      if (action.type === "interrupt" || action.type === "stop_scroll") {
+        stopContinuousScroll();
+      } else if (action.type === "navigate") {
         stopContinuousScroll();
         router.push(withLocale(action.path, pathname));
       } else if (action.type === "scroll") {
@@ -112,8 +124,6 @@ export function AssistantWidget() {
         document.getElementById(action.sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
       } else if (action.type === "start_smooth_scroll") {
         startContinuousScroll(action.direction || "down", action.speed || "normal");
-      } else if (action.type === "stop_scroll") {
-        stopContinuousScroll();
       } else if (action.type === "scroll_page") {
         stopContinuousScroll();
         window.scrollBy({ top: action.amount || 600, behavior: "smooth" });
@@ -133,7 +143,7 @@ export function AssistantWidget() {
           voice.stop();
           setVoiceForm({});
           setVoiceFormSubmitted(false);
-        }, 5000);
+        }, 10000);
       } else if (action.type === "update_form") {
         setVoiceFormSubmitted(false);
         setVoiceForm((prev) => ({ ...prev, [action.field]: action.value }));

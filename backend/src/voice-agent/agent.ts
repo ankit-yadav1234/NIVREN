@@ -43,39 +43,87 @@ interface ConsultationState {
   confirmed: boolean;
 }
 
-type AgentAction =
-  | { type: "navigate"; path: string }
-  | { type: "scroll"; sectionId: string }
-  | { type: "scroll_page"; amount: number; direction: "down" | "up" }
-  | { type: "start_smooth_scroll"; direction: "down" | "up"; speed: "slow" | "normal" | "fast" }
-  | { type: "stop_scroll" }
-  | { type: "set_theme"; theme: "dark" | "light" }
-  | { type: "set_language"; locale: "en" | "hi" | "ar" }
-  | { type: "end_session" }
-  | { type: "update_form"; field: ConsultationField; value: string }
-  | { type: "consultation_started" }
-  | { type: "consultation_confirmed" }
-  | { type: "agent_speaking"; isSpeaking: boolean; text?: string }
-  | {
-      type: "consultation_requested";
-      data: { name: string; phone: string; email?: string; serviceOrSpecialty?: string; message?: string };
-    };
+import { ConversationController, type ConversationState } from "../ai/conversationController";
 
-function publishAction(ctx: JobContext, action: AgentAction) {
-  const payload = new TextEncoder().encode(JSON.stringify(action));
-  return ctx.room.localParticipant?.publishData(payload, { reliable: true, topic: "agent-action" });
-}
-
-function getCurrentRoute(ctx: JobContext): string | undefined {
-  const participant = [...ctx.room.remoteParticipants.values()][0];
-  return participant?.attributes?.route;
+export interface AgentAction {
+  id: string;
+  generationId: number;
+  type:
+    | "navigate"
+    | "scroll"
+    | "scroll_page"
+    | "start_smooth_scroll"
+    | "stop_scroll"
+    | "set_theme"
+    | "set_language"
+    | "end_session"
+    | "update_form"
+    | "consultation_started"
+    | "consultation_confirmed"
+    | "agent_speaking"
+    | "consultation_requested"
+    | "cancel_action"
+    | "interrupt"
+    | "conversation_state";
+  priority?: number;
+  timestamp: number;
+  interruptible?: boolean;
+  path?: string;
+  sectionId?: string;
+  amount?: number;
+  direction?: "down" | "up";
+  speed?: "slow" | "normal" | "fast";
+  theme?: "dark" | "light";
+  locale?: "en" | "hi" | "ar";
+  field?: ConsultationField;
+  value?: string;
+  isSpeaking?: boolean;
+  text?: string;
+  targetActionId?: string;
+  conversationState?: ConversationState;
+  data?: { name: string; phone: string; email?: string; serviceOrSpecialty?: string; message?: string };
 }
 
 export default defineAgent({
   entry: async (ctx: JobContext) => {
-    // Per-call consultation state — scoped to this closure, so it lives only
-    // for this one room/job and never leaks across calls.
+    // Per-call consultation state
     let consultation: ConsultationState | null = null;
+
+    // Central Conversation Controller
+    const controller = new ConversationController((state) => {
+      const payload = new TextEncoder().encode(
+        JSON.stringify({
+          id: `state_${Date.now()}`,
+          generationId: state.generationId,
+          type: "conversation_state",
+          timestamp: Date.now(),
+          conversationState: state,
+        } as AgentAction)
+      );
+      ctx.room.localParticipant?.publishData(payload, { reliable: false, topic: "agent-action" });
+    });
+
+    function publishAction(
+      actionData: Omit<AgentAction, "id" | "generationId" | "timestamp"> & {
+        id?: string;
+        generationId?: number;
+        timestamp?: number;
+      }
+    ) {
+      const action: AgentAction = {
+        id: actionData.id || `act_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        generationId: actionData.generationId ?? controller.getGenerationId(),
+        timestamp: actionData.timestamp ?? Date.now(),
+        ...actionData,
+      };
+      const payload = new TextEncoder().encode(JSON.stringify(action));
+      return ctx.room.localParticipant?.publishData(payload, { reliable: true, topic: "agent-action" });
+    }
+
+    function getCurrentRoute(): string | undefined {
+      const participant = [...ctx.room.remoteParticipants.values()][0];
+      return participant?.attributes?.route;
+    }
 
     const tools = [
       tool({
@@ -89,7 +137,9 @@ export default defineAgent({
           if (!isNavigableRoute(path)) {
             return `Cannot navigate to ${path}. Valid pages: ${NAVIGABLE_ROUTES_DESCRIPTION}.`;
           }
-          await publishAction(ctx, { type: "navigate", path });
+          controller.onToolStart("navigate");
+          await publishAction({ type: "navigate", path, priority: 90, interruptible: false });
+          controller.onToolEnd(`Navigated to ${path}`);
           return `Navigating to ${path} now.`;
         },
       }),
@@ -101,7 +151,9 @@ export default defineAgent({
         parameters: z.object({}),
         execute: async () => {
           consultation = { confirmed: false };
-          await publishAction(ctx, { type: "consultation_started" });
+          controller.onToolStart("start_consultation");
+          await publishAction({ type: "consultation_started", priority: 70 });
+          controller.onToolEnd("Consultation form opened");
           return "Consultation form started. Ask for the first missing field only — required: name, phone, service. Optional: email, message.";
         },
       }),
@@ -118,8 +170,10 @@ export default defineAgent({
         execute: async ({ field, value }) => {
           if (!consultation) consultation = { confirmed: false };
           consultation[field] = value;
-          consultation.confirmed = false; // any change invalidates a prior confirmation
-          await publishAction(ctx, { type: "update_form", field, value });
+          consultation.confirmed = false;
+          controller.onToolStart("update_consultation_field");
+          await publishAction({ type: "update_form", field, value, priority: 70 });
+          controller.onToolEnd(`Updated ${field}`);
           const missing = REQUIRED_CONSULTATION_FIELDS.filter((f) => !consultation![f]);
           return missing.length > 0
             ? `Saved. Still needed: ${missing.join(", ")}.`
@@ -153,7 +207,9 @@ export default defineAgent({
           const missing = REQUIRED_CONSULTATION_FIELDS.filter((f) => !consultation![f]);
           if (missing.length > 0) return `Cannot confirm yet — still missing: ${missing.join(", ")}.`;
           consultation.confirmed = true;
-          await publishAction(ctx, { type: "consultation_confirmed" });
+          controller.onToolStart("confirm_consultation");
+          await publishAction({ type: "consultation_confirmed", priority: 80 });
+          controller.onToolEnd("Consultation confirmed");
           return "Confirmed. You may now call submit_consultation.";
         },
       }),
@@ -169,11 +225,14 @@ export default defineAgent({
             return "Not confirmed yet — read back the details and get explicit confirmation before calling this.";
           }
           const { name, phone, email, service, message } = consultation;
-          await publishAction(ctx, {
+          controller.onToolStart("submit_consultation");
+          await publishAction({
             type: "consultation_requested",
+            priority: 95,
             data: { name: name!, phone: phone!, email, serviceOrSpecialty: service, message },
           });
           consultation = null;
+          controller.onToolEnd("Consultation submitted");
           return `Submitted. Let ${name} know NIVREN's team will reach out shortly.`;
         },
       }),
@@ -183,7 +242,7 @@ export default defineAgent({
         description: "List the section IDs on the current page for in-page navigation.",
         parameters: z.object({}),
         execute: async () => {
-          const route = getCurrentRoute(ctx);
+          const route = getCurrentRoute();
           if (!route) return "Current page unknown.";
           const sections = sectionsForRoute(route);
           if (sections.length === 0) return "No named sections on this page.";
@@ -199,7 +258,9 @@ export default defineAgent({
         }),
         flags: ToolFlag.CANCELLABLE,
         execute: async ({ sectionId }) => {
-          await publishAction(ctx, { type: "scroll", sectionId });
+          controller.onToolStart("scroll_to_section");
+          await publishAction({ type: "scroll", sectionId, priority: 60 });
+          controller.onToolEnd(`Scrolled to section ${sectionId}`);
           return "Scrolling there now.";
         },
       }),
@@ -214,7 +275,9 @@ export default defineAgent({
         }),
         flags: ToolFlag.CANCELLABLE,
         execute: async ({ direction, speed }) => {
-          await publishAction(ctx, { type: "start_smooth_scroll", direction, speed });
+          controller.onToolStart("start_smooth_scroll");
+          await publishAction({ type: "start_smooth_scroll", direction, speed, priority: 60, interruptible: true });
+          controller.onToolEnd(`Smooth scroll ${direction} ${speed}`);
           return `Continuous smooth scrolling started ${direction} at ${speed} speed. Ready to explain or stop whenever requested.`;
         },
       }),
@@ -222,11 +285,13 @@ export default defineAgent({
       tool({
         name: "stop_scroll",
         description:
-          "Immediately stops any continuous page scrolling when user says 'ruk jao', 'stop', 'thahar jao', 'page roko', 'stop scrolling', or 'hold on'.",
+          "Immediately stops any continuous page scrolling when user says 'ruk jao', 'stop', 'thahar jao', 'page roko', 'stop scrolling', 'wait', or 'hold on'.",
         parameters: z.object({}),
         flags: ToolFlag.CANCELLABLE,
         execute: async () => {
-          await publishAction(ctx, { type: "stop_scroll" });
+          controller.onToolStart("stop_scroll");
+          await publishAction({ type: "stop_scroll", priority: 100, interruptible: false });
+          controller.onToolEnd("Stopped scroll");
           return "Scrolling stopped immediately.";
         },
       }),
@@ -242,7 +307,9 @@ export default defineAgent({
         flags: ToolFlag.CANCELLABLE,
         execute: async ({ direction, amount }) => {
           const px = direction === "down" ? (amount ?? 600) : -(amount ?? 600);
-          await publishAction(ctx, { type: "scroll_page", amount: px, direction });
+          controller.onToolStart("scroll_page");
+          await publishAction({ type: "scroll_page", amount: px, direction, priority: 50 });
+          controller.onToolEnd(`Scrolled ${direction}`);
           return `Scrolled the page ${direction} by ${Math.abs(px)}px. Now explain or read what is visible.`;
         },
       }),
@@ -255,7 +322,9 @@ export default defineAgent({
         }),
         flags: ToolFlag.CANCELLABLE,
         execute: async ({ theme }) => {
-          await publishAction(ctx, { type: "set_theme", theme });
+          controller.onToolStart("set_theme");
+          await publishAction({ type: "set_theme", theme, priority: 80 });
+          controller.onToolEnd(`Theme set to ${theme}`);
           return `Switched to ${theme} mode.`;
         },
       }),
@@ -268,7 +337,9 @@ export default defineAgent({
         }),
         flags: ToolFlag.CANCELLABLE,
         execute: async ({ locale }) => {
-          await publishAction(ctx, { type: "set_language", locale });
+          controller.onToolStart("set_language");
+          await publishAction({ type: "set_language", locale, priority: 85 });
+          controller.onToolEnd(`Language set to ${locale}`);
           return `Switched the site language to ${locale}.`;
         },
       }),
@@ -280,7 +351,9 @@ export default defineAgent({
         parameters: z.object({}),
         flags: ToolFlag.CANCELLABLE,
         execute: async () => {
-          await publishAction(ctx, { type: "end_session" });
+          controller.onToolStart("end_session");
+          await publishAction({ type: "end_session", priority: 100 });
+          controller.onToolEnd("Session ended");
           return "Voice session ending. Goodbye message spoken and closing signal sent.";
         },
       }),
@@ -292,15 +365,15 @@ export default defineAgent({
       llm: new google.realtime.RealtimeModel({
         model: "gemini-2.5-flash-native-audio-preview-12-2025",
         voice: "Puck", // 100% Professional Male Voice
-        temperature: 0.6,
+        temperature: 0.5,
         thinkingConfig: { thinkingBudget: 0 },
         toolBehavior: Behavior.NON_BLOCKING,
-        toolResponseScheduling: FunctionResponseScheduling.WHEN_IDLE,
+        toolResponseScheduling: FunctionResponseScheduling.INTERRUPT, // Immediately interrupt speech to execute tool call
         realtimeInputConfig: {
           automaticActivityDetection: {
             startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_HIGH,
             endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_HIGH,
-            silenceDurationMs: 300,
+            silenceDurationMs: 450, // Human conversational cadence — fast without jumpy mid-thought cutoffs
           },
           activityHandling: ActivityHandling.START_OF_ACTIVITY_INTERRUPTS,
           turnCoverage: TurnCoverage.TURN_INCLUDES_ONLY_ACTIVITY,
@@ -311,7 +384,8 @@ export default defineAgent({
     session.on(AgentSessionEventTypes.MetricsCollected, (ev) => logMetrics(ev.metrics));
 
     // LiveKit billing safeguard timers
-    const INACTIVITY_TIMEOUT_MS = 30 * 1000; // 30 seconds of silence / no user speech
+    const INACTIVITY_TIMEOUT_MS = 30 * 1000; // 30 seconds of user silence
+    const DISCONNECT_GRACE_PERIOD_MS = 10 * 1000; // 10 seconds farewell grace period (upgraded from 5s)
     const MAX_SESSION_DURATION_MS = 10 * 60 * 1000; // 10 minutes hard cap
 
     let inactivityTimer: NodeJS.Timeout | null = null;
@@ -325,7 +399,7 @@ export default defineAgent({
       if (maxSessionTimer) clearTimeout(maxSessionTimer);
 
       try {
-        await publishAction(ctx, { type: "end_session" });
+        await publishAction({ type: "end_session", priority: 100 });
         session.generateReply({
           instructions:
             "Say this complete farewell message clearly: 'Thank you for connecting with NIVREN Healthcare! I am disconnecting our session now to save resources. Have a wonderful and productive day!' and call the end_session tool.",
@@ -340,7 +414,7 @@ export default defineAgent({
         } catch {
           // ignore
         }
-      }, 5000);
+      }, DISCONNECT_GRACE_PERIOD_MS);
     };
 
     const resetInactivityTimer = () => {
@@ -351,8 +425,29 @@ export default defineAgent({
       }, INACTIVITY_TIMEOUT_MS);
     };
 
-    session.on(AgentSessionEventTypes.UserInputTranscribed, () => resetInactivityTimer());
-    session.on(AgentSessionEventTypes.UserStateChanged, () => resetInactivityTimer());
+    session.on(AgentSessionEventTypes.UserInputTranscribed, (ev: any) => {
+      resetInactivityTimer();
+      const text = ev?.text || "";
+      if (text) {
+        controller.onUserTranscript(text);
+      }
+    });
+
+    session.on(AgentSessionEventTypes.UserStateChanged, (ev: any) => {
+      resetInactivityTimer();
+      // True barge-in / Interruption: User spoke -> increment generation ID and signal client
+      if (ev?.state === "speaking" || ev?.newState === "speaking") {
+        const { isInterruption } = controller.onUserSpeechStart();
+        if (isInterruption) {
+          publishAction({
+            type: "interrupt",
+            priority: 100,
+            interruptible: false,
+          });
+        }
+      }
+    });
+
     session.on(AgentSessionEventTypes.ConversationItemAdded, (ev: any) => {
       resetInactivityTimer();
       try {
@@ -360,7 +455,8 @@ export default defineAgent({
           const content = ev.item.content;
           const text = typeof content === "string" ? content : Array.isArray(content) ? content.map((c: any) => c?.text || "").join(" ") : "";
           if (text) {
-            publishAction(ctx, { type: "agent_speaking", isSpeaking: true, text });
+            controller.onAgentSpeaking(true, text);
+            publishAction({ type: "agent_speaking", isSpeaking: true, text, priority: 10 });
           }
         }
       } catch (_) {}
@@ -369,7 +465,8 @@ export default defineAgent({
     session.on(AgentSessionEventTypes.AgentStateChanged, (ev: any) => {
       try {
         const isSpeaking = ev?.newState === "speaking";
-        publishAction(ctx, { type: "agent_speaking", isSpeaking });
+        controller.onAgentSpeaking(isSpeaking);
+        publishAction({ type: "agent_speaking", isSpeaking, priority: 10 });
       } catch (_) {}
     });
 

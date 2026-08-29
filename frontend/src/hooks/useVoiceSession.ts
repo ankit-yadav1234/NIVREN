@@ -9,23 +9,65 @@ export type VoiceStatus = "idle" | "connecting" | "connected" | "error";
 
 export type ConsultationField = "name" | "phone" | "email" | "service" | "message";
 
-export type VoiceAgentAction =
-  | { type: "navigate"; path: string }
-  | { type: "scroll"; sectionId: string }
-  | { type: "scroll_page"; amount: number; direction: "down" | "up" }
-  | { type: "start_smooth_scroll"; direction: "down" | "up"; speed: "slow" | "normal" | "fast" }
-  | { type: "stop_scroll" }
-  | { type: "set_theme"; theme: "dark" | "light" }
-  | { type: "set_language"; locale: "en" | "hi" | "ar" }
-  | { type: "end_session" }
-  | { type: "update_form"; field: ConsultationField; value: string }
-  | { type: "consultation_started" }
-  | { type: "consultation_confirmed" }
-  | { type: "agent_speaking"; isSpeaking: boolean; text?: string }
-  | {
-      type: "consultation_requested";
-      data: { name: string; phone: string; email?: string; serviceOrSpecialty?: string; message?: string };
-    };
+export interface ConversationTelemetry {
+  topic: string | null;
+  subtopic: string | null;
+  currentIntent: string | null;
+  generationId: number;
+  turnId: number;
+  activeToolId: string | null;
+  activeToolName: string | null;
+  agentState: string;
+  lastUserMessage: string | null;
+  lastAgentMessage: string | null;
+  lastActionSummary: string | null;
+  latency: {
+    userToDetectionMs?: number;
+    detectionToIntentMs?: number;
+    intentToToolMs?: number;
+    toolToBrowserMs?: number;
+    userToFirstAudioMs?: number;
+  };
+}
+
+export interface VoiceAgentAction {
+  id?: string;
+  generationId?: number;
+  type:
+    | "navigate"
+    | "scroll"
+    | "scroll_page"
+    | "start_smooth_scroll"
+    | "stop_scroll"
+    | "set_theme"
+    | "set_language"
+    | "end_session"
+    | "update_form"
+    | "consultation_started"
+    | "consultation_confirmed"
+    | "agent_speaking"
+    | "consultation_requested"
+    | "cancel_action"
+    | "interrupt"
+    | "conversation_state";
+  priority?: number;
+  timestamp?: number;
+  interruptible?: boolean;
+  path?: string;
+  sectionId?: string;
+  amount?: number;
+  direction?: "down" | "up";
+  speed?: "slow" | "normal" | "fast";
+  theme?: "dark" | "light";
+  locale?: "en" | "hi" | "ar";
+  field?: ConsultationField;
+  value?: string;
+  isSpeaking?: boolean;
+  text?: string;
+  targetActionId?: string;
+  conversationState?: ConversationTelemetry;
+  data?: { name: string; phone: string; email?: string; serviceOrSpecialty?: string; message?: string };
+}
 
 /**
  * Manages a LiveKit voice session with the NIVREN voice agent: mic capture,
@@ -47,6 +89,7 @@ interface GlobalVoiceState {
   audioBlocked: boolean;
   userMicMuted: boolean;
   isVoiceOpen: boolean;
+  conversationState: ConversationTelemetry | null;
 }
 
 let activeRoom: Room | null = null;
@@ -59,6 +102,7 @@ let globalState: GlobalVoiceState = {
   audioBlocked: false,
   userMicMuted: false,
   isVoiceOpen: false,
+  conversationState: null,
 };
 const stateListeners = new Set<(state: GlobalVoiceState) => void>();
 let globalActionHandler: ((action: VoiceAgentAction) => void) | null = null;
@@ -189,12 +233,20 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
         }
       });
 
+      let maxObservedGenerationId = 0;
+      let lastActionTimestamp = 0;
+
       room.on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
         const isAgentSpeaking = speakers.some((p) => !p.isLocal);
         const isUserSpeaking = speakers.some((p) => p.isLocal);
-        // Zero-latency barge-in: If user speaks and mic is not muted, agent visually stops immediately
+        // Zero-latency barge-in: If user speaks and mic is not muted, immediately stop visual speaking & abort pending actions
         if (isUserSpeaking && !globalState.userMicMuted) {
           updateGlobalState({ agentSpeaking: false });
+          globalActionHandler?.({
+            type: "interrupt",
+            priority: 100,
+            timestamp: Date.now(),
+          });
         } else {
           updateGlobalState({ agentSpeaking: isAgentSpeaking });
         }
@@ -208,12 +260,35 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
         if (topic !== "agent-action") return;
         try {
           const action = JSON.parse(new TextDecoder().decode(payload)) as VoiceAgentAction;
+          
+          // Stale action rejection using generationId and timestamp
+          if (action.generationId !== undefined) {
+            if (action.generationId < maxObservedGenerationId && (action.priority ?? 0) < 100) {
+              return; // Discard stale action from an earlier turn/prompt
+            }
+            if (action.generationId > maxObservedGenerationId) {
+              maxObservedGenerationId = action.generationId;
+            }
+          }
+
+          if (action.timestamp && action.timestamp < lastActionTimestamp && (action.priority ?? 0) < 100) {
+            return; // Discard out-of-order stale action
+          }
+          if (action.timestamp) {
+            lastActionTimestamp = action.timestamp;
+          }
+
           if (action.type === "agent_speaking") {
             updateGlobalState({
-              agentSpeaking: action.isSpeaking,
+              agentSpeaking: action.isSpeaking ?? false,
               ...(action.text ? { latestAgentText: action.text } : {}),
             });
+          } else if (action.type === "interrupt") {
+            updateGlobalState({ agentSpeaking: false });
+          } else if (action.type === "conversation_state" && action.conversationState) {
+            updateGlobalState({ conversationState: action.conversationState });
           }
+
           globalActionHandler?.(action);
         } catch {
           // ignore malformed payloads
@@ -223,7 +298,13 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
       room.on(RoomEvent.Disconnected, () => {
         if (activeRoom !== room) return;
         activeRoom = null;
-        updateGlobalState({ status: "idle", agentSpeaking: false, latestAgentText: "", isVoiceOpen: false });
+        updateGlobalState({
+          status: "idle",
+          agentSpeaking: false,
+          latestAgentText: "",
+          isVoiceOpen: false,
+          conversationState: null,
+        });
       });
 
       await room.connect(url, token, { autoSubscribe: true });
@@ -259,6 +340,7 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
     status: state.status,
     agentSpeaking: state.agentSpeaking,
     latestAgentText: state.latestAgentText,
+    conversationState: state.conversationState,
     audioBlocked: state.audioBlocked,
     muted: state.userMicMuted,
     userMicMuted: state.userMicMuted,
