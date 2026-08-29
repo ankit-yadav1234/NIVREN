@@ -21,8 +21,8 @@ export const AVATAR_CONFIG = {
       id: "male",
       name: "Dr. Dylan",
       role: "Chief RCM Consultant",
-      // Sharp Executive Male Presenter
-      imageUrl: "https://clips-presenters.d-id.com/v2/dylan_grey_suite_lobby/veRJGS_iOD/9mMps_xg_q/image.png",
+      // Sharp Executive Male Presenter (Local High-Resolution Asset)
+      imageUrl: "/images/doctors/dr-dylan.png",
       voiceId: "en-US-GuyNeural",
     },
     female: {

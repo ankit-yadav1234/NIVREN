@@ -32,8 +32,8 @@ export function VoiceAgentPanel({
   const filledFields = FORM_FIELD_ORDER.filter((f) => form?.[f]);
   const defaultAvatar = AVATAR_CONFIG.avatars.male;
 
-  // Avatar Display Mode: "3d" (Ready Player Me Rigged 3D Doctor) or "photo" (Photorealistic 3D Depth Parallax)
-  const [avatarMode, setAvatarMode] = React.useState<"3d" | "photo">("3d");
+  // Default to Real Presenter Doctor (Dr. Dylan) with Deep 3D Parallax & Lip Sync
+  const [avatarMode, setAvatarMode] = React.useState<"photo" | "3d">("photo");
 
   // Real-time Smooth 3D Cursor Physics (Interpolated with Lerp for 60 FPS fluidity)
   const [mouse, setMouse] = React.useState({ x: 0, y: 0 });
