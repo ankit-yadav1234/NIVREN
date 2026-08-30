@@ -30,9 +30,9 @@ dotenv.config();
 /** RCM facts + behavior rules live in one shared file — see ../ai/prompt.ts. */
 const INSTRUCTIONS = buildVoiceInstructions(NAVIGABLE_ROUTES_DESCRIPTION);
 
-/** Spoken immediately via session.say() — expansive greeting with Dr. Dylan persona. */
+/** Spoken immediately on session connect — crisp, punchy, conversational greeting. */
 const WELCOME_MESSAGE =
-  "Hi! I'm Dr. Dylan, your senior Revenue Cycle consultant at NIVREN. NIVREN is an advanced, technology-driven Healthcare Revenue Cycle Management and Medical Billing partner. We help physician practices, clinics, and hospital networks eliminate claim denials, streamline certified medical coding, accelerate AR recovery, and maximize overall practice revenue. What specific area of your revenue cycle can I help you with today?";
+  "Hello! I'm Dr. Dylan from NIVREN Healthcare. How can I help you with your revenue cycle today?";
 
 interface ConsultationState {
   name?: string;
@@ -296,7 +296,7 @@ export default defineAgent({
           controller.onToolStart("scroll_to_section");
           await publishAction({ type: "scroll", sectionId, priority: 80 });
           controller.onToolEnd(`Scrolled to section ${sectionId}`);
-          return `Smoothly navigated to section ${sectionId}.`;
+          return "Navigated to section.";
         },
       }),
 
@@ -313,7 +313,7 @@ export default defineAgent({
           controller.onToolStart("start_smooth_scroll");
           await publishAction({ type: "start_smooth_scroll", direction, speed, priority: 60, interruptible: true });
           controller.onToolEnd(`Smooth scroll ${direction} ${speed}`);
-          return `Smooth scrolling started ${direction} at ${speed} pace. Ready to explain or stop whenever requested.`;
+          return "Smooth scrolling active.";
         },
       }),
 
@@ -327,7 +327,7 @@ export default defineAgent({
           controller.onToolStart("stop_scroll");
           await publishAction({ type: "stop_scroll", priority: 100, interruptible: false });
           controller.onToolEnd("Stopped scroll");
-          return "Scrolling stopped smoothly.";
+          return "Scrolling stopped.";
         },
       }),
 
@@ -346,7 +346,7 @@ export default defineAgent({
           controller.onToolStart("scroll_page");
           await publishAction({ type: "scroll_page", amount: px, direction, priority: 60 });
           controller.onToolEnd(`Scrolled ${direction}`);
-          return `Scrolled the page ${direction} by ${Math.abs(px)}px.`;
+          return "Page scrolled.";
         },
       }),
 

@@ -254,8 +254,11 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
       room.on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
         const isAgentSpeaking = speakers.some((p) => !p.isLocal);
         const isUserSpeaking = speakers.some((p) => p.isLocal);
-        // Zero-latency barge-in: If user speaks and mic is not muted, immediately stop visual speaking & abort pending actions
+        // Instant Barge-In: If user speaks, immediately silence the audio element to eliminate mic echo
         if (isUserSpeaking && !globalState.userMicMuted) {
+          if (activeAudioEl) {
+            activeAudioEl.volume = 0;
+          }
           updateGlobalState({ agentSpeaking: false });
           globalActionHandler?.({
             type: "interrupt",
@@ -263,6 +266,9 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
             timestamp: Date.now(),
           });
         } else {
+          if (activeAudioEl && !isUserSpeaking && isAgentSpeaking) {
+            activeAudioEl.volume = 1;
+          }
           updateGlobalState({ agentSpeaking: isAgentSpeaking });
         }
       });
@@ -299,11 +305,17 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
           }
 
           if (action.type === "agent_speaking") {
+            if (action.isSpeaking && activeAudioEl) {
+              activeAudioEl.volume = 1;
+            }
             updateGlobalState({
               agentSpeaking: action.isSpeaking ?? false,
               ...(action.text ? { latestAgentText: action.text } : {}),
             });
           } else if (action.type === "interrupt") {
+            if (activeAudioEl) {
+              activeAudioEl.volume = 0;
+            }
             updateGlobalState({ agentSpeaking: false });
           } else if (action.type === "conversation_state" && action.conversationState) {
             updateGlobalState({ conversationState: action.conversationState });

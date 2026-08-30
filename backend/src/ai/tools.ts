@@ -26,10 +26,13 @@ export const NAVIGABLE_ROUTES = [
   "/about/leadership",
   "/about/careers",
   "/departments",
+  "/services",
   "/rcm",
   "/who-we-serve",
   "/case-studies",
   "/contact",
+  "/appointment",
+  "/locations",
   "/faq",
 ] as const;
 
@@ -46,14 +49,17 @@ export function isNavigableRoute(path: string): path is NavigableRoute {
  */
 const ROUTE_LABELS: Record<NavigableRoute, string> = {
   "/": "home page",
-  "/about": "about / company page",
+  "/about": "about / company page (dropdown: leadership, careers)",
   "/about/leadership": "leadership team",
   "/about/careers": "careers / open roles",
-  "/departments": "specialties we bill for (cardiology, neurology, orthopedics, pediatrics, oncology, dermatology)",
-  "/rcm": "RCM services (billing, coding, denial management, AR, credentialing, analytics)",
+  "/departments": "departments & specialties dropdown (cardiology, neurology, orthopedics, pediatrics, oncology, dermatology)",
+  "/services": "services dropdown (RCM, billing, coding, diagnostics, health checkups)",
+  "/rcm": "RCM revenue cycle management services",
   "/who-we-serve": "who we serve (hospitals, physician groups, clinics, healthcare organizations)",
   "/case-studies": "case studies / client results",
   "/contact": "contact / request a consultation",
+  "/appointment": "book an appointment / consultation form",
+  "/locations": "hospital locations / clinic centers",
   "/faq": "frequently asked questions",
 };
 
