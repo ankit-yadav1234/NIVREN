@@ -15,7 +15,7 @@ import { localePath } from "@/lib/utils/format";
  */
 export function MissionGlance({ locale }: { locale: Locale }) {
   return (
-    <section className="bg-background [background-image:radial-gradient(ellipse_65%_90%_at_top_right,hsl(var(--primary)/0.18),transparent_65%)] py-12 dark:[background-image:radial-gradient(ellipse_65%_90%_at_top_right,hsl(var(--primary)/0.24),transparent_65%)] md:py-20">
+    <section id="mission-glance" className="bg-background [background-image:radial-gradient(ellipse_65%_90%_at_top_right,hsl(var(--primary)/0.18),transparent_65%)] py-12 dark:[background-image:radial-gradient(ellipse_65%_90%_at_top_right,hsl(var(--primary)/0.24),transparent_65%)] md:py-20">
       <Container>
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
           <Reveal>

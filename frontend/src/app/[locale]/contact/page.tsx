@@ -58,7 +58,7 @@ export default async function ContactPage({
         headerAccent={<OrbitAccent />}
       />
 
-      <section className="bg-background [background-image:radial-gradient(ellipse_65%_90%_at_top_right,hsl(var(--primary)/0.18),transparent_65%)] py-12 dark:[background-image:radial-gradient(ellipse_65%_90%_at_top_right,hsl(var(--primary)/0.24),transparent_65%)] md:py-20">
+      <section id="contact-form" className="bg-background [background-image:radial-gradient(ellipse_65%_90%_at_top_right,hsl(var(--primary)/0.18),transparent_65%)] py-12 dark:[background-image:radial-gradient(ellipse_65%_90%_at_top_right,hsl(var(--primary)/0.24),transparent_65%)] md:py-20">
         <Container>
           <Reveal className="mx-auto max-w-2xl text-center">
             <h2 className="text-[length:var(--text-h2)] font-bold text-primary">

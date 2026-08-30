@@ -9,7 +9,7 @@ import { localePath } from "@/lib/utils/format";
 export function AppointmentCTA({ dict, locale }: { dict: Dictionary; locale: Locale }) {
   const t = dict.home.appointmentCta;
   return (
-    <section className="py-12 md:py-16">
+    <section id="appointment" className="py-12 md:py-16">
       <Container>
         <div className="relative isolate overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#0369a1] via-[#0284c7] to-[#075985] px-6 py-11 sm:px-10 sm:py-13 md:px-14 md:py-14 text-center text-white shadow-xl">
           {/* Subtle Ambient Lighting */}

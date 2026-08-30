@@ -14,6 +14,7 @@ import { useLocale } from "@/hooks/useLocale";
 import { apiFetch } from "@/lib/api/client";
 import { trackEvent } from "@/lib/analytics";
 import type { AppointmentResult } from "@/types";
+import { scrollController } from "@/lib/scroll/scrollController";
 
 interface ChatEntry extends AIMessage {
   id: string;
@@ -44,63 +45,23 @@ export function AssistantWidget() {
   const [voiceFormSubmitted, setVoiceFormSubmitted] = React.useState(false);
 
   const switchLanguage = React.useCallback(
-    (locale: "en" | "hi" | "ar") => {
+    (targetLocale: "en" | "hi" | "ar") => {
       const segments = pathname.split("/");
-      segments[1] = locale; // first segment after the leading slash is the locale
+      if (segments[1] === "en" || segments[1] === "hi" || segments[1] === "ar") {
+        segments[1] = targetLocale;
+      } else {
+        segments.splice(1, 0, targetLocale);
+      }
       router.push(segments.join("/") || "/");
     },
     [pathname, router]
   );
 
-  const scrollAnimRef = React.useRef<number | null>(null);
-  const scrollAbortController = React.useRef<AbortController | null>(null);
-
-  const stopContinuousScroll = React.useCallback(() => {
-    if (scrollAbortController.current) {
-      scrollAbortController.current.abort();
-      scrollAbortController.current = null;
-    }
-    if (scrollAnimRef.current !== null) {
-      cancelAnimationFrame(scrollAnimRef.current);
-      scrollAnimRef.current = null;
-    }
-  }, []);
-
-  const startContinuousScroll = React.useCallback(
-    (direction: "down" | "up" = "down", speed: "slow" | "normal" | "fast" = "normal") => {
-      stopContinuousScroll();
-      const controller = new AbortController();
-      scrollAbortController.current = controller;
-      const signal = controller.signal;
-
-      const speedPx = speed === "slow" ? 1.5 : speed === "fast" ? 6.5 : 3.5;
-      const delta = direction === "down" ? speedPx : -speedPx;
-
-      const step = () => {
-        if (signal.aborted) return;
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        const currentScroll = window.scrollY || window.pageYOffset;
-        if (direction === "down" && currentScroll >= maxScroll - 2) {
-          stopContinuousScroll();
-          return;
-        }
-        if (direction === "up" && currentScroll <= 2) {
-          stopContinuousScroll();
-          return;
-        }
-        window.scrollBy(0, delta);
-        scrollAnimRef.current = requestAnimationFrame(step);
-      };
-      scrollAnimRef.current = requestAnimationFrame(step);
-    },
-    [stopContinuousScroll]
-  );
-
   // Stop auto scroll if user touches screen or uses mouse wheel manually
   React.useEffect(() => {
     const handleUserScroll = (e: Event) => {
-      if (e.isTrusted && scrollAnimRef.current !== null) {
-        stopContinuousScroll();
+      if (e.isTrusted) {
+        scrollController.stopScroll({ immediate: true });
       }
     };
     window.addEventListener("wheel", handleUserScroll, { passive: true });
@@ -108,25 +69,31 @@ export function AssistantWidget() {
     return () => {
       window.removeEventListener("wheel", handleUserScroll);
       window.removeEventListener("touchmove", handleUserScroll);
-      stopContinuousScroll();
+      scrollController.stopScroll({ immediate: true });
     };
-  }, [stopContinuousScroll]);
+  }, []);
 
   const runClientAction = React.useCallback(
     (action: any) => {
       if (action.type === "interrupt" || action.type === "stop_scroll") {
-        stopContinuousScroll();
+        // Natural friction deceleration stop (or immediate on interrupt)
+        scrollController.stopScroll({ immediate: action.type === "interrupt" });
       } else if (action.type === "navigate") {
-        stopContinuousScroll();
+        scrollController.stopScroll({ immediate: true });
         router.push(withLocale(action.path, pathname));
       } else if (action.type === "scroll") {
-        stopContinuousScroll();
-        document.getElementById(action.sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        // Section navigation with header offset
+        scrollController.stopScroll({ immediate: true });
+        scrollController.scrollToSection(action.sectionId, { offset: 80 });
       } else if (action.type === "start_smooth_scroll") {
-        startContinuousScroll(action.direction || "down", action.speed || "normal");
+        scrollController.startContinuousScroll({
+          direction: action.direction || "down",
+          speed: action.speed || "normal",
+        });
       } else if (action.type === "scroll_page") {
-        stopContinuousScroll();
-        window.scrollBy({ top: action.amount || 600, behavior: "smooth" });
+        scrollController.stopScroll({ immediate: true });
+        const delta = action.amount ?? (action.direction === "up" ? -600 : 600);
+        scrollController.scrollByDelta(delta);
       } else if (action.type === "set_theme") {
         setTheme(action.theme);
         trackEvent({ name: "theme_change", theme: action.theme });
@@ -144,7 +111,7 @@ export function AssistantWidget() {
         setVoiceFormSubmitted(false);
         trackEvent({ name: "consultation_cancelled", source: "voice" });
       } else if (action.type === "end_session") {
-        stopContinuousScroll();
+        scrollController.stopScroll({ immediate: true });
         setTimeout(() => {
           voice.stop();
           setVoiceForm({});
@@ -176,7 +143,7 @@ export function AssistantWidget() {
           });
       }
     },
-    [router, pathname, setTheme, switchLanguage, startContinuousScroll, stopContinuousScroll]
+    [router, pathname, setTheme, switchLanguage]
   );
 
   // LiveKit WebRTC Voice Session connected to Backend RAG & MCP tools

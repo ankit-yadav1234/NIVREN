@@ -269,65 +269,67 @@ export default defineAgent({
 
       tool({
         name: "scroll_to_section",
-        description: "Scroll to a specific section on the current page.",
+        description:
+          "Smoothly scroll directly to a specific section on the current page when user asks to view/open a section (e.g. 'doctors dikhao', 'testimonials pe jao', 'appointment form kholo', 'rcm services dikhao', 'mission section dikhao', 'go to emergency', 'show contact').",
         parameters: z.object({
-          sectionId: z.string().describe("The exact section ID on the current page."),
+          sectionId: z.string().describe("The exact section ID on the current page (e.g. 'rcm-services', 'testimonials', 'appointment', 'mission-glance', 'emergency', 'contact-form', 'service-cards')."),
         }),
         flags: ToolFlag.CANCELLABLE,
         execute: async ({ sectionId }) => {
           controller.onToolStart("scroll_to_section");
-          await publishAction({ type: "scroll", sectionId, priority: 60 });
+          await publishAction({ type: "scroll", sectionId, priority: 80 });
           controller.onToolEnd(`Scrolled to section ${sectionId}`);
-          return "Scrolling there now.";
+          return `Smoothly navigated to section ${sectionId}.`;
         },
       }),
 
       tool({
         name: "start_smooth_scroll",
         description:
-          "Continuously and smoothly auto-scroll the webpage. Use speed 'slow' when user says 'dhire dhire scroll karo', 'slow scroll', 'aram se scroll karo'. Use 'normal' for regular 'scroll down' / 'scroll karo', and 'fast' for 'tez scroll karo' / 'fast scroll'.",
+          "Continuously and smoothly auto-scroll the webpage with natural acceleration. Use speed 'slow' when user says 'dhire dhire scroll karo', 'slow scroll', 'aram se scroll karo', 'thoda dheere'. Use 'normal' for regular 'scroll down', 'scroll karo', 'aur neeche', 'page neeche karo'. Use 'fast' for 'tez scroll karo', 'fast scroll'. Direction 'up' for 'upar scroll karo', 'scroll up', 'page upar le jao'.",
         parameters: z.object({
           direction: z.enum(["down", "up"]).default("down").describe("Scroll direction: 'down' or 'up'."),
-          speed: z.enum(["slow", "normal", "fast"]).default("normal").describe("Scroll speed: 'slow' (gentle reading pace), 'normal', or 'fast'."),
+          speed: z.enum(["slow", "normal", "fast"]).default("normal").describe("Scroll speed: 'slow' (gentle reading pace ~110px/s), 'normal' (~260px/s), or 'fast' (~580px/s)."),
         }),
         flags: ToolFlag.CANCELLABLE,
         execute: async ({ direction, speed }) => {
           controller.onToolStart("start_smooth_scroll");
           await publishAction({ type: "start_smooth_scroll", direction, speed, priority: 60, interruptible: true });
           controller.onToolEnd(`Smooth scroll ${direction} ${speed}`);
-          return `Continuous smooth scrolling started ${direction} at ${speed} speed. Ready to explain or stop whenever requested.`;
+          return `Smooth scrolling started ${direction} at ${speed} pace. Ready to explain or stop whenever requested.`;
         },
       }),
 
       tool({
         name: "stop_scroll",
         description:
-          "Immediately stops any continuous page scrolling when user says 'ruk jao', 'stop', 'thahar jao', 'page roko', 'stop scrolling', 'wait', or 'hold on'.",
+          "Highest priority tool to immediately and smoothly stop any active page scrolling when user says 'ruk jao', 'stop', 'bas', 'bas karo', 'thahar jao', 'page roko', 'stop scrolling', 'wait', 'ruko', or 'hold on'.",
         parameters: z.object({}),
         flags: ToolFlag.CANCELLABLE,
         execute: async () => {
           controller.onToolStart("stop_scroll");
           await publishAction({ type: "stop_scroll", priority: 100, interruptible: false });
           controller.onToolEnd("Stopped scroll");
-          return "Scrolling stopped immediately.";
+          return "Scrolling stopped smoothly.";
         },
       }),
 
       tool({
         name: "scroll_page",
         description:
-          "Smoothly scroll the webpage down or up by a fixed distance when user asks for a single step scroll.",
+          "Smoothly scroll the webpage down or up by a small or fixed distance when user asks for a single step scroll (e.g. 'thoda neeche', 'a bit down', 'thoda upar', 'scroll slightly', 'one page down').",
         parameters: z.object({
           direction: z.enum(["down", "up"]).default("down").describe("Direction to scroll ('down' or 'up')."),
-          amount: z.number().optional().describe("Amount of pixels to scroll (default is 600px)."),
+          amount: z.number().optional().describe("Amount of pixels to scroll (default 350px for small step, 600px for full step)."),
         }),
         flags: ToolFlag.CANCELLABLE,
         execute: async ({ direction, amount }) => {
-          const px = direction === "down" ? (amount ?? 600) : -(amount ?? 600);
+          const defaultStep = 350;
+          const px = direction === "down" ? (amount ?? defaultStep) : -(amount ?? defaultStep);
           controller.onToolStart("scroll_page");
-          await publishAction({ type: "scroll_page", amount: px, direction, priority: 50 });
+          await publishAction({ type: "scroll_page", amount: px, direction, priority: 60 });
           controller.onToolEnd(`Scrolled ${direction}`);
-          return `Scrolled the page ${direction} by ${Math.abs(px)}px. Now explain or read what is visible.`;
+          return `Scrolled the page ${direction} by ${Math.abs(px)}px.`;
         },
       }),
 

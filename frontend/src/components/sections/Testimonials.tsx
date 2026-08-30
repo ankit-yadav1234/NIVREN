@@ -19,7 +19,7 @@ export function Testimonials({
   const scrollList = [...testimonials, ...testimonials];
 
   return (
-    <Section className="overflow-hidden py-16 md:py-24">
+    <Section id="testimonials" className="overflow-hidden py-16 md:py-24">
       <SectionHeading
         eyebrow="Client & Patient Stories"
         title={dict.home.testimonials.title}

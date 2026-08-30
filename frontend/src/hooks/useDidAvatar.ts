@@ -4,6 +4,7 @@ import * as React from "react";
 import { sendAIMessage, type AIMessage, type AIClientAction } from "@/lib/api/ai";
 import { AVATAR_CONFIG, type AvatarOption } from "@/config/avatar";
 import { useRouter } from "next/navigation";
+import { scrollController } from "@/lib/scroll/scrollController";
 
 // Uses relative Next.js API routes (/api/did/...) so it functions seamlessly on Vercel production
 const API_BASE = "";
@@ -50,7 +51,7 @@ export function useDidAvatar(pathname: string) {
         const target = pathname.startsWith("/hi") ? `/hi${action.path}` : pathname.startsWith("/ar") ? `/ar${action.path}` : `/en${action.path}`;
         router.push(target);
       } else if (action.type === "scroll") {
-        document.getElementById(action.sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        scrollController.scrollToSection(action.sectionId, { offset: 80 });
       }
     },
     [router, pathname]

@@ -11,6 +11,15 @@ export interface PageSection {
 }
 
 export const PAGE_SECTIONS: Record<string, PageSection[]> = {
+  "/": [
+    { id: "hero", label: "Home Hero & Video Banner" },
+    { id: "emergency", label: "Emergency & Urgent Care Banner" },
+    { id: "mission-glance", label: "NIVREN Network At A Glance" },
+    { id: "impact", label: "RCM Performance & Impact Stats" },
+    { id: "rcm-services", label: "Core RCM & Healthcare Services" },
+    { id: "testimonials", label: "Client & Patient Testimonials" },
+    { id: "appointment", label: "Free Assessment & Consultation CTA" },
+  ],
   "/about": [
     { id: "mission-vision", label: "Mission & Vision" },
     { id: "values", label: "Our Values" },
@@ -21,6 +30,19 @@ export const PAGE_SECTIONS: Record<string, PageSection[]> = {
     { id: "testimonial", label: "Testimonial" },
     { id: "care-team", label: "Why Patients Choose Us" },
     { id: "comfort-tech", label: "Facilities & Comfort" },
+    { id: "appointment", label: "Book Consultation" },
+  ],
+  "/services": [
+    { id: "service-cards", label: "Clinical & RCM Service Offerings" },
+    { id: "appointment", label: "Schedule Service / Consultation" },
+  ],
+  "/rcm": [
+    { id: "rcm-services", label: "End-to-End RCM Capabilities" },
+    { id: "appointment", label: "Free Revenue Cycle Assessment" },
+  ],
+  "/contact": [
+    { id: "contact-form", label: "Get In Touch Form & Direct Address" },
+    { id: "appointment", label: "Schedule Appointment" },
   ],
 };
 

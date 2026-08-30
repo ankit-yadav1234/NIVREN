@@ -16,7 +16,7 @@ const STATS = [
  */
 export function ImpactStrip() {
   return (
-    <section className="relative isolate overflow-hidden py-20 sm:py-24 md:py-28 lg:py-32 flex items-center min-h-[540px]">
+    <section id="impact" className="relative isolate overflow-hidden py-20 sm:py-24 md:py-28 lg:py-32 flex items-center min-h-[540px]">
       <Image
         src="https://images.unsplash.com/photo-1758873271761-6cfe9b4f000c?auto=format&fit=crop&w=1800&q=80"
         alt=""

@@ -33,7 +33,7 @@ export function Hero({
 }) {
   const t = dict.home.hero;
   return (
-    <section className="relative isolate flex min-h-dvh items-center overflow-hidden bg-slate-950">
+    <section id="hero" className="relative isolate flex min-h-dvh items-center overflow-hidden bg-slate-950">
       {/* Moving video background */}
       <HeroVideo src={HERO_VIDEO} className="absolute inset-0 -z-20 h-full w-full scale-105 object-cover" />
       {/* Readability overlay: diagonal multi-stop wash + a soft brand-color glow behind the copy */}

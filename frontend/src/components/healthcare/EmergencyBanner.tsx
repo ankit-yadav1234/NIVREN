@@ -16,7 +16,7 @@ export function EmergencyBanner({
   const phone = healthcareConfig.emergency.phone;
 
   return (
-    <div className="bg-emergency text-white">
+    <div id="emergency" className="bg-emergency text-white">
       <Container className="flex flex-col items-center justify-between gap-4 py-6 sm:flex-row">
         <div className="flex items-center gap-3">
           <Ambulance className="h-8 w-8 shrink-0" aria-hidden />
