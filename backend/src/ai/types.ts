@@ -14,6 +14,8 @@ export interface AIGenerateRequest {
   systemInstruction?: string;
   /** Extra grounding text (e.g. RAG chunks, page context) injected before the user message. */
   context?: string;
+  /** Optional model override (e.g., "gemini-3.1-pro-preview" for deep reasoning). */
+  model?: string;
   /** Tool/function declarations the model may call, in provider-agnostic form. */
   tools?: unknown[];
 }

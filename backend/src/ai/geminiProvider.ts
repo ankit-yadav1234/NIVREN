@@ -25,7 +25,7 @@ export class GeminiProvider implements AIProvider {
 
   async generate(request: AIGenerateRequest): Promise<AIGenerateResponse> {
     const response = await this.client.models.generateContent({
-      model: DEFAULT_MODEL,
+      model: request.model || DEFAULT_MODEL,
       contents: toContents(request.history, request.message, request.context),
       config: {
         systemInstruction: request.systemInstruction,
@@ -43,7 +43,7 @@ export class GeminiProvider implements AIProvider {
 
   async *generateStream(request: AIGenerateRequest): AsyncGenerator<string, void, unknown> {
     const stream = await this.client.models.generateContentStream({
-      model: DEFAULT_MODEL,
+      model: request.model || DEFAULT_MODEL,
       contents: toContents(request.history, request.message, request.context),
       config: request.systemInstruction
         ? { systemInstruction: request.systemInstruction }
