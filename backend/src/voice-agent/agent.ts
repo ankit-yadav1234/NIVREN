@@ -22,17 +22,13 @@ import {
 } from "@google/genai";
 import { NAVIGABLE_ROUTES_DESCRIPTION, isNavigableRoute } from "../ai/tools";
 import { sectionsForRoute, stripLocale } from "../ai/pageSections";
-import { buildVoiceInstructions } from "../ai/prompt";
+import { buildVoiceInstructions, getWelcomeMessage, getFarewellMessage } from "../ai/prompt";
 import { CONSULTATION_FIELD_KEYS, REQUIRED_CONSULTATION_FIELDS, type ConsultationField } from "../ai/consultationFields";
 
 dotenv.config();
 
 /** RCM facts + behavior rules live in one shared file — see ../ai/prompt.ts. */
 const INSTRUCTIONS = buildVoiceInstructions(NAVIGABLE_ROUTES_DESCRIPTION);
-
-/** Spoken immediately on session connect — expansive greeting with Dr. Dylan persona. */
-const WELCOME_MESSAGE =
-  "Hi! I'm Dr. Dylan, your senior Revenue Cycle consultant at NIVREN. NIVREN is an advanced, technology-driven Healthcare Revenue Cycle Management and Medical Billing partner. We help physician practices, clinics, and hospital networks eliminate claim denials, streamline certified medical coding, accelerate AR recovery, and maximize overall practice revenue. What specific area of your revenue cycle can I help you with today?";
 
 interface ConsultationState {
   name?: string;
@@ -443,9 +439,9 @@ export default defineAgent({
 
       try {
         await publishAction({ type: "end_session", priority: 100 });
+        const farewell = getFarewellMessage(getCurrentLocale());
         session.generateReply({
-          instructions:
-            "Say this complete farewell message clearly: 'Thank you for connecting with NIVREN Healthcare! I am disconnecting our session now to save resources. Have a wonderful and productive day!' and call the end_session tool.",
+          instructions: `Say this exact farewell message clearly: "${farewell}" and call the end_session tool.`,
         });
       } catch (err) {
         console.warn("Error publishing end_session action:", err);
@@ -530,14 +526,9 @@ export default defineAgent({
     // Dr. Dylan speaks welcome message automatically on connection in active website language
     try {
       const activeLocale = getCurrentLocale();
-      let greetingInstruction = `Greet the user immediately with this exact greeting in the conversation: "${WELCOME_MESSAGE}"`;
-      if (activeLocale === "hi") {
-        greetingInstruction = `Greet the user immediately in Hindi: "Namaste! Main Dr. Dylan hoon, NIVREN Healthcare ka senior Revenue Cycle Management consultant. NIVREN ek advanced Healthcare Revenue Cycle Management aur Medical Billing partner hai. Hum claim denials ko khatam karne aur revenue maximize karne me madad karte hain. Aaj main aapki revenue cycle me kis area me madad kar sakta hoon?"`;
-      } else if (activeLocale === "ar") {
-        greetingInstruction = `Greet the user immediately in Arabic: "مرحباً! أنا د. ديلان، كبير مستشاري إدارة دورة الإيرادات في نيفيرين للرعاية الصحية. نيفيرين شريك متقدم في الفوترة الطبية وإدارة دورة الإيرادات. كيف يمكنني مساعدتك في دورتك المالية اليوم؟"`;
-      }
+      const welcome = getWelcomeMessage(activeLocale);
       session.generateReply({
-        instructions: greetingInstruction,
+        instructions: `Greet the user immediately in the active language with this exact greeting: "${welcome}"`,
       });
     } catch (greetingErr) {
       console.warn("Initial greeting could not be spoken:", greetingErr);
