@@ -73,16 +73,34 @@ export function AssistantWidget() {
     };
   }, []);
 
+  // Prefetch all top navigable routes in background for instant sub-frame transitions
+  React.useEffect(() => {
+    const prefetchRoutes = ["/contact", "/rcm", "/services", "/case-studies", "/who-we-serve", "/about", "/locations", "/faq"];
+    prefetchRoutes.forEach((route) => {
+      try {
+        router.prefetch(withLocale(route, pathname));
+      } catch (_) {}
+    });
+  }, [pathname, router]);
+
   const runClientAction = React.useCallback(
     (action: any) => {
+      const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+
       if (action.type === "interrupt" || action.type === "stop_scroll") {
         // Natural friction deceleration stop (or immediate on interrupt)
         scrollController.stopScroll({ immediate: action.type === "interrupt" });
       } else if (action.type === "navigate") {
         scrollController.stopScroll({ immediate: true });
         const targetUrl = withLocale(action.path, pathname);
+        const navStartTime = now;
         if (pathname !== targetUrl) {
+          console.log(`[NAV_PERF] ActionReceived -> router.push target=${targetUrl} timestamp=${now.toFixed(1)}ms`);
           router.push(targetUrl);
+          const pushTime = typeof performance !== "undefined" ? performance.now() : Date.now();
+          console.log(`[NAV_PERF] router.push executed in ${(pushTime - navStartTime).toFixed(2)}ms`);
+        } else {
+          console.log(`[NAV_PERF] Skipped router.push (already on ${targetUrl})`);
         }
       } else if (action.type === "scroll") {
         // Section navigation with header offset

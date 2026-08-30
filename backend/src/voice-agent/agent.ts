@@ -145,13 +145,13 @@ export default defineAgent({
           const pageTitle = path.replace(/^\//, "").replace(/-/g, " ") || "home";
 
           if (currentClean && currentClean === targetClean) {
-            return `User is already on the ${pageTitle} page.`;
+            return "User is already on this page.";
           }
 
           controller.onToolStart("navigate");
           await publishAction({ type: "navigate", path, priority: 95, interruptible: false });
           controller.onToolEnd(`Navigated to ${path}`);
-          return `Navigation to ${pageTitle} page completed.`;
+          return "Navigation completed.";
         },
       }),
 
