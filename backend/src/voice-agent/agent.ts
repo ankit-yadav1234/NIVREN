@@ -21,7 +21,7 @@ import {
   EndSensitivity,
 } from "@google/genai";
 import { NAVIGABLE_ROUTES_DESCRIPTION, isNavigableRoute } from "../ai/tools";
-import { sectionsForRoute } from "../ai/pageSections";
+import { sectionsForRoute, stripLocale } from "../ai/pageSections";
 import { buildVoiceInstructions } from "../ai/prompt";
 import { CONSULTATION_FIELD_KEYS, REQUIRED_CONSULTATION_FIELDS, type ConsultationField } from "../ai/consultationFields";
 
@@ -138,11 +138,20 @@ export default defineAgent({
           if (!isNavigableRoute(path)) {
             return `Cannot navigate to ${path}. Valid pages: ${NAVIGABLE_ROUTES_DESCRIPTION}.`;
           }
+
+          const current = getCurrentRoute();
+          const currentClean = current ? stripLocale(current) : "";
+          const targetClean = stripLocale(path);
+          const pageTitle = path.replace(/^\//, "").replace(/-/g, " ") || "home";
+
+          if (currentClean && currentClean === targetClean) {
+            return `User is already on the ${pageTitle} page.`;
+          }
+
           controller.onToolStart("navigate");
           await publishAction({ type: "navigate", path, priority: 95, interruptible: false });
           controller.onToolEnd(`Navigated to ${path}`);
-          const pageTitle = path.replace(/^\//, "").replace(/-/g, " ") || "home";
-          return `Navigated to ${pageTitle} page immediately. Confirm to user in ONE single sentence (e.g. "${pageTitle} page open kar diya hai.").`;
+          return `Navigation to ${pageTitle} page completed.`;
         },
       }),
 

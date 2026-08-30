@@ -108,6 +108,20 @@ let globalState: GlobalVoiceState = {
 const stateListeners = new Set<(state: GlobalVoiceState) => void>();
 let globalActionHandler: ((action: VoiceAgentAction) => void) | null = null;
 
+// Idempotent action cache to guarantee zero duplicate action execution
+const processedActionIds = new Set<string>();
+const MAX_PROCESSED_ACTIONS = 200;
+
+function markActionProcessed(id: string): boolean {
+  if (processedActionIds.has(id)) return false; // Already executed!
+  processedActionIds.add(id);
+  if (processedActionIds.size > MAX_PROCESSED_ACTIONS) {
+    const oldest = processedActionIds.values().next().value;
+    if (oldest) processedActionIds.delete(oldest);
+  }
+  return true; // First time processing
+}
+
 function notifyListeners() {
   for (const listener of stateListeners) {
     listener({ ...globalState });
@@ -261,8 +275,13 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
         if (topic !== "agent-action") return;
         try {
           const action = JSON.parse(new TextDecoder().decode(payload)) as VoiceAgentAction;
+
+          // 1. Idempotency Check: Drop duplicate action if already processed
+          if (action.id && !markActionProcessed(action.id)) {
+            return;
+          }
           
-          // Stale action rejection using generationId and timestamp
+          // 2. Stale action rejection using generationId and timestamp
           if (action.generationId !== undefined) {
             if (action.generationId < maxObservedGenerationId && (action.priority ?? 0) < 100) {
               return; // Discard stale action from an earlier turn/prompt
