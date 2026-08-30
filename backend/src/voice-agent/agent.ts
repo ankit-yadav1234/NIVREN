@@ -139,9 +139,10 @@ export default defineAgent({
             return `Cannot navigate to ${path}. Valid pages: ${NAVIGABLE_ROUTES_DESCRIPTION}.`;
           }
           controller.onToolStart("navigate");
-          await publishAction({ type: "navigate", path, priority: 90, interruptible: false });
+          await publishAction({ type: "navigate", path, priority: 95, interruptible: false });
           controller.onToolEnd(`Navigated to ${path}`);
-          return `Navigating to ${path} now.`;
+          const pageTitle = path.replace(/^\//, "").replace(/-/g, " ") || "home";
+          return `Navigated to ${pageTitle} page immediately. Confirm to user in ONE single sentence (e.g. "${pageTitle} page open kar diya hai.").`;
         },
       }),
 

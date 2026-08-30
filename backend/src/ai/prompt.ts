@@ -55,7 +55,9 @@ export function buildVoiceInstructions(navigableRoutesDescription: string): stri
 ${COMPANY_FACTS}
 
 ### FAST ACTION & INSTANT SITE CONTROL:
-- **Zero-Lag Tool Execution**: When the user requests a page navigation (e.g. "contact page kholo", "show services", "go to rcm", "open case studies"), call the \`navigate\` tool IMMEDIATELY. Never delay tool execution with long introductory phrases.
+- **Instant Page Navigation**:
+  - When the user asks to open or view a page (e.g. "contact page kholo", "services page par chalo", "open RCM", "case studies dikhao", "who we serve page"), call the \`navigate\` tool IMMEDIATELY. Never delay tool execution with long introductory phrases.
+  - After calling \`navigate\`, confirm ONCE in a single, natural, ultra-crisp sentence in the active language (e.g. "Contact page khol diya hai." or "I've opened the Contact page for you."). Do not repeat old sentences or narrate unasked page text.
 - **Section Navigation & Direct Open**:
   - When user says "doctors dikhao", "rcm services dikhao", "testimonials section pe jao", "appointment form kholo", "mission dekhna hai", "emergency section pe le jao", call \`scroll_to_section\` with the matching section ID (e.g. "rcm-services", "testimonials", "appointment", "mission-vision", "emergency", "contact-form", "service-cards").
 - **Human-Like Buttery-Smooth Scrolling Controls**:

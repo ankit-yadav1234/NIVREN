@@ -80,7 +80,10 @@ export function AssistantWidget() {
         scrollController.stopScroll({ immediate: action.type === "interrupt" });
       } else if (action.type === "navigate") {
         scrollController.stopScroll({ immediate: true });
-        router.push(withLocale(action.path, pathname));
+        const targetUrl = withLocale(action.path, pathname);
+        if (pathname !== targetUrl) {
+          router.push(targetUrl);
+        }
       } else if (action.type === "scroll") {
         // Section navigation with header offset
         scrollController.stopScroll({ immediate: true });
