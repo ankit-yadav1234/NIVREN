@@ -126,6 +126,13 @@ export default defineAgent({
       return participant?.attributes?.route;
     }
 
+    function getCurrentLocale(): "en" | "hi" | "ar" {
+      const route = getCurrentRoute();
+      if (route?.startsWith("/hi")) return "hi";
+      if (route?.startsWith("/ar")) return "ar";
+      return "en";
+    }
+
     const tools = [
       tool({
         name: "navigate",
@@ -361,7 +368,7 @@ export default defineAgent({
       tool({
         name: "set_language",
         description:
-          "Instantly switch the entire website language and conversational speech language. Valid locales: 'en' (English), 'hi' (Hindi), 'ar' (Arabic). Trigger on: 'Hindi me baat karo', 'change hindi', 'Hindi karo', 'English me bolo', 'change to English', 'Arabic karo', 'bhasha badlo', 'Arbi me bolo', etc. Priority 95.",
+          "Instantly switch the entire website language and conversational speech language across all 6 combinations between English ('en'), Hindi ('hi'), and Arabic ('ar'). Trigger on: 'Hindi me baat karo', 'change to hindi', 'Hindi karo', 'English me bolo', 'change to English', 'Arabic karo', 'bhasha badlo', 'Arbi me bolo', 'Tahweel ila al-arabiya', 'Speak in English', 'Arbi me baat karo', 'Hindi to Arabic', 'English to Arabic', 'Arabic to Hindi', etc. Priority 100.",
         parameters: z.object({
           locale: z.enum(["en", "hi", "ar"]).describe("The language code to switch to: 'en' (English), 'hi' (Hindi), or 'ar' (Arabic)."),
         }),
@@ -370,7 +377,13 @@ export default defineAgent({
           controller.onToolStart("set_language");
           await publishAction({ type: "set_language", locale, priority: 100, interruptible: false });
           controller.onToolEnd(`Language set to ${locale}`);
-          return "Language switch completed.";
+          if (locale === "hi") {
+            return "Website switched to Hindi. YOU MUST NOW SPEAK EXCLUSIVELY IN HINDI.";
+          } else if (locale === "ar") {
+            return "Website switched to Arabic. YOU MUST NOW SPEAK EXCLUSIVELY IN ARABIC.";
+          } else {
+            return "Website switched to English. YOU MUST NOW SPEAK EXCLUSIVELY IN ENGLISH.";
+          }
         },
       }),
 
@@ -514,10 +527,17 @@ export default defineAgent({
       terminateSession();
     }, MAX_SESSION_DURATION_MS);
 
-    // Dr. Dylan speaks welcome message automatically on connection
+    // Dr. Dylan speaks welcome message automatically on connection in active website language
     try {
+      const activeLocale = getCurrentLocale();
+      let greetingInstruction = `Greet the user immediately with this exact greeting in the conversation: "${WELCOME_MESSAGE}"`;
+      if (activeLocale === "hi") {
+        greetingInstruction = `Greet the user immediately in Hindi: "Namaste! Main Dr. Dylan hoon, NIVREN Healthcare ka senior Revenue Cycle Management consultant. Main aaj aapki kaise madad kar sakta hoon?"`;
+      } else if (activeLocale === "ar") {
+        greetingInstruction = `Greet the user immediately in Arabic: "مرحباً! أنا د. ديلان، مستشار إدارة دورة الإيرادات في نيفيرين. كيف يمكنني مساعدتك اليوم؟"`;
+      }
       session.generateReply({
-        instructions: `Greet the user immediately with this exact greeting in the conversation: "${WELCOME_MESSAGE}"`,
+        instructions: greetingInstruction,
       });
     } catch (greetingErr) {
       console.warn("Initial greeting could not be spoken:", greetingErr);
