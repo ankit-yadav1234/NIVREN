@@ -143,11 +143,12 @@ export function AssistantWidget() {
         trackEvent({ name: "consultation_cancelled", source: "voice" });
       } else if (action.type === "end_session") {
         scrollController.stopScroll({ immediate: true });
+        // Close voice modal smoothly right after farewell speech completes
         setTimeout(() => {
           voice.stop();
           setVoiceForm({});
           setVoiceFormSubmitted(false);
-        }, 10000);
+        }, 2200);
       } else if (action.type === "update_form") {
         setVoiceFormSubmitted(false);
         setVoiceForm((prev) => ({ ...prev, [action.field]: action.value }));

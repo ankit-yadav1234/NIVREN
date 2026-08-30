@@ -106,7 +106,7 @@ export function VoiceAgentPanel({
       {/* Center Circular Avatar Container with 3D Head & Background Tracking */}
       <div className="relative flex flex-col items-center justify-end mt-auto mb-4">
         <div className="relative flex h-72 w-72 items-center justify-center sm:h-80 sm:w-80">
-          
+
           {/* Outer Floating 3D Ambient Aura Layer 1 (Translates in 3D with cursor) */}
           <div
             aria-hidden

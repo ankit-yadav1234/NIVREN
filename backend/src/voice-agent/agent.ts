@@ -386,14 +386,27 @@ export default defineAgent({
       tool({
         name: "end_session",
         description:
-          "End the voice conversation and close the voice assistant window immediately when the user says bye, goodbye, end the session, disconnect, band karo, close this, or confirms they want to exit.",
+          "Immediately close the voice assistant and end the session when user says: 'close', 'band karo', 'exit', 'bye', 'goodbye', 'stop', 'disconnect', 'khatam karo', 'alvida', 'chalo bye', 'band kar do', 'band ho jao', 'close agent', 'close window', 'close panel', 'end call', 'bas band karo', 'wada'an', 'iqlaq'. Priority 100.",
         parameters: z.object({}),
         flags: ToolFlag.CANCELLABLE,
         execute: async () => {
           controller.onToolStart("end_session");
-          await publishAction({ type: "end_session", priority: 100 });
+          await publishAction({ type: "end_session", priority: 100, interruptible: false });
           controller.onToolEnd("Session ended");
-          return "Voice session ending. Goodbye message spoken and closing signal sent.";
+          return "Voice session ending. Speak exactly ONE short farewell sentence in the active language.";
+        },
+      }),
+
+      tool({
+        name: "skip_item",
+        description:
+          "Skip the current question, field, or topic immediately when user says: 'skip', 'skip karo', 'aage badho', 'chhod do', 'next', 'agla sawal', 'agli cheez', 'leave this', 'move on', 'next question', 'takhaddi'. Priority 90.",
+        parameters: z.object({}),
+        flags: ToolFlag.CANCELLABLE,
+        execute: async () => {
+          controller.onToolStart("skip_item");
+          controller.onToolEnd("Skipped item");
+          return "Skipped. Move immediately to the next question or next topic.";
         },
       }),
     ];
