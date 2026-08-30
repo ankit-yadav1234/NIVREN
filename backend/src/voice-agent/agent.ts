@@ -368,7 +368,7 @@ export default defineAgent({
         flags: ToolFlag.CANCELLABLE,
         execute: async ({ locale }) => {
           controller.onToolStart("set_language");
-          await publishAction({ type: "set_language", locale, priority: 95, interruptible: false });
+          await publishAction({ type: "set_language", locale, priority: 100, interruptible: false });
           controller.onToolEnd(`Language set to ${locale}`);
           return "Language switch completed.";
         },
