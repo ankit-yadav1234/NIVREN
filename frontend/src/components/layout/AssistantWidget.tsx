@@ -47,12 +47,19 @@ export function AssistantWidget() {
   const switchLanguage = React.useCallback(
     (targetLocale: "en" | "hi" | "ar") => {
       const segments = pathname.split("/");
+      const currentLocale = segments[1] === "en" || segments[1] === "hi" || segments[1] === "ar" ? segments[1] : "en";
+      if (currentLocale === targetLocale) {
+        console.log(`[LANG_PERF] Already on locale ${targetLocale}`);
+        return;
+      }
       if (segments[1] === "en" || segments[1] === "hi" || segments[1] === "ar") {
         segments[1] = targetLocale;
       } else {
         segments.splice(1, 0, targetLocale);
       }
-      router.push(segments.join("/") || "/");
+      const targetUrl = segments.join("/") || `/${targetLocale}`;
+      console.log(`[LANG_PERF] Switching language to ${targetLocale} -> targetUrl=${targetUrl}`);
+      router.push(targetUrl);
     },
     [pathname, router]
   );
@@ -73,15 +80,18 @@ export function AssistantWidget() {
     };
   }, []);
 
-  // Prefetch all top navigable routes in background for instant sub-frame transitions
+  // Prefetch all top navigable routes across all 3 locales in background for instant sub-frame transitions
   React.useEffect(() => {
-    const prefetchRoutes = ["/contact", "/rcm", "/services", "/case-studies", "/who-we-serve", "/about", "/locations", "/faq"];
-    prefetchRoutes.forEach((route) => {
-      try {
-        router.prefetch(withLocale(route, pathname));
-      } catch (_) {}
+    const locales = ["en", "hi", "ar"];
+    const baseRoutes = ["", "/contact", "/rcm", "/services", "/case-studies", "/who-we-serve", "/about", "/locations", "/faq"];
+    locales.forEach((l) => {
+      baseRoutes.forEach((r) => {
+        try {
+          router.prefetch(`/${l}${r}`);
+        } catch (_) {}
+      });
     });
-  }, [pathname, router]);
+  }, [router]);
 
   const runClientAction = React.useCallback(
     (action: any) => {

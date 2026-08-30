@@ -360,16 +360,17 @@ export default defineAgent({
 
       tool({
         name: "set_language",
-        description: "Switch the website's language. Valid: 'en' (English), 'hi' (Hindi), 'ar' (Arabic).",
+        description:
+          "Instantly switch the entire website language and conversational speech language. Valid locales: 'en' (English), 'hi' (Hindi), 'ar' (Arabic). Trigger on: 'Hindi me baat karo', 'change hindi', 'Hindi karo', 'English me bolo', 'change to English', 'Arabic karo', 'bhasha badlo', 'Arbi me bolo', etc. Priority 95.",
         parameters: z.object({
-          locale: z.enum(["en", "hi", "ar"]).describe("The language code to switch to."),
+          locale: z.enum(["en", "hi", "ar"]).describe("The language code to switch to: 'en' (English), 'hi' (Hindi), or 'ar' (Arabic)."),
         }),
         flags: ToolFlag.CANCELLABLE,
         execute: async ({ locale }) => {
           controller.onToolStart("set_language");
-          await publishAction({ type: "set_language", locale, priority: 85 });
+          await publishAction({ type: "set_language", locale, priority: 95, interruptible: false });
           controller.onToolEnd(`Language set to ${locale}`);
-          return `Switched the site language to ${locale}.`;
+          return "Language switch completed.";
         },
       }),
 
