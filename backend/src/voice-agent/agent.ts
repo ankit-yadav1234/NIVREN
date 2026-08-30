@@ -30,9 +30,9 @@ dotenv.config();
 /** RCM facts + behavior rules live in one shared file — see ../ai/prompt.ts. */
 const INSTRUCTIONS = buildVoiceInstructions(NAVIGABLE_ROUTES_DESCRIPTION);
 
-/** Spoken immediately on session connect — crisp, punchy, conversational greeting. */
+/** Spoken immediately on session connect — expansive greeting with Dr. Dylan persona. */
 const WELCOME_MESSAGE =
-  "Hello! I'm Dr. Dylan from NIVREN Healthcare. How can I help you with your revenue cycle today?";
+  "Hi! I'm Dr. Dylan, your senior Revenue Cycle consultant at NIVREN. NIVREN is an advanced, technology-driven Healthcare Revenue Cycle Management and Medical Billing partner. We help physician practices, clinics, and hospital networks eliminate claim denials, streamline certified medical coding, accelerate AR recovery, and maximize overall practice revenue. What specific area of your revenue cycle can I help you with today?";
 
 interface ConsultationState {
   name?: string;
@@ -532,9 +532,9 @@ export default defineAgent({
       const activeLocale = getCurrentLocale();
       let greetingInstruction = `Greet the user immediately with this exact greeting in the conversation: "${WELCOME_MESSAGE}"`;
       if (activeLocale === "hi") {
-        greetingInstruction = `Greet the user immediately in Hindi: "Namaste! Main Dr. Dylan hoon, NIVREN Healthcare ka senior Revenue Cycle Management consultant. Main aaj aapki kaise madad kar sakta hoon?"`;
+        greetingInstruction = `Greet the user immediately in Hindi: "Namaste! Main Dr. Dylan hoon, NIVREN Healthcare ka senior Revenue Cycle Management consultant. NIVREN ek advanced Healthcare Revenue Cycle Management aur Medical Billing partner hai. Hum claim denials ko khatam karne aur revenue maximize karne me madad karte hain. Aaj main aapki revenue cycle me kis area me madad kar sakta hoon?"`;
       } else if (activeLocale === "ar") {
-        greetingInstruction = `Greet the user immediately in Arabic: "مرحباً! أنا د. ديلان، مستشار إدارة دورة الإيرادات في نيفيرين. كيف يمكنني مساعدتك اليوم؟"`;
+        greetingInstruction = `Greet the user immediately in Arabic: "مرحباً! أنا د. ديلان، كبير مستشاري إدارة دورة الإيرادات في نيفيرين للرعاية الصحية. نيفيرين شريك متقدم في الفوترة الطبية وإدارة دورة الإيرادات. كيف يمكنني مساعدتك في دورتك المالية اليوم؟"`;
       }
       session.generateReply({
         instructions: greetingInstruction,
