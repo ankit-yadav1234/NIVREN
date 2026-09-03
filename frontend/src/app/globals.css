@@ -304,3 +304,58 @@
     justify-content: center;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Visual Spotlight Focus Ring (Agentic Highlight Element)             */
+/* ------------------------------------------------------------------ */
+@keyframes spotlightGlowPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.4), 0 0 35px rgba(34, 211, 238, 0.5);
+    border-color: rgba(34, 211, 238, 0.9);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(34, 211, 238, 0.7), 0 0 60px rgba(34, 211, 238, 0.8);
+    border-color: rgba(103, 232, 249, 1);
+  }
+}
+
+.agent-spotlight-active {
+  animation: spotlightGlowPulse 1.8s ease-in-out infinite !important;
+  border-radius: var(--radius-lg, 1rem) !important;
+  transition: all 0.3s ease !important;
+  z-index: 30 !important;
+}
+
+.agent-spotlight-badge {
+  position: absolute;
+  top: -14px;
+  right: 18px;
+  z-index: 40;
+  pointer-events: none;
+}
+
+.agent-spotlight-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #0f172a, #0284c7);
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid rgba(34, 211, 238, 0.6);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 12px rgba(34, 211, 238, 0.6);
+}
+
+.agent-spotlight-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background-color: #22d3ee;
+  box-shadow: 0 0 8px #22d3ee;
+  animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+

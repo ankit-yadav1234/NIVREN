@@ -34,6 +34,10 @@ export const NAVIGABLE_ROUTES = [
   "/appointment",
   "/locations",
   "/faq",
+  "/privacy",
+  "/terms",
+  "/disclaimer",
+  "/accessibility",
 ] as const;
 
 export type NavigableRoute = (typeof NAVIGABLE_ROUTES)[number];
@@ -61,6 +65,10 @@ const ROUTE_LABELS: Record<NavigableRoute, string> = {
   "/appointment": "book an appointment / consultation form",
   "/locations": "hospital locations / clinic centers",
   "/faq": "frequently asked questions",
+  "/privacy": "privacy policy and HIPAA compliance rules",
+  "/terms": "terms of service and client agreements",
+  "/disclaimer": "medical disclaimer and clinical guidance",
+  "/accessibility": "accessibility statement and WCAG standards",
 };
 
 export const NAVIGABLE_ROUTES_DESCRIPTION = NAVIGABLE_ROUTES.map((r) => `${r} (${ROUTE_LABELS[r]})`).join(", ");

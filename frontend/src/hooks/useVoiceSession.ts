@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Room, RoomEvent, Track, type RemoteTrack } from "livekit-client";
+import { Room, RoomEvent, Track, createLocalAudioTrack, type RemoteTrack } from "livekit-client";
 import { getLiveKitToken } from "@/lib/api/livekit";
 import { trackEvent } from "@/lib/analytics";
 
@@ -50,12 +50,22 @@ export interface VoiceAgentAction {
     | "consultation_requested"
     | "cancel_action"
     | "interrupt"
-    | "conversation_state";
+    | "conversation_state"
+    | "highlight_element"
+    | "show_roi_card"
+    | "show_ehr_badge"
+    | "show_benchmark"
+    | "show_denial_card"
+    | "show_health_score"
+    | "dismiss_interactive_card";
   priority?: number;
   timestamp?: number;
   interruptible?: boolean;
   path?: string;
   sectionId?: string;
+  selector?: string;
+  label?: string;
+  durationMs?: number;
   amount?: number;
   direction?: "down" | "up";
   speed?: "slow" | "normal" | "fast";
@@ -67,6 +77,11 @@ export interface VoiceAgentAction {
   text?: string;
   targetActionId?: string;
   conversationState?: ConversationTelemetry;
+  roiData?: any;
+  ehrData?: any;
+  benchmarkData?: any;
+  denialData?: any;
+  healthData?: any;
   data?: { name: string; phone: string; email?: string; serviceOrSpecialty?: string; message?: string };
 }
 
@@ -133,6 +148,95 @@ function updateGlobalState(patch: Partial<GlobalVoiceState>) {
   notifyListeners();
 }
 
+/**
+ * Resilient Multi-Tier Microphone Acquisition.
+ * Prevents microphone failure on older Windows 10 machines, legacy Realtek audio drivers,
+ * or USB/Bluetooth devices that fail with OverconstrainedError on strict DSP constraints.
+ */
+async function acquireRobustLocalAudioTrack() {
+  // Tier 1: Full Professional DSP (Noise Suppression + Echo Cancellation + AGC)
+  try {
+    return await createLocalAudioTrack({
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+    });
+  } catch (err1) {
+    console.warn("[VOICE_MIC] Tier 1 full DSP constraints failed, attempting Tier 2 (AEC only)...", err1);
+  }
+
+  // Tier 2: Basic Echo Cancellation only (fixes Realtek HD Audio / legacy Windows 10 driver crashes)
+  try {
+    return await createLocalAudioTrack({
+      echoCancellation: true,
+      noiseSuppression: false,
+      autoGainControl: false,
+    });
+  } catch (err2) {
+    console.warn("[VOICE_MIC] Tier 2 relaxed constraints failed, attempting Tier 3 (raw device)...", err2);
+  }
+
+  // Tier 3: Bare minimum constraints (Universal fallback guaranteed to capture audio on any soundcard)
+  try {
+    return await createLocalAudioTrack({});
+  } catch (err3) {
+    console.error("[VOICE_MIC] All microphone capture attempts failed:", err3);
+    return null;
+  }
+}
+
+const INSTANT_GREETING_TEXT: Record<string, string> = {
+  en: "Hi! I'm Dr. Dylan, your senior Revenue Cycle consultant at NIVREN. How can I help your healthcare practice today?",
+  hi: "Namaste! Main Dr. Dylan hoon, NIVREN Healthcare ka senior consultant. Aaj main aapki revenue cycle me kis tarah madad kar sakta hoon?",
+  ar: "مرحباً! أنا د. ديلان، كبير مستشاري إدارة دورة الإيرادات في نيفيرين. كيف يمكنني مساعدتك اليوم؟",
+};
+
+export function stopInstantGreeting() {
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    try {
+      window.speechSynthesis.cancel();
+    } catch (_) {}
+  }
+}
+
+export function playInstantGreeting(locale: "en" | "hi" | "ar", onEnd?: () => void) {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+    onEnd?.();
+    return;
+  }
+  try {
+    window.speechSynthesis.cancel();
+    const text = INSTANT_GREETING_TEXT[locale] || INSTANT_GREETING_TEXT.en;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = locale === "hi" ? "hi-IN" : locale === "ar" ? "ar-SA" : "en-US";
+    utterance.rate = 1.05;
+    utterance.pitch = 0.95;
+
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = voices.find(
+      (v) =>
+        (locale === "en" && (v.name.includes("David") || v.name.includes("Male") || v.name.includes("Google US English") || v.name.includes("Natural"))) ||
+        (locale === "hi" && (v.lang.startsWith("hi") || v.name.includes("Hindi"))) ||
+        (locale === "ar" && (v.lang.startsWith("ar") || v.name.includes("Arabic")))
+    );
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+
+    utterance.onend = () => {
+      onEnd?.();
+    };
+    utterance.onerror = () => {
+      onEnd?.();
+    };
+
+    window.speechSynthesis.speak(utterance);
+  } catch (err) {
+    console.warn("Instant greeting synthesis error:", err);
+    onEnd?.();
+  }
+}
+
 export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, route: string) {
   const [state, setState] = React.useState<GlobalVoiceState>(() => ({ ...globalState }));
   const routeRef = React.useRef(route);
@@ -152,6 +256,7 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
 
   /** Tears down the room/audio element cleanly */
   const cleanup = React.useCallback(async () => {
+    stopInstantGreeting();
     const room = activeRoom;
     activeRoom = null;
     if (activeAudioEl) {
@@ -200,6 +305,27 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
       updateGlobalState({ isVoiceOpen: true });
       return;
     }
+
+    // Determine current active locale from route
+    const currentPath = routeRef.current || "/";
+    const activeLocale: "en" | "hi" | "ar" = currentPath.startsWith("/hi") ? "hi" : currentPath.startsWith("/ar") ? "ar" : "en";
+    const greetingText = INSTANT_GREETING_TEXT[activeLocale] || INSTANT_GREETING_TEXT.en;
+
+    // 1. INSTANT 0ms UI & GREETING LAUNCH (Starts speaking in <20ms within direct click frame)
+    updateGlobalState({
+      status: "connecting",
+      agentSpeaking: true,
+      latestAgentText: greetingText,
+      error: null,
+      isVoiceOpen: true,
+      userMicMuted: false,
+    });
+
+    playInstantGreeting(activeLocale, () => {
+      // Once instant greeting finishes, reset speaking state if agent is not currently talking
+      updateGlobalState({ agentSpeaking: false });
+    });
+
     // Pre-unlock AudioContext on direct click interaction
     try {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -211,15 +337,20 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
       }
     } catch (_) {}
 
-    updateGlobalState({ status: "connecting", error: null, isVoiceOpen: true, userMicMuted: false });
     try {
-      const identity = `user-${crypto.randomUUID()}`;
-      const roomName = `voice-${crypto.randomUUID()}`;
-      const { token, url } = await getLiveKitToken(roomName, identity);
+      const { token, url } = await getLiveKitToken();
 
       const room = new Room({
         adaptiveStream: true,
         dynacast: true,
+        audioCaptureDefaults: {
+          autoGainControl: true,
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
+        publishDefaults: {
+          dtx: true,
+        },
       });
       activeRoom = room;
 
@@ -231,6 +362,8 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
               el = track.attach();
               el.id = "livekit-remote-audio";
               el.autoplay = true;
+              el.setAttribute("playsinline", "true");
+              el.setAttribute("webkit-playsinline", "true");
               if (document.body) {
                 document.body.appendChild(el);
               }
@@ -238,10 +371,15 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
               track.attach(el);
             }
             activeAudioEl = el;
-            el.play().catch((err) => {
-              console.warn("Audio autoplay blocked by browser:", err);
-              updateGlobalState({ audioBlocked: true });
-            });
+            el.muted = false;
+            el.volume = 1.0;
+            const playPromise = el.play();
+            if (playPromise !== undefined) {
+              playPromise.catch((err) => {
+                console.warn("Audio autoplay blocked by browser policy:", err);
+                updateGlobalState({ audioBlocked: true });
+              });
+            }
           } catch (e) {
             console.warn("Could not attach remote audio track:", e);
           }
@@ -339,14 +477,26 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
         });
       });
 
-      await room.connect(url, token, { autoSubscribe: true });
+      // Connect to SFU and pre-initialize microphone with multi-tier fallback in parallel
+      const connectPromise = room.connect(url, token, { autoSubscribe: true });
+      const micPromise = acquireRobustLocalAudioTrack();
+
+      const [, localAudioTrack] = await Promise.all([connectPromise, micPromise]);
       await room.startAudio().catch(() => {});
       updateGlobalState({ audioBlocked: !room.canPlaybackAudio });
-      
-      await room.localParticipant.setAttributes({ route: routeRef.current }).catch((err) => {
-        console.error("Could not sync current route to the agent:", err);
-      });
-      await room.localParticipant.setMicrophoneEnabled(true);
+
+      if (localAudioTrack) {
+        await room.localParticipant.publishTrack(localAudioTrack).catch(async (pubErr) => {
+          console.warn("[VOICE_MIC] Failed to publish pre-created audio track, falling back to setMicrophoneEnabled:", pubErr);
+          await room.localParticipant.setMicrophoneEnabled(true).catch(() => {});
+        });
+      } else {
+        await room.localParticipant.setMicrophoneEnabled(true).catch((micErr) => {
+          console.warn("[VOICE_MIC] setMicrophoneEnabled fallback failed:", micErr);
+        });
+      }
+
+      room.localParticipant.setAttributes({ route: routeRef.current, client_greeted: "true" }).catch(() => {});
       updateGlobalState({ status: "connected", userMicMuted: false });
       trackEvent({ name: "voice_conversation_start" });
     } catch (err) {

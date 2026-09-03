@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { MessageCircle, X, Send, Loader2, Sparkles } from "lucide-react";
 import { sendAIMessage, type AIMessage, type AIClientAction } from "@/lib/api/ai";
 import { useVoiceSession, type ConsultationField } from "@/hooks/useVoiceSession";
+import { prewarmVoiceToken } from "@/lib/api/livekit";
 import { VoiceAgentPanel } from "./VoiceAgentPanel";
 import { AVATAR_CONFIG } from "@/config/avatar";
 import { Button } from "@/components/ui/Button";
@@ -15,6 +16,8 @@ import { apiFetch } from "@/lib/api/client";
 import { trackEvent } from "@/lib/analytics";
 import type { AppointmentResult } from "@/types";
 import { scrollController } from "@/lib/scroll/scrollController";
+import { spotlightController } from "@/lib/ui/spotlightController";
+import { AgentInteractiveCard, type InteractiveCardPayload } from "@/components/healthcare/AgentInteractiveCard";
 
 interface ChatEntry extends AIMessage {
   id: string;
@@ -43,6 +46,7 @@ export function AssistantWidget() {
   // see runClientAction below and the form card in VoiceAgentPanel.
   const [voiceForm, setVoiceForm] = React.useState<Partial<Record<ConsultationField, string>>>({});
   const [voiceFormSubmitted, setVoiceFormSubmitted] = React.useState(false);
+  const [activeInteractiveCard, setActiveInteractiveCard] = React.useState<InteractiveCardPayload | null>(null);
 
   const switchLanguage = React.useCallback(
     (targetLocale: "en" | "hi" | "ar") => {
@@ -80,7 +84,7 @@ export function AssistantWidget() {
     };
   }, []);
 
-  // Prefetch all top navigable routes across all 3 locales in background for instant sub-frame transitions
+  // Prefetch all top navigable routes across all 3 locales and prewarm voice token in background for instant sub-frame transitions
   React.useEffect(() => {
     const locales = ["en", "hi", "ar"];
     const baseRoutes = ["", "/contact", "/rcm", "/services", "/case-studies", "/who-we-serve", "/about", "/locations", "/faq"];
@@ -88,9 +92,16 @@ export function AssistantWidget() {
       baseRoutes.forEach((r) => {
         try {
           router.prefetch(`/${l}${r}`);
-        } catch (_) {}
+        } catch (_) { }
       });
     });
+
+    // Warm up backend connection & LiveKit voice token in background after page load
+    const warmTimer = setTimeout(() => {
+      prewarmVoiceToken().catch(() => { });
+    }, 1200);
+
+    return () => clearTimeout(warmTimer);
   }, [router]);
 
   const runClientAction = React.useCallback(
@@ -173,6 +184,33 @@ export function AssistantWidget() {
             trackEvent({ name: "consultation_submit_failure" });
             console.error("Voice appointment booking error:", err);
           });
+      } else if (action.type === "highlight_element") {
+        if (action.selector) {
+          spotlightController.highlight(action.selector, action.label, action.durationMs);
+        }
+      } else if (action.type === "show_roi_card") {
+        if (action.roiData) {
+          setActiveInteractiveCard({ type: "roi", roi: action.roiData });
+        }
+      } else if (action.type === "show_ehr_badge") {
+        if (action.ehrData) {
+          setActiveInteractiveCard({ type: "ehr", ehr: action.ehrData });
+        }
+      } else if (action.type === "show_benchmark") {
+        if (action.benchmarkData) {
+          setActiveInteractiveCard({ type: "benchmark", benchmark: action.benchmarkData });
+        }
+      } else if (action.type === "show_denial_card") {
+        if (action.denialData) {
+          setActiveInteractiveCard({ type: "denial", denial: action.denialData });
+        }
+      } else if (action.type === "show_health_score") {
+        if (action.healthData) {
+          setActiveInteractiveCard({ type: "health", health: action.healthData });
+        }
+      } else if (action.type === "dismiss_interactive_card") {
+        setActiveInteractiveCard(null);
+        spotlightController.clearSpotlight();
       }
     },
     [router, pathname, setTheme, switchLanguage]
@@ -195,6 +233,8 @@ export function AssistantWidget() {
     voice.stop();
     setVoiceForm({});
     setVoiceFormSubmitted(false);
+    setActiveInteractiveCard(null);
+    spotlightController.clearSpotlight();
   };
 
   React.useEffect(() => {
@@ -253,6 +293,8 @@ export function AssistantWidget() {
         type="button"
         aria-label={voice.isVoiceOpen ? t.closeVoice : t.openVoice}
         aria-pressed={voice.isVoiceOpen}
+        onMouseEnter={() => prewarmVoiceToken().catch(() => { })}
+        onTouchStart={() => prewarmVoiceToken().catch(() => { })}
         onClick={(e) => {
           e.stopPropagation();
           if (voice.isVoiceOpen) {
@@ -399,6 +441,18 @@ export function AssistantWidget() {
             </Button>
           </form>
         </div>
+      )}
+
+      {/* Autonomous Floating Interactive Card (ROI Calculator, EHR Badge, Specialty Benchmark) */}
+      {activeInteractiveCard && (
+        <AgentInteractiveCard
+          card={activeInteractiveCard}
+          onClose={() => setActiveInteractiveCard(null)}
+          onRequestAudit={() => {
+            setActiveInteractiveCard(null);
+            router.push(withLocale("/contact", pathname));
+          }}
+        />
       )}
     </>
   );

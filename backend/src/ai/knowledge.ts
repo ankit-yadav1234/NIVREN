@@ -1,6 +1,6 @@
 /**
  * RAG knowledge base — the facts the assistant can answer questions about.
- * Kept as short, independent documents (per-specialty, per-service, per-FAQ)
+ * Kept as short, independent documents (per-specialty, per-service, per-FAQ, per-policy)
  * so retrieval returns focused context instead of one giant blob.
  */
 export interface KnowledgeDoc {
@@ -14,151 +14,143 @@ export const knowledgeBase: KnowledgeDoc[] = [
   {
     id: "company-overview",
     text:
-      "NIVREN is a Revenue Cycle Management (RCM) company — billing, coding, denial management, AR " +
-      "follow-up, credentialing, and analytics for hospitals and clinics. NIVREN also runs its own " +
-      "connected hospital network (cardiology, neurology, orthopedics, pediatrics, oncology, " +
-      "dermatology), which is where its RCM expertise is proven before it's offered to other providers.",
+      "NIVREN is an advanced Healthcare Revenue Cycle Management (RCM) and Medical Billing partner. " +
+      "We help physician practices, clinics, specialty groups, and hospital networks eliminate claim denials, " +
+      "streamline certified medical coding, accelerate accounts receivable recovery, and maximize total practice collections.",
     route: "/about",
     category: "Company",
   },
   {
     id: "rcm-billing",
-    text: "Medical Billing service: end-to-end claim submission and payment posting for hospitals and clinics.",
+    text: "Medical Billing service: end-to-end electronic claim submission, payment posting, secondary billing, and patient statement processing for healthcare providers.",
     route: "/rcm/medical-billing",
     category: "RCM",
   },
   {
     id: "rcm-coding",
-    text: "Medical Coding service: certified coders assign accurate CPT/ICD codes to prevent undercoding and denials.",
+    text: "Certified Medical Coding service: AAPC/AHIMA certified coders assign precise CPT, ICD-10, and HCPCS codes with 99.1% accuracy to eliminate undercoding and audits.",
     route: "/rcm/medical-coding",
     category: "RCM",
   },
   {
     id: "rcm-eligibility",
-    text: "Eligibility Verification service: confirms patient insurance coverage before the visit to avoid claim rejections.",
+    text: "Eligibility & Benefits Verification service: 24-48 hr advance verification of patient insurance coverage, co-pays, deductibles, and prior-authorization needs to eliminate front-end rejections.",
     route: "/rcm/eligibility-verification",
     category: "RCM",
   },
   {
     id: "rcm-claims",
-    text: "Claims Submission & Scrubbing service: automated and manual claim scrubbing before submission for a higher first-pass acceptance rate.",
+    text: "Claims Management & Scrubbing service: multi-tier automated scrubbing rules before submission, delivering a 98% first-pass clean claim acceptance rate.",
     route: "/rcm/claims-management",
     category: "RCM",
   },
   {
     id: "rcm-denials",
     text:
-      "Denial Management service: every denied claim gets a root-cause review and appeal, with a 92% appeal " +
-      "success rate, so the same denial reason doesn't keep recurring.",
+      "Denial Management & Appeals service: comprehensive root-cause analysis on every denied claim, rapid appeals with a 92% recovery success rate, and systematic prevention.",
     route: "/rcm/denial-management",
     category: "RCM",
   },
   {
     id: "rcm-ar",
-    text: "AR Follow-Up service: persistent follow-up with payers on unpaid claims to shorten days in accounts receivable — 28 days average.",
+    text: "Accounts Receivable (AR) Recovery service: aggressive payer follow-up on aging 30/60/90/120+ day balances, reducing average days in AR to 28 days (industry average is 45-55 days).",
     route: "/rcm/ar-management",
     category: "RCM",
   },
   {
     id: "rcm-credentialing",
-    text: "Provider Credentialing & Enrollment service: payer enrollment, CAQH maintenance, and re-credentialing, cutting time to first claim from ~60 to ~30 days.",
+    text: "Provider Credentialing & Payer Enrollment service: full enrollment management, CAQH profile maintenance, and re-credentialing, cutting provider start time from 60 to 30 days.",
     route: "/rcm/credentialing",
     category: "RCM",
   },
   {
     id: "rcm-analytics",
-    text: "RCM Analytics & Reporting service: real-time dashboards for collections, denials, AR, and payer performance.",
+    text: "RCM Analytics & Financial Reporting: executive BI dashboards tracking net collection rate, denial breakdown, payer turnaround time, and provider productivity.",
     route: "/rcm/rcm-analytics",
     category: "RCM",
   },
   {
     id: "rcm-stats",
-    text: "RCM results: 98% clean claim rate, 28 average days in AR, 35% fewer denials, 99.1% coding accuracy, 24/7 dedicated support.",
+    text: "NIVREN core performance metrics: 98% first-pass clean claim rate, 28 average days in AR, 35% reduction in claim denials, 99.1% coding accuracy, and 24/7 client support.",
     route: "/rcm",
     category: "RCM",
   },
   {
-    id: "specialty-cardiology",
-    text: "Cardiology billing & coding: correctly capturing complex CPT codes for interventional procedures, device implants, and cath lab work — a common source of undercoding elsewhere.",
-    route: "/departments/cardiology",
-    category: "Specialties",
+    id: "legal-privacy-policy",
+    text:
+      "Privacy Policy & HIPAA Compliance: NIVREN is 100% HIPAA compliant and SOC 2 Type II certified. All Protected Health Information (PHI) and patient financial records are encrypted using AES-256 at rest and TLS 1.3 in transit. We sign Business Associate Agreements (BAAs), implement strict role-based access control, and NEVER sell or share private patient data with unauthorized third parties.",
+    route: "/privacy",
+    category: "Legal",
   },
   {
-    id: "specialty-neurology",
-    text: "Neurology billing & coding: accurate coding for stroke care, EEG/EMG studies, and complex neurological procedures.",
-    route: "/departments/neurology",
-    category: "Specialties",
+    id: "legal-terms-of-service",
+    text:
+      "Terms of Service: Our agreements govern RCM consulting, billing management, and software portal access. NIVREN operates on transparent performance-based fee structures, standard 99.9% uptime SLAs, clear dispute resolution protocols, and strict client data ownership protections.",
+    route: "/terms",
+    category: "Legal",
   },
   {
-    id: "specialty-orthopedics",
-    text: "Orthopedics billing & coding: precise coding for joint replacements, sports medicine procedures, and bundled-payment episodes.",
-    route: "/departments/orthopedics",
-    category: "Specialties",
+    id: "legal-medical-disclaimer",
+    text:
+      "Medical Disclaimer: The information provided on this website and by the AI assistant is for healthcare revenue cycle management, billing, and operational purposes only. NIVREN does not provide direct medical diagnosis or clinical treatment. Patients must always consult licensed physicians for medical emergencies and clinical care.",
+    route: "/disclaimer",
+    category: "Legal",
   },
   {
-    id: "specialty-pediatrics",
-    text: "Pediatrics billing & coding: coding for well-child visits, vaccinations, and NICU care, with the age- and weight-based rules payers require.",
-    route: "/departments/pediatrics",
-    category: "Specialties",
-  },
-  {
-    id: "specialty-oncology",
-    text: "Oncology billing & coding: chemotherapy and radiation therapy coding, plus prior-authorization management for high-cost treatment plans.",
-    route: "/departments/oncology",
-    category: "Specialties",
-  },
-  {
-    id: "specialty-dermatology",
-    text: "Dermatology billing & coding: correctly distinguishing medical, surgical, and cosmetic procedures — a frequent denial trigger when miscoded.",
-    route: "/departments/dermatology",
-    category: "Specialties",
+    id: "legal-accessibility",
+    text:
+      "Accessibility Statement: NIVREN is committed to digital accessibility complying with WCAG 2.1 Level AA standards. The platform supports screen readers, keyboard navigation, fluid clamp typography, high-contrast healthcare color tokens, and reduced-motion user preferences.",
+    route: "/accessibility",
+    category: "Legal",
   },
   {
     id: "who-we-serve",
     text:
-      "NIVREN serves hospitals and health systems, physician groups, independent clinics and medical " +
-      "practices, and other healthcare organizations like ambulatory surgery centers and behavioral " +
-      "health providers — RCM support sized to how each one actually operates.",
+      "Who We Serve: Independent physician practices, multi-specialty clinics, ambulatory surgery centers (ASCs), hospital networks, behavioral health centers, and diagnostic labs across the United States.",
     route: "/who-we-serve",
     category: "Company",
   },
   {
     id: "case-studies",
     text:
-      "Client results include a 48% denial rate reduction in two quarters, 99.1% coding accuracy from " +
-      "the first month, and a full RCM transition completed in under 3 weeks with zero disruption to " +
-      "cash flow. Full case studies are on the Case Studies page.",
+      "Case Studies & Proven Results: Multi-specialty clinic achieved a 48% denial rate reduction in 6 months; surgical group accelerated cash collections by $1.2M in 90 days; cardiology practice achieved 99.2% coding accuracy with zero transition downtime.",
     route: "/case-studies",
     category: "Company",
   },
   {
     id: "leadership",
-    text: "NIVREN's leadership team includes the CEO, VP of Revenue Cycle Operations, Head of Compliance & Security, and Director of Client Success.",
+    text: "Leadership: Led by executive healthcare administrators, former hospital CFOs, certified billing directors, and health-tech engineers dedicated to revenue integrity.",
     route: "/about/leadership",
     category: "Company",
   },
   {
     id: "careers",
-    text: "NIVREN hires certified coders, billers, and RCM specialists, mostly remote-first roles. Open interest can be sent through the Contact page even without a specific open role.",
+    text: "Careers: NIVREN hires remote-first certified medical coders (CPC, COC, CIC), billing specialists, denial managers, and client success leads. Comprehensive benefits, competitive compensation, and ongoing CEU support are provided.",
     route: "/about/careers",
     category: "Company",
   },
   {
+    id: "locations-contact",
+    text: "Locations & Contact: Headquarters: 100 Healthcare Plaza, Suite 400. Regional operations in Downtown, Westside, and Eastgate centers. Phone: +1 (800) 555-0199 / +91 98765 43210 | Email: care@nivren.example.",
+    route: "/locations",
+    category: "Contact",
+  },
+  {
     id: "faq-consultation",
-    text: "How to get started: request a free revenue cycle assessment through the Contact page, or ask the assistant to open it. A specialist follows up to review your current billing setup.",
+    text: "Consultation & Free Practice Assessment: Providers can book a free, zero-obligation Revenue Cycle Assessment and Claims Audit. Required details: Name, Phone number, Email address, and Service needed.",
     route: "/contact",
     category: "FAQ",
   },
   {
     id: "faq-onboarding",
-    text: "Onboarding: most practices are fully transitioned within 2-3 weeks. NIVREN works within your existing practice management/EHR system rather than requiring a migration.",
-    route: "/rcm",
+    text: "Onboarding & EHR Integration: Seamless 2-3 week transition with zero cash flow disruption. NIVREN integrates directly into your existing EHR/PM system (Epic, Cerner, AthenaHealth, eClinicalWorks, Kareo, NextGen, etc.).",
+    route: "/faq",
     category: "FAQ",
   },
   {
-    id: "faq-security",
-    text: "Data security: all workflows run through HIPAA-compliant, encrypted systems, with access limited to the staff directly handling your account.",
-    route: "/rcm",
+    id: "faq-pricing",
+    text: "Pricing Model: Performance-aligned percentage of collections model. We only succeed when your practice collects revenue. No hidden software fees or locked contracts.",
+    route: "/faq",
     category: "FAQ",
   },
 ];

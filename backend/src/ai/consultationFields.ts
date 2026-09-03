@@ -2,9 +2,7 @@
  * Single source of truth for the voice-fillable consultation/contact fields
  * — both the voice agent's tools (voice-agent/agent.ts) and its prompt
  * (ai/prompt.ts) derive the field list, required/optional split, and
- * per-field phrasing from this one array. Add or remove a field here and
- * both the tool schema and the prompt update automatically — no need to
- * hand-edit either.
+ * per-field phrasing from this one array.
  */
 
 export type ConsultationField = "name" | "phone" | "email" | "service" | "message";
@@ -18,10 +16,10 @@ export interface ConsultationFieldDef {
 
 export const CONSULTATION_FIELDS: ConsultationFieldDef[] = [
   { key: "name", askAs: "their full name", required: true },
-  { key: "phone", askAs: "the best phone number to reach them", required: true },
-  { key: "service", askAs: "which service or specialty they need help with", required: true },
-  { key: "email", askAs: "their email address", required: false },
-  { key: "message", askAs: "a short note on their situation", required: false },
+  { key: "phone", askAs: "their phone number", required: true },
+  { key: "email", askAs: "their email address (required for confirmation)", required: true },
+  { key: "service", askAs: "which RCM service they need (Medical Billing, Medical Coding, Denial Management, AR Recovery, Eligibility Verification, Prior Authorization, or Practice Audit)", required: true },
+  { key: "message", askAs: "a short note on their practice needs", required: false },
 ];
 
 export const CONSULTATION_FIELD_KEYS = CONSULTATION_FIELDS.map((f) => f.key) as [ConsultationField, ...ConsultationField[]];

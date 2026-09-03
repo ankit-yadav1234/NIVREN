@@ -50,6 +50,8 @@ export default async function LocaleLayout({
     <html lang={locale} dir={dir} suppressHydrationWarning className={`${fontVars} notranslate`}>
       <head>
         <meta name="google" content="notranslate" />
+        <link rel="dns-prefetch" href="https://livekit.cloud" />
+        <link rel="preconnect" href="https://livekit.cloud" crossOrigin="" />
         <script id="theme-init" dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script
           id="organization-jsonld"

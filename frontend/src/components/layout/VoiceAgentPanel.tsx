@@ -84,8 +84,8 @@ export function VoiceAgentPanel({
     };
   }, []);
 
-  const speaking = voice.status === "connected" && voice.agentSpeaking && !voice.audioBlocked;
-  const isConnecting = voice.status === "connecting";
+  const speaking = voice.agentSpeaking && !voice.audioBlocked;
+  const isConnecting = voice.status === "connecting" && !voice.agentSpeaking;
 
   // Calculate 3D transformation values for Photo Parallax mode
   const rotateY = mouse.x * 22; // Head turns left/right (-22deg to +22deg)
