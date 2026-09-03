@@ -110,6 +110,8 @@ interface GlobalVoiceState {
 
 let activeRoom: Room | null = null;
 let activeAudioEl: HTMLAudioElement | null = null;
+let isStartingSession = false;
+
 let globalState: GlobalVoiceState = {
   status: "idle",
   agentSpeaking: false,
@@ -185,58 +187,6 @@ async function acquireRobustLocalAudioTrack() {
   }
 }
 
-const INSTANT_GREETING_TEXT: Record<string, string> = {
-  en: "Hi! I'm Dr. Dylan, your senior Revenue Cycle consultant at NIVREN. How can I help your healthcare practice today?",
-  hi: "Namaste! Main Dr. Dylan hoon, NIVREN Healthcare ka senior consultant. Aaj main aapki revenue cycle me kis tarah madad kar sakta hoon?",
-  ar: "مرحباً! أنا د. ديلان، كبير مستشاري إدارة دورة الإيرادات في نيفيرين. كيف يمكنني مساعدتك اليوم؟",
-};
-
-export function stopInstantGreeting() {
-  if (typeof window !== "undefined" && "speechSynthesis" in window) {
-    try {
-      window.speechSynthesis.cancel();
-    } catch (_) {}
-  }
-}
-
-export function playInstantGreeting(locale: "en" | "hi" | "ar", onEnd?: () => void) {
-  if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-    onEnd?.();
-    return;
-  }
-  try {
-    window.speechSynthesis.cancel();
-    const text = INSTANT_GREETING_TEXT[locale] || INSTANT_GREETING_TEXT.en;
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = locale === "hi" ? "hi-IN" : locale === "ar" ? "ar-SA" : "en-US";
-    utterance.rate = 1.05;
-    utterance.pitch = 0.95;
-
-    const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(
-      (v) =>
-        (locale === "en" && (v.name.includes("David") || v.name.includes("Male") || v.name.includes("Google US English") || v.name.includes("Natural"))) ||
-        (locale === "hi" && (v.lang.startsWith("hi") || v.name.includes("Hindi"))) ||
-        (locale === "ar" && (v.lang.startsWith("ar") || v.name.includes("Arabic")))
-    );
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
-    }
-
-    utterance.onend = () => {
-      onEnd?.();
-    };
-    utterance.onerror = () => {
-      onEnd?.();
-    };
-
-    window.speechSynthesis.speak(utterance);
-  } catch (err) {
-    console.warn("Instant greeting synthesis error:", err);
-    onEnd?.();
-  }
-}
-
 export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, route: string) {
   const [state, setState] = React.useState<GlobalVoiceState>(() => ({ ...globalState }));
   const routeRef = React.useRef(route);
@@ -256,7 +206,7 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
 
   /** Tears down the room/audio element cleanly */
   const cleanup = React.useCallback(async () => {
-    stopInstantGreeting();
+    isStartingSession = false;
     const room = activeRoom;
     activeRoom = null;
     if (activeAudioEl) {
@@ -276,6 +226,7 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
       audioBlocked: false,
       userMicMuted: false,
       isVoiceOpen: false,
+      conversationState: null,
     });
   }, []);
 
@@ -301,29 +252,20 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
   }, [cleanup]);
 
   const start = React.useCallback(async () => {
-    if (activeRoom) {
+    if (activeRoom || isStartingSession) {
       updateGlobalState({ isVoiceOpen: true });
       return;
     }
 
-    // Determine current active locale from route
-    const currentPath = routeRef.current || "/";
-    const activeLocale: "en" | "hi" | "ar" = currentPath.startsWith("/hi") ? "hi" : currentPath.startsWith("/ar") ? "ar" : "en";
-    const greetingText = INSTANT_GREETING_TEXT[activeLocale] || INSTANT_GREETING_TEXT.en;
+    isStartingSession = true;
 
-    // 1. INSTANT 0ms UI & GREETING LAUNCH (Starts speaking in <20ms within direct click frame)
     updateGlobalState({
       status: "connecting",
-      agentSpeaking: true,
-      latestAgentText: greetingText,
+      agentSpeaking: false,
+      latestAgentText: "",
       error: null,
       isVoiceOpen: true,
       userMicMuted: false,
-    });
-
-    playInstantGreeting(activeLocale, () => {
-      // Once instant greeting finishes, reset speaking state if agent is not currently talking
-      updateGlobalState({ agentSpeaking: false });
     });
 
     // Pre-unlock AudioContext on direct click interaction
@@ -468,6 +410,7 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
       room.on(RoomEvent.Disconnected, () => {
         if (activeRoom !== room) return;
         activeRoom = null;
+        isStartingSession = false;
         updateGlobalState({
           status: "idle",
           agentSpeaking: false,
@@ -496,11 +439,13 @@ export function useVoiceSession(onAction: (action: VoiceAgentAction) => void, ro
         });
       }
 
-      room.localParticipant.setAttributes({ route: routeRef.current, client_greeted: "true" }).catch(() => {});
+      room.localParticipant.setAttributes({ route: routeRef.current }).catch(() => {});
+      isStartingSession = false;
       updateGlobalState({ status: "connected", userMicMuted: false });
       trackEvent({ name: "voice_conversation_start" });
     } catch (err) {
       console.error("Voice session error:", err);
+      isStartingSession = false;
       await cleanup();
       updateGlobalState({
         status: "error",

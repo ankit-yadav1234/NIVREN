@@ -794,37 +794,28 @@ export default defineAgent({
       terminateSession();
     }, MAX_SESSION_DURATION_MS);
 
-    // Dr. Dylan speaks welcome message automatically only if client has not already started instant greeting
-    const participant = [...ctx.room.remoteParticipants.values()][0];
-    const clientAlreadyGreeted = participant?.attributes?.client_greeted === "true";
-
-    if (!clientAlreadyGreeted) {
-      let greeted = false;
-      const sendInitialGreeting = () => {
-        if (greeted || isTerminating) return;
-        const currentP = [...ctx.room.remoteParticipants.values()][0];
-        if (currentP?.attributes?.client_greeted === "true") return;
-        greeted = true;
-        try {
-          const activeLocale = getCurrentLocale();
-          const welcome = getWelcomeMessage(activeLocale);
-          session.generateReply({
-            instructions: `Greet the user immediately in the active language with this exact greeting: "${welcome}"`,
-          });
-        } catch (greetingErr) {
-          console.warn("Initial greeting could not be spoken:", greetingErr);
-        }
-      };
-
-      if (ctx.room.remoteParticipants.size > 0) {
-        sendInitialGreeting();
-      } else {
-        ctx.room.once("participantConnected", (p) => {
-          if (p?.attributes?.client_greeted !== "true") {
-            sendInitialGreeting();
-          }
+    // Dr. Dylan speaks welcome message cleanly once when participant connects
+    let greeted = false;
+    const sendInitialGreeting = () => {
+      if (greeted || isTerminating) return;
+      greeted = true;
+      try {
+        const activeLocale = getCurrentLocale();
+        const welcome = getWelcomeMessage(activeLocale);
+        session.generateReply({
+          instructions: `Greet the user immediately in the active language with this exact greeting: "${welcome}"`,
         });
+      } catch (greetingErr) {
+        console.warn("Initial greeting could not be spoken:", greetingErr);
       }
+    };
+
+    if (ctx.room.remoteParticipants.size > 0) {
+      sendInitialGreeting();
+    } else {
+      ctx.room.once("participantConnected", () => {
+        sendInitialGreeting();
+      });
     }
   },
 });

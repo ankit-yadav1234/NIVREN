@@ -40,11 +40,6 @@ export function VoiceAgentPanel({
   const targetMouseRef = React.useRef({ x: 0, y: 0 });
   const currentMouseRef = React.useRef({ x: 0, y: 0 });
 
-  React.useEffect(() => {
-    if (voice.status === "idle") {
-      voice.start();
-    }
-  }, [voice]);
 
   // Global window cursor listener so Dr. Dylan looks at mouse anywhere on screen
   React.useEffect(() => {
