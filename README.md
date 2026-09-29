@@ -1,6 +1,6 @@
 # NIVREN Fullstack Healthcare Project
 
-A modular, production-ready fullstack healthcare platform featuring a **Next.js 15 Frontend** and an **Express.js TypeScript Backend**.
+A modular, production-ready fullstack healthcare platform featuring a **Next.js 15 frontend** and an **Express.js TypeScript backend**.
 
 > 📌 **For AI Agents & Developers**: Please read [AGENTS.md](./AGENTS.md) for full project architecture, folder conventions, data separation rules, and design guidelines.
 
