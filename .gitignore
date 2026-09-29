@@ -56,3 +56,4 @@ frontend/.env.*.local
 # Local development configs
 .claude/settings.local.json
 .env.development.local
+backend/livekit.toml
