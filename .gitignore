@@ -42,7 +42,7 @@ yarn-error.log*
 # Sensitive internal documentation (kept locally only)
 AGENTS.md
 VOICE_AI_AGENT_PROMPT.md
-docs/voice-agent-realtime-audit.md
+docs/
 frontend/AGENTS.md
 
 # Security & API configurations
