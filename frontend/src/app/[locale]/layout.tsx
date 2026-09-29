@@ -53,6 +53,7 @@ export default async function LocaleLayout({
         <link rel="dns-prefetch" href="https://livekit.cloud" />
         <link rel="preconnect" href="https://livekit.cloud" crossOrigin="" />
         <script id="theme-init" dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script id="sw-register" dangerouslySetInnerHTML={{ __html: `if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {})` }} />
         <script
           id="organization-jsonld"
           type="application/ld+json"

@@ -219,6 +219,18 @@ export function AssistantWidget() {
   // LiveKit WebRTC Voice Session connected to Backend RAG & MCP tools
   const voice = useVoiceSession(runClientAction, pathname);
 
+  // Auto-join voice room when website loads for instant agent availability
+  React.useEffect(() => {
+    const autoJoinTimer = setTimeout(() => {
+      if (voice?.start && !voiceOpen) {
+        voice.start().catch(() => {});
+        setVoiceOpen(true);
+      }
+    }, 2500);
+
+    return () => clearTimeout(autoJoinTimer);
+  }, [voice, voiceOpen]);
+
   const defaultAvatar =
     AVATAR_CONFIG.avatars[AVATAR_CONFIG.defaultGender as keyof typeof AVATAR_CONFIG.avatars] ||
     AVATAR_CONFIG.avatars.female;
@@ -226,6 +238,12 @@ export function AssistantWidget() {
   const openVoice = () => {
     setOpen(false);
     trackEvent({ name: "voice_assistant_open" });
+
+    // Register service worker on avatar click for offline support & lower latency
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => {});
+    }
+
     voice.start();
   };
 
