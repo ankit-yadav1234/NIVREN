@@ -38,3 +38,21 @@ yarn-error.log*
 .git-credentials
 
 .vercel
+
+# Sensitive internal documentation (kept locally only)
+AGENTS.md
+VOICE_AI_AGENT_PROMPT.md
+docs/voice-agent-realtime-audit.md
+frontend/AGENTS.md
+
+# Security & API configurations
+backend/.env
+backend/.env.local
+backend/.env.*.local
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Local development configs
+.claude/settings.local.json
+.env.development.local
